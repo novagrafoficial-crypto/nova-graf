@@ -1,0 +1,77 @@
+.home-container {
+  font-family: Arial, sans-serif;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #0f5132, #1b8a5a);
+  color: white;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 42px;
+}
+
+.hero p {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.hero button {
+  margin-top: 20px;
+  padding: 12px 25px;
+  background: white;
+  color: #0f5132;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* SECCIONES */
+.section {
+  padding: 70px 20px;
+  text-align: center;
+}
+
+.section h2 {
+  color: #0f5132;
+  margin-bottom: 15px;
+}
+
+.section p {
+  max-width: 700px;
+  margin: auto;
+  font-size: 16px;
+}
+
+/* TARJETAS */
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.card {
+  width: 250px;
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* CONTACTO */
+.contact-info p {
+  margin: 5px;
+}
+
+/* FOOTER */
+.footer {
+  background: #0f5132;
+  color: white;
+  text-align: center;
+  padding: 15px;
+}

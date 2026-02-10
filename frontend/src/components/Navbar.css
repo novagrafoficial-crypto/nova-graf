@@ -1,0 +1,39 @@
+.navbar {
+  background: #0f5132;
+  color: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+}
+
+.logo {
+  font-size: 22px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+}
+
+.login-btn {
+  background: white;
+  color: #0f5132 !important;
+  padding: 6px 12px;
+  border-radius: 5px;
+}
+
+.register-btn {
+  background: transparent;
+  border: 1px solid white;
+  padding: 6px 12px;
+  border-radius: 5px;
+}
