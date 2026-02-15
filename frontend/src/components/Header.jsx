@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // 👈 Importa Link
 import '../styles/Header.css';
 
 const Header = ({ cartCount = 0 }) => {
@@ -6,8 +7,10 @@ const Header = ({ cartCount = 0 }) => {
 
   return (
     <header className="navbar">
-      {/* Logo */}
-      <div className="navbar-logo">Nova Graf</div>
+      {/* Logo (puede ser Link a inicio) */}
+      <div className="navbar-logo">
+        <Link to="/">Nova Graf</Link> {/* 👈 Link a Home */}
+      </div>
 
       {/* Menú de navegación */}
       <ul className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
@@ -16,6 +19,13 @@ const Header = ({ cartCount = 0 }) => {
         <li><a href="#catalogos">Catálogos</a></li>
         <li><a href="#servicios">Servicios</a></li>
         <li><a href="#contacto">Contacto</a></li>
+        {/* 👇 Enlaces de autenticación (visibles en escritorio) */}
+        <li className="auth-desktop">
+          <Link to="/login">Iniciar Sesión</Link>
+        </li>
+        <li className="auth-desktop">
+          <Link to="/register">Registrarse</Link>
+        </li>
       </ul>
 
       {/* Carrito */}
@@ -33,6 +43,14 @@ const Header = ({ cartCount = 0 }) => {
         <span></span>
         <span></span>
       </div>
+
+      {/* Enlaces de autenticación para móvil (dentro del menú hamburguesa) */}
+      {menuOpen && (
+        <div className="mobile-auth">
+          <Link to="/login" onClick={() => setMenuOpen(false)}>Iniciar Sesión</Link>
+          <Link to="/register" onClick={() => setMenuOpen(false)}>Registrarse</Link>
+        </div>
+      )}
     </header>
   );
 };
