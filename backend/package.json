@@ -9,8 +9,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
-    "express": "^4.22.1"
+    "dotenv": "^17.2.4",
+    "express": "^4.22.1",
+    "pg": "^8.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"

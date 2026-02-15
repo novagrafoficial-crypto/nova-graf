@@ -1,22 +1,19 @@
-const express = require("express");
-const cors = require("cors");   
+// backend/src/server.js
+const express = require('express');
+const cors = require('cors');
+const userRoutes = require('./routes/userRoutes');  // Importar las rutas de usuario
+
 const app = express();
+app.use(cors());
 
+// Middleware para parsear el body en formato JSON
 app.use(express.json());
-app.use(cors());                
 
-const userRoutes = require("./routes/user.routes");
-app.use("/api/users", userRoutes);
+// Usar las rutas
+app.use('/api/users', userRoutes); // Rutas de usuarios en el endpoint /api/users
 
-const homeRoutes = require("./routes/home.routes");
-app.use("/api/home", homeRoutes);
-
-const catalogRoutes = require("./routes/catalog.routes");
-app.use("/api/catalog", catalogRoutes);
-
-const productRoutes = require("./routes/product.routes");
-app.use("/api/products", productRoutes);
-
-app.listen(3000, () => {
-  console.log("Servidor corriendo en puerto 3000");
+// Iniciar servidor
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
