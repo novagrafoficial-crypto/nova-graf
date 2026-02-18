@@ -1,5 +1,5 @@
 // backend/models/userModel.js
-const db = require('../config/db'); // Importa la conexión de la base de datos
+const db = require('../../config/db'); // Importa la conexión de la base de datos
 const bcrypt = require('bcrypt');
 
 const createUser = async ({

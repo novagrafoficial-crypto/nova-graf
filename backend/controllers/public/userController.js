@@ -1,5 +1,5 @@
 // backend/controllers/userController.js
-const userModel = require('../models/userModel'); // Importamos el modelo
+const userModel = require('../../models/public/userModel'); // Importamos el modelo
 
 const registerUser = async (req, res) => {
   const {

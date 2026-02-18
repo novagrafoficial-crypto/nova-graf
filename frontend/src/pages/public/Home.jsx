@@ -1,75 +1,74 @@
-import React, { useState } from 'react';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import '../../styles/Home.css';
+import React from 'react';
+import '../../styles/public/Home.css'; // Estilos específicos para el home
+import LogoNova from '../../assets/LogoNova.png'; // Mismo logo del header
 
-function Home() {
-  // Estado para el contador del carrito (ejemplo)
-  const [cartCount] = useState(3); // Valor de ejemplo
-
+const Home = () => {
   return (
-    <div className="home-container">
-      <Header cartCount={cartCount} />
-
-      {/* HERO */}
-      <section className="hero" id="inicio">
-        <h1>Nova Graf</h1>
-        <p>Especialistas en personalización de artículos</p>
-        <button>Ver Catálogo</button>
+    <main className="home-main">
+      {/* Sección Inicio - Hero */}
+      <section id="inicio" className="hero-section">
+        <div className="hero-container">
+          <img src={LogoNova} alt="Nova Graf" className="hero-logo" />
+          <h1 className="hero-title">Bienvenido a Nova Graf</h1>
+          <p className="hero-subtitle">
+            Innovación y calidad en impresión y diseño gráfico
+          </p>
+          <a href="#catalogo" className="hero-cta">Explorar catálogo</a>
+        </div>
+        {/* Decoración opcional con ondas o elementos verdes */}
+        <div className="hero-decoration"></div>
       </section>
 
-      {/* SOBRE NOSOTROS */}
-      <section className="section" id="nosotros">
-        <h2>Sobre Nosotros</h2>
-        <p>
-          Nova Graf es una empresa dedicada a la personalización de productos
-          como tazas, playeras, termos y más, ofreciendo calidad, diseño y
-          atención personalizada.
+      {/* Sección Catálogo */}
+      <section id="catalogo" className="section">
+        <h2 className="section-title">Catálogo de productos</h2>
+        <p className="section-text">Aquí irían tus productos destacados...</p>
+      </section>
+
+      {/* Sección Misión */}
+      <section id="mision" className="section">
+        <h2 className="section-title">Misión</h2>
+        <p className="section-text">
+          Nuestra misión es ofrecer soluciones de impresión innovadoras y sostenibles...
         </p>
       </section>
 
-      {/* CATÁLOGOS */}
-      <section className="section" id="catalogos">
-        <h2>Catálogos</h2>
-        <div className="cards">
-          <div className="card">Tazas</div>
-          <div className="card">Playeras</div>
-          <div className="card">Gorras</div>
-          <div className="card">Termos</div>
-        </div>
-      </section>
-
-      {/* SERVICIOS */}
-      <section className="section" id="servicios">
-        <h2>Servicios</h2>
-        <p>
-          Impresión, sublimación, serigrafía, grabado láser y diseño gráfico.
+      {/* Sección Visión */}
+      <section id="vision" className="section">
+        <h2 className="section-title">Visión</h2>
+        <p className="section-text">
+          Ser líderes en el mercado latinoamericano de diseño e impresión...
         </p>
       </section>
 
-      {/* CONTACTO */}
-      <section className="section" id="contacto">
-        <h2>Contacto</h2>
-        <div className="contact-info">
-          <p>Teléfono: 771 123 4567</p>
-          <p>Correo: contacto@novagraf.com</p>
-          <p>Dirección: Yahualica, Hidalgo</p>
-        </div>
+      {/* Sección Valores */}
+      <section id="valores" className="section">
+        <h2 className="section-title">Valores</h2>
+        <ul className="values-list">
+          <li>Compromiso con la calidad</li>
+          <li>Innovación constante</li>
+          <li>Sostenibilidad</li>
+          <li>Atención personalizada</li>
+        </ul>
       </section>
 
-      {/* FOOTER */}
-      <Footer />
+      {/* Sección Antecedentes */}
+      <section id="antecedentes" className="section">
+        <h2 className="section-title">Nuestra historia</h2>
+        <p className="section-text">
+          Desde 2010, Nova Graf ha evolucionado para convertirse en un referente...
+        </p>
+      </section>
 
-      {/* 🛒 OPCIONAL: Carrito flotante (puedes eliminarlo si usas el del Header) */}
-      {/*
-      <div className="cart-floating">
-        <span className="cart-icon">🛒</span>
-        <span className="cart-count">{cartCount}</span>
-        <span className="cart-tooltip">Carrito</span>
-      </div>
-      */}
-    </div>
+      {/* Sección Contacto */}
+      <section id="contacto" className="section">
+        <h2 className="section-title">Contacto</h2>
+        <p className="section-text">
+          ¿Hablamos? Escríbenos a <a href="mailto:info@novagraf.com">info@novagraf.com</a>
+        </p>
+      </section>
+    </main>
   );
-}
+};
 
 export default Home;
