@@ -85,7 +85,6 @@ const handleSubmit = async (e) => {
           <p className="required-note">Todos los campos son obligatorios</p>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

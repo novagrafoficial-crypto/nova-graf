@@ -69,9 +69,6 @@ const Home = () => {
           </p>
         </section>
       </main>
-
-      {/* Aquí va el Footer */}
-      <Footer />
     </>
   );
 };
