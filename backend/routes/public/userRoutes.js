@@ -1,9 +1,10 @@
 // backend/routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const userController = require('../../controllers/public/userController');
+const { registerUser, verifyUser, loginUserController  } = require('../../controllers/public/userController');
 
-// Ruta para registrar un nuevo usuario
-router.post('/register', userController.registerUser);
+router.post('/register', registerUser);
+router.post('/verify-otp', verifyUser);
+router.post('/login', loginUserController);
 
 module.exports = router;

@@ -9,8 +9,8 @@ app.use(express.json());
 
 // Rutas públicas
 const userRoutes = require('./routes/public/userRoutes');  
-
-
+const misionRoutes = require('./routes/public/misionRoutes');
+const visionRoutes = require('./routes/public/visionRoutes');
 
 // Rutas para administración
 
@@ -19,9 +19,10 @@ const userRoutes = require('./routes/public/userRoutes');
 // Rutas para usuarios registrados
 
 
-// Registramos todas las rutas en el servidor
 // Rutas públicas
-app.use('/api/users', userRoutes);       
+app.use('/api/users', userRoutes);  
+app.use('/api/public', misionRoutes); 
+app.use('/api/public', visionRoutes); 
 
 // Ruta (admin)
 
