@@ -10,10 +10,9 @@ app.use(express.json());
 // Rutas públicas
 const userRoutes = require('./routes/public/userRoutes');  
 
-
+// Carpeta pública para servir imágenes subidas
 
 // Rutas para administración
-
 
 
 // Rutas para usuarios registrados
@@ -23,8 +22,15 @@ const userRoutes = require('./routes/public/userRoutes');
 // Rutas públicas
 app.use('/api/users', userRoutes);       
 
-// Ruta (admin)
-
+// Rutas admin
+const marcasRoutes = require('./routes/admin/marcasRoutes');
+app.use('/api/admin/marcas', marcasRoutes);
+const categoriasRoutes = require("./routes/admin/categoriasRoutes");
+app.use("/api/admin/categorias", categoriasRoutes);
+const subcategoriasRoutes = require("./routes/admin/subcategoriasRoutes");
+app.use("/api/admin/subcategorias", subcategoriasRoutes);
+const productosRoutes = require("./routes/admin/productosRoutes");
+app.use("/api/admin/productos", productosRoutes);
 // Ruta para gestionar el perfil de usuario
 
 
