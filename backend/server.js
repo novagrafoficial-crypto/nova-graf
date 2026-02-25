@@ -31,6 +31,8 @@ const subcategoriasRoutes = require("./routes/admin/subcategoriasRoutes");
 app.use("/api/admin/subcategorias", subcategoriasRoutes);
 const productosRoutes = require("./routes/admin/productosRoutes");
 app.use("/api/admin/productos", productosRoutes);
+const usuariosRoutes = require("./routes/admin/usuariosRoutes");
+app.use("/api/admin/usuarios", usuariosRoutes);
 // Ruta para gestionar el perfil de usuario
 
 
