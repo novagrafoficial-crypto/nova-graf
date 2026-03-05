@@ -38,7 +38,7 @@ const Footer = () => {
 
         {/* Columna 4: Redes sociales */}
         <div className="footer-section">
-          <h4>Síguenos</h4>
+          <h4>Redes Sociales</h4>
           <div className="social-icons">
             {/* Puedes reemplazar estos emojis por íconos de react-icons o FontAwesome */}
             <a href="#" aria-label="Facebook" className="social-icon">📘</a>

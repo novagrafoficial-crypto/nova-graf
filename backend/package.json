@@ -14,7 +14,12 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^4.22.1",
-    "pg": "^8.18.0"
+    "express-session": "^1.19.0",
+    "mongoose": "^9.2.3",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"
