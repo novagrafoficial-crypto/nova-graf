@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import ClientHeader from "../../components/client/ClientHeader";
 
 function ClientProfile() {
   const [user] = useState(() => JSON.parse(localStorage.getItem("user")));
@@ -60,7 +59,6 @@ function ClientProfile() {
 
   return (
     <>
-      <ClientHeader user={user} />
       <div style={{ maxWidth: "600px", margin: "2rem auto", padding: "0 1rem" }}>
         
         {/* Encabezado */}

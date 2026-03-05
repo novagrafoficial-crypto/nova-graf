@@ -1,7 +1,6 @@
 import React from 'react';
 import '../../styles/public/Home.css';
 import LogoNova from '../../assets/LogoNova.png';
-import Footer from '../../components/Footer'; // ← Importa tu Footer (ajusta la ruta)
 
 const Home = () => {
   return (
