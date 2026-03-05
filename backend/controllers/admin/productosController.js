@@ -1,66 +1,77 @@
 const productosModel = require("../../models/admin/productosModel");
+const path = require("path");
+const fs = require("fs");
 
-// Listar todos los productos
-const obtenerProductos = async (_req, res) => {
+// Obtener todos los productos
+const obtenerProductos = async (req, res) => {
   try {
     const productos = await productosModel.obtenerProductos();
     res.json(productos);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al obtener productos" });
+    res.status(500).json({ error: err.message || "Error al obtener productos" });
   }
 };
 
 // Crear producto
 const crearProducto = async (req, res) => {
+  const { nombre, descripcion, precio, stock, categoria_id, subcategoria_id, marca_id, caracteristicas } = req.body;
+  const archivo_imagen = req.file ? `/uploads/${req.file.filename}` : null;
+
   try {
-    console.log("req.body:", req.body);
-    console.log("req.file:", req.file);
+    // Parsear características de texto simple a objeto
+    const caracteristicasObj = parsearCaracteristicas(caracteristicas || '');
 
-    const productoData = {
-      nombre: req.body.nombre || "",
-      descripcion: req.body.descripcion || "",
-      precio: parseFloat(req.body.precio) || 0,
-      stock: parseInt(req.body.stock) || 0,
-      marca_id: parseInt(req.body.marca_id) || null,
-      categoria_id: parseInt(req.body.categoria_id) || null,
-      subcategoria_id: parseInt(req.body.subcategoria_id) || null,
-      activo: req.body.activo === "true" || req.body.activo === true,
-      archivo_imagen: req.file ? req.file.filename : null
-    };
-
-    const producto = await productosModel.crearProducto(productoData);
-    res.json(producto);
+    const producto = await productosModel.crearProducto({
+      nombre, descripcion, precio, stock, categoria_id, subcategoria_id, marca_id,
+      caracteristicas: caracteristicasObj,
+      archivo_imagen
+    });
+    res.status(201).json(producto);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al crear producto" });
+    res.status(500).json({ error: err.message || "Error al crear producto" });
   }
 };
 
 // Actualizar producto
 const actualizarProducto = async (req, res) => {
   const { id } = req.params;
-  try {
-    const productoData = {
-      nombre: req.body.nombre || "",
-      descripcion: req.body.descripcion || "",
-      precio: parseFloat(req.body.precio) || 0,
-      stock: parseInt(req.body.stock) || 0,
-      marca_id: parseInt(req.body.marca_id) || null,
-      categoria_id: parseInt(req.body.categoria_id) || null,
-      subcategoria_id: parseInt(req.body.subcategoria_id) || null,
-      activo: req.body.activo === "true" || req.body.activo === true,
-      archivo_imagen: req.file ? req.file.filename : req.body.archivo_imagen || null
-    };
+  const { nombre, descripcion, precio, stock, categoria_id, subcategoria_id, marca_id, caracteristicas } = req.body;
+  
+  let archivo_imagen = req.body.archivo_imagen_actual;
+  if (req.file) {
+    if (archivo_imagen) fs.unlinkSync(path.join(__dirname, '../../..', archivo_imagen));
+    archivo_imagen = `/uploads/${req.file.filename}`;
+  }
 
-    const producto = await productosModel.actualizarProducto(id, productoData);
+  try {
+    // Parsear características de texto simple a objeto
+    const caracteristicasObj = parsearCaracteristicas(caracteristicas || '');
+
+    const producto = await productosModel.actualizarProducto(id, {
+      nombre, descripcion, precio, stock, categoria_id, subcategoria_id, marca_id,
+      caracteristicas: caracteristicasObj,
+      archivo_imagen
+    });
     res.json(producto);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al actualizar producto" });
+    res.status(500).json({ error: err.message || "Error al actualizar producto" });
   }
 };
 
+// Función helper para parsear texto simple a objeto
+const parsearCaracteristicas = (texto) => {
+  const obj = {};
+  texto.split('\n').forEach(linea => {
+    const [clave, valor] = linea.split(':').map(str => str.trim());
+    if (clave && valor) {
+      obj[clave] = valor;
+    }
+  });
+  return obj;
+};
 // Eliminar producto
 const eliminarProducto = async (req, res) => {
   const { id } = req.params;
@@ -69,7 +80,10 @@ const eliminarProducto = async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al eliminar producto" });
+    if (err.message.includes('no encontrado')) {
+      return res.status(404).json({ error: err.message });
+    }
+    res.status(500).json({ error: err.message || "Error al eliminar producto" });
   }
 };
 

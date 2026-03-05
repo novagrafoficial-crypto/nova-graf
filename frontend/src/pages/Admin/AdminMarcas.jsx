@@ -6,17 +6,25 @@ function AdminMarcas() {
   const [nombre, setNombre] = useState("");
   const [editando, setEditando] = useState(false);
   const [idEditar, setIdEditar] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const API = "http://localhost:5000/api/admin/marcas";
 
   // Obtener marcas
   const obtenerMarcas = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(API);
+      if (!res.ok) throw new Error("Error en la respuesta del servidor");
       const data = await res.json();
       setMarcas(data);
     } catch (error) {
       console.error("Error al obtener marcas:", error);
+      setError("No se pudieron cargar las marcas. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,24 +35,32 @@ function AdminMarcas() {
   // Agregar o actualizar
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!nombre.trim()) {
+      setError("El nombre es requerido");
+      return;
+    }
 
-    if (!nombre.trim()) return;
-
+    setError(null);
     try {
+      let res;
       if (editando) {
         // UPDATE
-        await fetch(`${API}/${idEditar}`, {
+        res = await fetch(`${API}/${idEditar}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre }),
         });
       } else {
         // CREATE
-        await fetch(API, {
+        res = await fetch(API, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre }),
         });
+      }
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Error al guardar");
       }
 
       setNombre("");
@@ -53,19 +69,24 @@ function AdminMarcas() {
       obtenerMarcas();
     } catch (error) {
       console.error("Error al guardar marca:", error);
+      setError(error.message);
     }
   };
 
   // Eliminar
   const handleEliminar = async (id) => {
+    if (!window.confirm("¿Seguro que quieres eliminar esta marca?")) return;
+
+    setError(null);
     try {
-      await fetch(`${API}/${id}`, {
+      const res = await fetch(`${API}/${id}`, {
         method: "DELETE",
       });
-
+      if (!res.ok) throw new Error("Error al eliminar");
       obtenerMarcas();
     } catch (error) {
       console.error("Error al eliminar:", error);
+      setError("No se pudo eliminar la marca.");
     }
   };
 
@@ -73,7 +94,8 @@ function AdminMarcas() {
   const handleEditar = (marca) => {
     setNombre(marca.nombre);
     setEditando(true);
-    setIdEditar(marca.id);
+    setIdEditar(marca._id);  // Corregido: _id
+    setError(null);
   };
 
   // Cancelar edición
@@ -81,11 +103,14 @@ function AdminMarcas() {
     setNombre("");
     setEditando(false);
     setIdEditar(null);
+    setError(null);
   };
 
   return (
     <div className="admin-marcas-container">
       <h2>Administrar Marcas</h2>
+
+      {error && <p className="error-message">{error}</p>}
 
       <form onSubmit={handleSubmit} className="form-marcas">
         <input
@@ -110,40 +135,44 @@ function AdminMarcas() {
         )}
       </form>
 
-      <table className="tabla-marcas">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {marcas.map((marca) => (
-            <tr key={marca.id}>
-              <td>{marca.id}</td>
-              <td>{marca.nombre}</td>
-              <td>
-                <button
-                  type="button"
-                  className="btn-editar"
-                  onClick={() => handleEditar(marca)}
-                >
-                  Editar
-                </button>
-
-                <button
-                  type="button"
-                  className="btn-eliminar"
-                  onClick={() => handleEliminar(marca.id)}
-                >
-                  Eliminar
-                </button>
-              </td>
+      {loading ? (
+        <p>Cargando marcas...</p>
+      ) : (
+        <table className="tabla-marcas">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {marcas.map((marca) => (
+              <tr key={marca._id}>  {/* Corregido: _id */}
+                <td>{marca._id}</td>  {/* Corregido: _id (se muestra como string) */}
+                <td>{marca.nombre}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="btn-editar"
+                    onClick={() => handleEditar(marca)}
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-eliminar"
+                    onClick={() => handleEliminar(marca._id)} 
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

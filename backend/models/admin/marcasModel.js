@@ -1,37 +1,50 @@
-const client = require('../../config/db');
+const mongoose = require('mongoose');
 
-// Obtener todas
+// Definir el esquema de Marca
+const marcaSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, unique: true }
+}, { timestamps: true });
+
+// Crear el modelo de Mongoose
+const Marca = mongoose.model('Marca', marcaSchema);
+
+// Función para obtener todas las marcas
 const obtenerTodas = async () => {
-  const result = await client.query(
-    'SELECT * FROM marcas ORDER BY id ASC'
-  );
-  return result.rows;
+  return await Marca.find().sort({ createdAt: -1 });
 };
 
-// Crear
+// Función para crear una nueva marca
 const crear = async (nombre) => {
-  const result = await client.query(
-    'INSERT INTO marcas (nombre) VALUES ($1) RETURNING *',
-    [nombre]
-  );
-  return result.rows[0];
+  if (!nombre?.trim()) {
+    throw new Error('El nombre es requerido');
+  }
+  const nuevaMarca = new Marca({ nombre });
+  return await nuevaMarca.save();
 };
 
-// Actualizar
+// Función para actualizar una marca
 const actualizar = async (id, nombre) => {
-  const result = await client.query(
-    'UPDATE marcas SET nombre = $1 WHERE id = $2 RETURNING *',
-    [nombre, id]
+  if (!nombre?.trim()) {
+    throw new Error('El nombre es requerido');
+  }
+  const marcaActualizada = await Marca.findByIdAndUpdate(
+    id,
+    { nombre },
+    { new: true, runValidators: true }
   );
-  return result.rows[0];
+  if (!marcaActualizada) {
+    throw new Error('Marca no encontrada');
+  }
+  return marcaActualizada;
 };
 
-// Eliminar
+// Función para eliminar una marca
 const eliminar = async (id) => {
-  await client.query(
-    'DELETE FROM marcas WHERE id = $1',
-    [id]
-  );
+  const marcaEliminada = await Marca.findByIdAndDelete(id);
+  if (!marcaEliminada) {
+    throw new Error('Marca no encontrada');
+  }
+  return marcaEliminada;  // Opcional: retorna el eliminado para confirmación
 };
 
 module.exports = {

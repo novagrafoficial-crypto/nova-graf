@@ -12,6 +12,7 @@ function AdminCategorias() {
   const obtenerCategorias = async () => {
     try {
       const res = await fetch(API);
+      if (!res.ok) throw new Error("Error en la respuesta");
       const data = await res.json();
       setCategorias(data);
     } catch (err) {
@@ -28,18 +29,19 @@ function AdminCategorias() {
     if (!nombre.trim()) return;
 
     try {
-      if (editando) {
-        await fetch(`${API}/${idEditar}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre }),
-        });
-      } else {
-        await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre }),
-        });
+      const url = editando ? `${API}/${idEditar}` : API;
+      const method = editando ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nombre.trim() }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(errorData.error || "Error al guardar");
+        return;
       }
 
       setNombre("");
@@ -47,23 +49,28 @@ function AdminCategorias() {
       setIdEditar(null);
       obtenerCategorias();
     } catch (err) {
-      console.error("Error al guardar categoría:", err);
+      console.error("Error:", err);
+      alert("Ocurrió un error inesperado");
     }
   };
 
   const handleEliminar = async (id) => {
+    if (!window.confirm("¿Seguro que quieres eliminar esta categoría?")) return;
+
     try {
-      await fetch(`${API}/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("No se pudo eliminar");
       obtenerCategorias();
     } catch (err) {
-      console.error("Error al eliminar categoría:", err);
+      console.error(err);
+      alert("Error al eliminar");
     }
   };
 
   const handleEditar = (cat) => {
     setNombre(cat.nombre);
     setEditando(true);
-    setIdEditar(cat.id);
+    setIdEditar(cat._id);          // ←←← ESTO ERA EL ERROR PRINCIPAL
   };
 
   const handleCancelar = () => {
@@ -94,15 +101,13 @@ function AdminCategorias() {
       <table className="tabla-categorias">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {categorias.map((cat) => (
-            <tr key={cat.id}>
-              <td>{cat.id}</td>
+            <tr key={cat._id}>
               <td>{cat.nombre}</td>
               <td>
                 <button
@@ -115,7 +120,7 @@ function AdminCategorias() {
                 <button
                   type="button"
                   className="btn-eliminar"
-                  onClick={() => handleEliminar(cat.id)}
+                  onClick={() => handleEliminar(cat._id)}
                 >
                   Eliminar
                 </button>

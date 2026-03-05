@@ -16,12 +16,13 @@ function AdminUsuarios() {
   };
 
   const cambiarRol = async (id, rolActual) => {
-    const nuevoRol = rolActual === "admin" ? "cliente" : "admin";
+    const nuevoRol =
+      rolActual === "administrador" ? "cliente" : "administrador";
 
     await fetch(`${API}/${id}/rol`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rol: nuevoRol })
+      body: JSON.stringify({ rol: nuevoRol }),
     });
 
     obtenerUsuarios();
@@ -31,7 +32,7 @@ function AdminUsuarios() {
     await fetch(`${API}/${id}/activo`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ activo: !estadoActual })
+      body: JSON.stringify({ activo: !estadoActual }),
     });
 
     obtenerUsuarios();
@@ -56,33 +57,47 @@ function AdminUsuarios() {
           </thead>
 
           <tbody>
-            {usuarios.map(u => (
+            {usuarios.map((u) => (
               <tr key={u.id_usuario}>
                 <td>{u.id_usuario}</td>
-                <td>{u.nombre} {u.apellido_paterno}</td>
+                <td>
+                  {u.nombre} {u.apellido_paterno}
+                </td>
                 <td>{u.nombre_usuario}</td>
                 <td>{u.correo_electronico}</td>
                 <td>
-                  <span className={u.rol === "admin" ? "badge-admin" : "badge-user"}>
+                  <span
+                    className={
+                      u.rol === "administrador"
+                        ? "badge-admin"
+                        : "badge-user"
+                    }
+                  >
                     {u.rol}
                   </span>
                 </td>
                 <td>
-                  <span className={u.activo ? "badge-active" : "badge-inactive"}>
+                  <span
+                    className={
+                      u.activo ? "badge-active" : "badge-inactive"
+                    }
+                  >
                     {u.activo ? "Activo" : "Inactivo"}
                   </span>
                 </td>
                 <td className="actions">
-                  <button 
+                  <button
                     className="btn-role"
                     onClick={() => cambiarRol(u.id_usuario, u.rol)}
                   >
                     Cambiar Rol
                   </button>
 
-                  <button 
+                  <button
                     className="btn-status"
-                    onClick={() => cambiarEstado(u.id_usuario, u.activo)}
+                    onClick={() =>
+                      cambiarEstado(u.id_usuario, u.activo)
+                    }
                   >
                     {u.activo ? "Desactivar" : "Activar"}
                   </button>

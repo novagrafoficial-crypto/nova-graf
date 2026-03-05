@@ -1,53 +1,26 @@
-const client = require('../../config/db');
+const mongoose = require("mongoose");
 
-// Obtener todos los usuarios (sin contraseña ni OTP)
-const obtenerUsuarios = async () => {
-  const result = await client.query(`
-    SELECT 
-      id_usuario,
-      nombre,
-      apellido_paterno,
-      apellido_materno,
-      nombre_usuario,
-      correo_electronico,
-      rol,
-      activo,
-      fecha_registro
-    FROM usuarios
-    ORDER BY id_usuario DESC
-  `);
+const usuarioSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true, trim: true },
+    apellido_paterno: { type: String },
+    apellido_materno: { type: String },
+    nombre_usuario: { type: String, required: true, unique: true },
+    correo_electronico: { type: String, required: true, unique: true },
+    contrasena: { type: String, required: true },
 
-  return result.rows;
-};
+    rol: {
+      type: String,
+      enum: ["administrador", "cliente"],
+      default: "cliente"
+    },
 
-// Cambiar rol
-const cambiarRol = async (id, rol) => {
-  const result = await client.query(
-    `UPDATE usuarios 
-     SET rol = $1 
-     WHERE id_usuario = $2 
-     RETURNING id_usuario, rol`,
-    [rol, id]
-  );
+    activo: {
+      type: Boolean,
+      default: true
+    }
+  },
+  { timestamps: true }
+);
 
-  return result.rows[0];
-};
-
-// Activar / Desactivar
-const cambiarEstado = async (id, activo) => {
-  const result = await client.query(
-    `UPDATE usuarios 
-     SET activo = $1 
-     WHERE id_usuario = $2 
-     RETURNING id_usuario, activo`,
-    [activo, id]
-  );
-
-  return result.rows[0];
-};
-
-module.exports = {
-  obtenerUsuarios,
-  cambiarRol,
-  cambiarEstado,
-};
+module.exports = mongoose.model("Usuario", usuarioSchema);

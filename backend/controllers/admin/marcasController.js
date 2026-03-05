@@ -1,4 +1,4 @@
-const marcasModel = require('../../models/admin/marcasModel');
+const marcasModel = require('../../models/admin/marcasModel');  // Verifica el path
 
 // Obtener todas
 const obtenerMarcas = async (_req, res) => {
@@ -7,7 +7,7 @@ const obtenerMarcas = async (_req, res) => {
     res.json(marcas);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al obtener marcas' });
+    res.status(500).json({ error: error.message || 'Error al obtener marcas' });
   }
 };
 
@@ -19,7 +19,10 @@ const crearMarca = async (req, res) => {
     res.status(201).json(nuevaMarca);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al crear marca' });
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'La marca ya existe' });
+    }
+    res.status(error.message.includes('requerido') ? 400 : 500).json({ error: error.message || 'Error al crear marca' });
   }
 };
 
@@ -28,12 +31,17 @@ const actualizarMarca = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre } = req.body;
-
     const marcaActualizada = await marcasModel.actualizar(id, nombre);
     res.json(marcaActualizada);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al actualizar marca' });
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'La marca ya existe' });
+    }
+    if (error.message.includes('no encontrada')) {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(error.message.includes('requerido') ? 400 : 500).json({ error: error.message || 'Error al actualizar marca' });
   }
 };
 
@@ -45,7 +53,10 @@ const eliminarMarca = async (req, res) => {
     res.json({ mensaje: 'Marca eliminada correctamente' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al eliminar marca' });
+    if (error.message.includes('no encontrada')) {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message || 'Error al eliminar marca' });
   }
 };
 

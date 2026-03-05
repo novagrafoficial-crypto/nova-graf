@@ -1,8 +1,12 @@
-const usuariosModel = require("../../models/admin/usuariosModel");
+const Usuario = require("../../models/admin/usuariosModel.js");
 
+// 🔎 Obtener todos los usuarios
 const obtenerUsuarios = async (req, res) => {
   try {
-    const usuarios = await usuariosModel.obtenerUsuarios();
+    const usuarios = await Usuario.find()
+      .select("-contrasena") // nunca enviar contraseña
+      .sort({ createdAt: -1 });
+
     res.json(usuarios);
   } catch (error) {
     console.error(error);
@@ -10,12 +14,22 @@ const obtenerUsuarios = async (req, res) => {
   }
 };
 
+// 🔁 Cambiar rol
 const cambiarRol = async (req, res) => {
   const { id } = req.params;
   const { rol } = req.body;
 
   try {
-    const usuario = await usuariosModel.cambiarRol(id, rol);
+    const usuario = await Usuario.findByIdAndUpdate(
+      id,
+      { rol },
+      { new: true }
+    ).select("-contrasena");
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
     res.json(usuario);
   } catch (error) {
     console.error(error);
@@ -23,12 +37,22 @@ const cambiarRol = async (req, res) => {
   }
 };
 
+// 🔁 Cambiar estado (activo/inactivo)
 const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { activo } = req.body;
 
   try {
-    const usuario = await usuariosModel.cambiarEstado(id, activo);
+    const usuario = await Usuario.findByIdAndUpdate(
+      id,
+      { activo },
+      { new: true }
+    ).select("-contrasena");
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
     res.json(usuario);
   } catch (error) {
     console.error(error);
