@@ -20,7 +20,7 @@ function AuthCallback() {
         localStorage.setItem("user", JSON.stringify(user));
 
         if (user.rol === "administrador") {
-          navigate("/admin/dashboard");
+          navigate("/admin");
         } else {
           navigate("/cliente/home");
         }

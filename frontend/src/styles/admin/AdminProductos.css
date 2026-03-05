@@ -1,0 +1,43 @@
+.admin-productos-container {
+  padding: 20px 40px;
+  margin-top: 50px;
+}
+
+.form-productos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-productos input,
+.form-productos textarea,
+.form-productos select {
+  padding: 8px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-productos button {
+  width: 120px;
+  padding: 8px;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.tabla-productos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-productos th,
+.tabla-productos td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.tabla-productos th {
+  background-color: #f2f2f2;
+}

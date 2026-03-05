@@ -15,7 +15,7 @@ function ClientLayout() {
     }
     const parsed = JSON.parse(storedUser);
     if (parsed.rol === "administrador") {
-      navigate("/admin/dashboard");
+      navigate("/admin/AdminLayout");
       return;
     }
     setUser(parsed);

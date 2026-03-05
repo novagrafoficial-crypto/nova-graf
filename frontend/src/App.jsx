@@ -1,9 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// Layouts
 import PublicLayout from "./layouts/PublicLayout";
 import ClientLayout from "./layouts/ClientLayout";
-
+import AdminLayout from "./layouts/AdminLayout";
 
 // Páginas públicas
 import Home from "./pages/public/Home";
@@ -18,15 +17,22 @@ import ResetPassword from "./pages/public/ResetPassword";
 import AuthCallback from "./pages/public/AuthCallback";
 
 // Páginas cliente
-import ClientProfile from "./pages/Client/ClientProfile";
 import ClienteHome from "./pages/Client/ClienteHome";
+import ClientProfile from "./pages/Client/ClientProfile";
+
+// Páginas admin
+import AdminMarcas from "./pages/Admin/AdminMarcas";
+import AdminCategorias from "./pages/Admin/AdminCategorias";
+import AdminSubcategorias from "./pages/Admin/AdminSubcategorias";
+import AdminProductos from "./pages/Admin/AdminProductos";
+import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Rutas públicas — con Header y Footer público */}
+        {/* Rutas públicas */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
@@ -36,22 +42,27 @@ function App() {
           <Route path="/nosotros/vision" element={<Vision />} />
           <Route path="/verify-account/:id_usuario" element={<VerificarRegistro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-recovery/:id_usuario" element={<VerifyRecovery />} />
           <Route path="/reset-password/:id_usuario" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
         </Route>
 
-        {/* Rutas cliente — con Header y Footer de cliente */}
+        {/* Rutas cliente */}
         <Route element={<ClientLayout />}>
           <Route path="/cliente/home" element={<ClienteHome />} />
+          <Route path="/cliente/perfil" element={<ClientProfile />} />
           <Route path="/cliente/pedidos" element={<div>Mis Pedidos</div>} />
           <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
-          <Route path="/cliente/perfil" element={<ClientProfile />} />
         </Route>
 
-        
-        {/* Rutas del administrador */}
+        {/* Rutas admin */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="marcas" element={<AdminMarcas />} />
+          <Route path="categorias" element={<AdminCategorias />} />
+          <Route path="subcategorias" element={<AdminSubcategorias />} />
+          <Route path="productos" element={<AdminProductos />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+        </Route>
 
       </Routes>
     </BrowserRouter>

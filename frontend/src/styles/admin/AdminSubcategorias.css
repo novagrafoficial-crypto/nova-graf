@@ -1,0 +1,122 @@
+/* Contenedor principal */
+.admin-subcategorias-container {
+  max-width: 900px;
+  margin: 40px auto; /* Centrado vertical y horizontal */
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
+}
+
+/* Título */
+.admin-subcategorias-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* Formulario */
+.form-subcategorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+  justify-content: center;
+}
+
+.form-subcategorias input {
+  padding: 10px;
+  font-size: 16px;
+  flex: 1 1 250px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.form-subcategorias button {
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.form-subcategorias button[type="submit"] {
+  background-color: #27ae60;
+  color: white;
+}
+
+.form-subcategorias button[type="submit"]:hover {
+  background-color: #1e8449;
+}
+
+/* Botón cancelar */
+.btn-cancelar {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #7f8c8d;
+}
+
+/* Tabla */
+.tabla-subcategorias {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-subcategorias th,
+.tabla-subcategorias td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabla-categorias th {
+  background-color: #2c3e50;
+  color: white;
+}
+
+.tabla-categorias tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Botones de acción en tabla */
+.btn-editar {
+  background-color: #2980b9;
+  color: white;
+  padding: 6px 12px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-editar:hover {
+  background-color: #1f618d;
+}
+
+.btn-eliminar {
+  background-color: #c0392b;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-eliminar:hover {
+  background-color: #922b21;
+}
+
+/* Error */
+.admin-error {
+  color: red;
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+}

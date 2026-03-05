@@ -44,7 +44,7 @@ function Login() {
       if (response.ok) {
         localStorage.setItem("user", JSON.stringify(data.user));
         if (data.user.rol === "administrador") {
-          navigate("/admin/dashboard");
+          navigate("/admin");
         } else {
           navigate("/cliente/home");
         }
