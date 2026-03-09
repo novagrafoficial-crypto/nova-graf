@@ -26,6 +26,9 @@ import AdminCategorias from "./pages/Admin/AdminCategorias";
 import AdminSubcategorias from "./pages/Admin/AdminSubcategorias";
 import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
+import AdminModulo from "./pages/Admin/AdminModulo";
+import AdminPublicacion from './pages/Admin/AdminPublicacion';
+
 
 function App() {
   return (
@@ -61,7 +64,9 @@ function App() {
           <Route path="categorias" element={<AdminCategorias />} />
           <Route path="subcategorias" element={<AdminSubcategorias />} />
           <Route path="productos" element={<AdminProductos />} />
+          <Route path="publicacion" element={<AdminPublicacion />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="modulo-extra" element={<AdminModulo />} />
         </Route>
 
       </Routes>

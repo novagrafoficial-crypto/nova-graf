@@ -1,55 +1,38 @@
-const mongoose = require('mongoose');
+const db = require('../../config/db');
 
-// Definir el esquema de Marca
-const marcaSchema = new mongoose.Schema({
-  nombre: { type: String, required: true, unique: true }
-}, { timestamps: true });
-
-// Crear el modelo de Mongoose
-const Marca = mongoose.model('Marca', marcaSchema);
-
-// Función para obtener todas las marcas
 const obtenerTodas = async () => {
-  return await Marca.find().sort({ createdAt: -1 });
+  const result = await db.query('SELECT * FROM marcas ORDER BY id DESC');
+  return result.rows;
 };
 
-// Función para crear una nueva marca
 const crear = async (nombre) => {
-  if (!nombre?.trim()) {
-    throw new Error('El nombre es requerido');
-  }
-  const nuevaMarca = new Marca({ nombre });
-  return await nuevaMarca.save();
-};
+  if (!nombre?.trim()) throw new Error('El nombre es requerido');
 
-// Función para actualizar una marca
-const actualizar = async (id, nombre) => {
-  if (!nombre?.trim()) {
-    throw new Error('El nombre es requerido');
-  }
-  const marcaActualizada = await Marca.findByIdAndUpdate(
-    id,
-    { nombre },
-    { new: true, runValidators: true }
+  const result = await db.query(
+    'INSERT INTO marcas (nombre) VALUES ($1) RETURNING *',
+    [nombre.trim()]
   );
-  if (!marcaActualizada) {
-    throw new Error('Marca no encontrada');
-  }
-  return marcaActualizada;
+  return result.rows[0];
 };
 
-// Función para eliminar una marca
+const actualizar = async (id, nombre) => {
+  if (!nombre?.trim()) throw new Error('El nombre es requerido');
+
+  const result = await db.query(
+    'UPDATE marcas SET nombre = $1 WHERE id = $2 RETURNING *',
+    [nombre.trim(), id]
+  );
+  if (result.rowCount === 0) throw new Error('Marca no encontrada');
+  return result.rows[0];
+};
+
 const eliminar = async (id) => {
-  const marcaEliminada = await Marca.findByIdAndDelete(id);
-  if (!marcaEliminada) {
-    throw new Error('Marca no encontrada');
-  }
-  return marcaEliminada;  // Opcional: retorna el eliminado para confirmación
+  const result = await db.query(
+    'DELETE FROM marcas WHERE id = $1 RETURNING *',
+    [id]
+  );
+  if (result.rowCount === 0) throw new Error('Marca no encontrada');
+  return result.rows[0];
 };
 
-module.exports = {
-  obtenerTodas,
-  crear,
-  actualizar,
-  eliminar
-};
+module.exports = { obtenerTodas, crear, actualizar, eliminar };

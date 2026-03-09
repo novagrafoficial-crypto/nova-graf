@@ -1,35 +1,21 @@
-const Usuario = require('./Usuario');
+const db = require('../../config/db');
 const bcrypt = require('bcrypt');
 
-// ─── HELPERS ──────────────────────────────────────────────
+// ─── HELPER ───────────────────────────────────────────────
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
-
-// Mapear _id de MongoDB a id_usuario para que los controladores no cambien
-const formatUser = (user) => ({
-  id_usuario: user._id,
-  nombre: user.nombre,
-  apellido_paterno: user.apellido_paterno,
-  ...(user.apellido_materno  && { apellido_materno: user.apellido_materno }),
-  ...(user.nombre_usuario    && { nombre_usuario: user.nombre_usuario }),
-  ...(user.fecha_nacimiento  && { fecha_nacimiento: user.fecha_nacimiento }),
-  ...(user.domicilio         && { domicilio: user.domicilio }),
-  ...(user.telefono          && { telefono: user.telefono }),
-  correo_electronico: user.correo_electronico,
-  rol: user.rol,
-  proveedor: user.proveedor,
-});
 
 // ─── VERIFICAR EMAIL ──────────────────────────────────────
 const checkEmailExists = async (email) => {
-  const user = await Usuario.findOne({ correo_electronico: email });
-  if (!user) return null;
-  return { correo_electronico: user.correo_electronico, proveedor: user.proveedor };
+  const result = await db.query(
+    'SELECT correo_electronico, proveedor FROM usuarios WHERE correo_electronico = $1',
+    [email]
+  );
+  return result.rowCount === 0 ? null : result.rows[0];
 };
 
 // ─── REGISTRO MANUAL ─────────────────────────────────────
 const createUser = async ({ name, lastNameP, lastNameM, username, birthDate, address, phone, email, password }) => {
-  
-  // Verificar duplicado
+
   const existing = await checkEmailExists(email);
   if (existing) {
     if (existing.proveedor === 'google')
@@ -43,69 +29,70 @@ const createUser = async ({ name, lastNameP, lastNameM, username, birthDate, add
   const otp = generateOTP();
   const otpExpiration = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Solo guarda campos que tienen valor
-  const userData = {
-    nombre: name,
-    apellido_paterno: lastNameP,
-    correo_electronico: email,
-    contrasena: hashedPassword,
-    codigo_otp: otp,
-    otp_expiracion: otpExpiration,
-    activo: false,
-    rol: 'cliente',
-    proveedor: 'local',
-    ...(lastNameM  && { apellido_materno: lastNameM }),
-    ...(username   && { nombre_usuario: username }),
-    ...(birthDate  && { fecha_nacimiento: birthDate }),
-    ...(address    && { domicilio: address }),
-    ...(phone      && { telefono: phone }),
-  };
+  const result = await db.query(`
+    INSERT INTO usuarios 
+    (nombre, apellido_paterno, apellido_materno, nombre_usuario, fecha_nacimiento, 
+     domicilio, telefono, correo_electronico, contrasena, codigo_otp, 
+     otp_expiracion, activo, rol, proveedor)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    RETURNING id_usuario, nombre, apellido_paterno, apellido_materno, 
+              nombre_usuario, correo_electronico, rol, proveedor
+  `, [
+    name, lastNameP, lastNameM || null, username || null,
+    birthDate || null, address || null, phone || null,
+    email, hashedPassword, otp, otpExpiration,
+    false, 'cliente', 'local'
+  ]);
 
-  const newUser = await Usuario.create(userData);
-  return formatUser(newUser);
+  return result.rows[0];
 };
 
 // ─── REGISTRO / LOGIN CON GOOGLE ─────────────────────────
-
 const findOrCreateGoogleUser = async ({ googleId, nombre, apellido_paterno, apellido_materno, email }) => {
-  
+
   // 1. Buscar si ya existe por google_id
-  let user = await Usuario.findOne({ google_id: googleId });
-  if (user) return formatUser(user); // Ya existe → solo retornar
+  let result = await db.query(
+    'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE google_id = $1',
+    [googleId]
+  );
+  if (result.rowCount > 0) return result.rows[0];
 
   // 2. Buscar si el correo ya existe con otro proveedor
-  const existing = await Usuario.findOne({ correo_electronico: email });
+  const existing = await checkEmailExists(email);
   if (existing) {
-    if (existing.proveedor === 'local')
-      throw { message: 'email_local' }; // Redirige al login con error
-    if (existing.proveedor === 'facebook')
-      throw { message: 'email_facebook' };
+    if (existing.proveedor === 'local')    throw { message: 'email_local' };
+    if (existing.proveedor === 'facebook') throw { message: 'email_facebook' };
   }
 
   // 3. Crear usuario nuevo con Google
-  // Solo guarda los campos que Google realmente nos da
-  const googleData = {
-    nombre,
-    apellido_paterno,
-    correo_electronico: email,
-    google_id: googleId,
-    nombre_usuario: email, // Usamos el email como nombre de usuario por defecto
-    activo: true,          // Google ya verificó el email
-    rol: 'cliente',
-    proveedor: 'google',
-    ...(apellido_materno && { apellido_materno }),
-  };
+  result = await db.query(`
+    INSERT INTO usuarios
+    (nombre, apellido_paterno, apellido_materno, nombre_usuario, correo_electronico, 
+     google_id, activo, rol, proveedor, contrasena)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+    RETURNING id_usuario, nombre, correo_electronico, rol, proveedor
+  `, [
+    nombre, apellido_paterno, apellido_materno || null,
+    email, email, googleId,
+    true, 'cliente', 'google', 'GOOGLE_AUTH'
+  ]);
 
-  const newUser = await Usuario.create(googleData);
-  return formatUser(newUser);
+  return result.rows[0];
 };
 
 // ─── LOGIN MANUAL ─────────────────────────────────────────
 const loginUser = async (email, password) => {
-  const user = await Usuario.findOne({ correo_electronico: email });
-  
-  if (!user) 
+  const result = await db.query(
+    `SELECT id_usuario, nombre, correo_electronico, contrasena, activo, rol, proveedor 
+     FROM usuarios WHERE correo_electronico = $1`,
+    [email]
+  );
+
+  if (result.rowCount === 0)
     return { success: false, message: 'Correo o contraseña incorrectos' };
+
+  const user = result.rows[0];
+
   if (user.proveedor === 'google')
     return { success: false, message: 'Este correo fue registrado con Google. Usa el botón de Google.' };
   if (user.proveedor === 'facebook')
@@ -114,116 +101,168 @@ const loginUser = async (email, password) => {
     return { success: false, message: 'Cuenta no activada. Revisa tu correo y verifica tu cuenta.' };
 
   const passwordMatch = await bcrypt.compare(password, user.contrasena);
-  if (!passwordMatch) 
+  if (!passwordMatch)
     return { success: false, message: 'Correo o contraseña incorrectos' };
 
-  return { success: true, user: formatUser(user) };
+  return {
+    success: true,
+    user: {
+      id_usuario:          user.id_usuario,
+      nombre:              user.nombre,
+      correo_electronico:  user.correo_electronico,
+      rol:                 user.rol,
+    }
+  };
 };
 
 // ─── OTP REGISTRO ─────────────────────────────────────────
 const verifyOTP = async (userId, otp) => {
-  const user = await Usuario.findById(userId);
-  if (!user) return { success: false, message: 'Usuario no encontrado' };
+  const result = await db.query(
+    'SELECT codigo_otp, otp_expiracion FROM usuarios WHERE id_usuario = $1',
+    [userId]
+  );
+
+  if (result.rowCount === 0)
+    return { success: false, message: 'Usuario no encontrado' };
+
+  const user = result.rows[0];
+
   if (String(user.codigo_otp) !== String(otp))
     return { success: false, message: 'Código incorrecto' };
   if (new Date() > new Date(user.otp_expiracion))
     return { success: false, message: 'Código expirado' };
 
-  await Usuario.findByIdAndUpdate(userId, { 
-    activo: true,
-    $unset: { codigo_otp: '', otp_expiracion: '' } // ← borra los campos OTP al activar
-  });
+  await db.query(
+    'UPDATE usuarios SET activo = true, codigo_otp = NULL, otp_expiracion = NULL WHERE id_usuario = $1',
+    [userId]
+  );
+
   return { success: true, message: 'Cuenta activada exitosamente' };
 };
 
 const getOTPData = async (userId) => {
-  const user = await Usuario.findById(userId);
-  if (!user) throw new Error('Usuario no encontrado');
-  return { correo_electronico: user.correo_electronico, codigo_otp: user.codigo_otp };
+  const result = await db.query(
+    'SELECT correo_electronico, codigo_otp FROM usuarios WHERE id_usuario = $1',
+    [userId]
+  );
+  if (result.rowCount === 0) throw new Error('Usuario no encontrado');
+  return result.rows[0];
 };
 
-// ─── BÚSQUEDAS ──────────────────────
+// ─── BÚSQUEDAS ────────────────────────────────────────────
 const findUserByEmail = async (email) => {
-  const user = await Usuario.findOne({ correo_electronico: email });
-  if (!user) return null;
-  return {
-    id_usuario: user._id,
-    nombre: user.nombre,
-    correo_electronico: user.correo_electronico,
-    activo: user.activo,
-    ...(user.telefono && { telefono: user.telefono }),
-  };
+  const result = await db.query(
+    `SELECT id_usuario, nombre, correo_electronico, activo, telefono, proveedor
+     FROM usuarios WHERE correo_electronico = $1`,
+    [email]
+  );
+  return result.rowCount === 0 ? null : result.rows[0];
 };
 
 const findUserById = async (id_usuario) => {
-  const user = await Usuario.findById(id_usuario);
-  if (!user) return null;
-  return {
-    id_usuario: user._id,
-    nombre: user.nombre,
-    correo_electronico: user.correo_electronico,
-    activo: user.activo
-  };
+  const result = await db.query(
+    'SELECT id_usuario, nombre, correo_electronico, activo FROM usuarios WHERE id_usuario = $1',
+    [id_usuario]
+  );
+  return result.rowCount === 0 ? null : result.rows[0];
 };
 
 // ─── RECUPERACIÓN DE CONTRASEÑA ───────────────────────────
 const saveRecoveryOTP = async (userId) => {
-  const otp = Math.floor(100000 + Math.random() * 900000);
+  const otp = generateOTP();
   const expiration = new Date(Date.now() + 10 * 60 * 1000);
-  await Usuario.findByIdAndUpdate(userId, { codigo_otp: otp, otp_expiracion: expiration });
+  await db.query(
+    'UPDATE usuarios SET codigo_otp = $1, otp_expiracion = $2 WHERE id_usuario = $3',
+    [otp, expiration, userId]
+  );
   return otp;
 };
 
 const verifyRecoveryOTP = async (userId, otp) => {
-  const user = await Usuario.findById(userId);
-  if (!user) return { success: false, message: 'Usuario no encontrado' };
+  const result = await db.query(
+    'SELECT codigo_otp, otp_expiracion FROM usuarios WHERE id_usuario = $1',
+    [userId]
+  );
+  if (result.rowCount === 0)
+    return { success: false, message: 'Usuario no encontrado' };
+
+  const user = result.rows[0];
   if (String(user.codigo_otp) !== String(otp))
     return { success: false, message: 'Código incorrecto' };
   if (new Date() > new Date(user.otp_expiracion))
     return { success: false, message: 'Código expirado' };
+
   return { success: true };
 };
 
 const resetPassword = async (userId, newPassword) => {
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  await Usuario.findByIdAndUpdate(userId, {
-    contrasena: hashedPassword,
-    $unset: { codigo_otp: '', otp_expiracion: '' } // ← borra los campos OTP
-  });
+  const hashed = await bcrypt.hash(newPassword, 10);
+  await db.query(
+    'UPDATE usuarios SET contrasena = $1, codigo_otp = NULL, otp_expiracion = NULL WHERE id_usuario = $2',
+    [hashed, userId]
+  );
   return { success: true, message: 'Contraseña actualizada correctamente' };
 };
 
-// ─── PERFIL ────────────────────────────────
+// ─── PERFIL ───────────────────────────────────────────────
 const getUserProfile = async (id_usuario) => {
-  const user = await Usuario.findById(id_usuario);
-  if (!user) return null;
-  return formatUser(user);
+  const result = await db.query(`
+    SELECT id_usuario, nombre, apellido_paterno, apellido_materno,
+           nombre_usuario, fecha_nacimiento, domicilio, telefono,
+           correo_electronico, proveedor
+    FROM usuarios WHERE id_usuario = $1
+  `, [id_usuario]);
+
+  return result.rowCount === 0 ? null : result.rows[0];
 };
 
-// ____Solo actualiza campos que vienen con valor________
 const updateUserProfile = async (id_usuario, fields) => {
-  
-  const updates = {};
-  const allowed = ['nombre', 'apellido_paterno', 'apellido_materno', 'nombre_usuario', 'fecha_nacimiento', 'domicilio', 'telefono'];
-  allowed.forEach(field => {
-    if (fields[field] !== undefined && fields[field] !== '') {
-      updates[field] = fields[field];
-    }
-  });
+  const { nombre, apellido_paterno, apellido_materno, nombre_usuario, fecha_nacimiento, domicilio, telefono } = fields;
 
-  const updated = await Usuario.findByIdAndUpdate(id_usuario, updates, { new: true });
-  return formatUser(updated);
+  const result = await db.query(`
+    UPDATE usuarios SET
+      nombre             = COALESCE($1, nombre),
+      apellido_paterno   = COALESCE($2, apellido_paterno),
+      apellido_materno   = COALESCE($3, apellido_materno),
+      nombre_usuario     = COALESCE($4, nombre_usuario),
+      fecha_nacimiento   = COALESCE($5, fecha_nacimiento),
+      domicilio          = COALESCE($6, domicilio),
+      telefono           = COALESCE($7, telefono)
+    WHERE id_usuario = $8
+    RETURNING id_usuario, nombre, apellido_paterno, apellido_materno,
+              nombre_usuario, fecha_nacimiento, domicilio, telefono,
+              correo_electronico, proveedor
+  `, [
+    nombre || null, apellido_paterno || null, apellido_materno || null,
+    nombre_usuario || null, fecha_nacimiento || null,
+    domicilio || null, telefono || null,
+    id_usuario
+  ]);
+
+  return result.rows[0];
 };
 
-// _____REENVIAR CODIGO DE ACTIVACION EN CASO DE EXPIRACIÓN__________
+// ─── REENVIAR OTP DE ACTIVACIÓN ───────────────────────────
 const resendActivationOTP = async (userId) => {
   const otp = generateOTP();
   const expiration = new Date(Date.now() + 10 * 60 * 1000);
-  await Usuario.findByIdAndUpdate(userId, { codigo_otp: otp, otp_expiracion: expiration });
+  await db.query(
+    'UPDATE usuarios SET codigo_otp = $1, otp_expiracion = $2 WHERE id_usuario = $3',
+    [otp, expiration, userId]
+  );
   return otp;
 };
 
-// ─── EXPORTS ────────────────────────────
+// ─── OBTENER ID POR EMAIL (sin verificar activo) ──────────
+const getUserIdByEmail = async (email) => {
+  const result = await db.query(
+    'SELECT id_usuario FROM usuarios WHERE correo_electronico = $1',
+    [email]
+  );
+  return result.rowCount === 0 ? null : result.rows[0];
+};
+
+// ─── EXPORTS ──────────────────────────────────────────────
 module.exports = {
   createUser,
   findOrCreateGoogleUser,
@@ -238,5 +277,6 @@ module.exports = {
   checkEmailExists,
   getUserProfile,
   updateUserProfile,
-  resendActivationOTP
+  resendActivationOTP,
+  getUserIdByEmail,
 };

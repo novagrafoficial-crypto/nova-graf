@@ -1,18 +1,36 @@
-const mongoose = require("mongoose");
+const db = require('../../config/db');
 
-const categoriaSchema = new mongoose.Schema(
-{
-nombre: {
-type: String,
-required: true,
-trim: true,
-unique: true
-}
-},
-{
-timestamps: true // agrega createdAt y updatedAt automáticamente
-}
-);
+const obtenerTodas = async () => {
+  const result = await db.query('SELECT * FROM categorias ORDER BY id DESC');
+  return result.rows;
+};
 
-// Mongo creará la colección "categorias" automáticamente
-module.exports = mongoose.model("Categoria", categoriaSchema);
+const crear = async (nombre) => {
+  if (!nombre?.trim()) throw new Error('El nombre es requerido');
+  const result = await db.query(
+    'INSERT INTO categorias (nombre) VALUES ($1) RETURNING *',
+    [nombre.trim()]
+  );
+  return result.rows[0];
+};
+
+const actualizar = async (id, nombre) => {
+  if (!nombre?.trim()) throw new Error('El nombre es requerido');
+  const result = await db.query(
+    'UPDATE categorias SET nombre = $1 WHERE id = $2 RETURNING *',
+    [nombre.trim(), id]
+  );
+  if (result.rowCount === 0) throw new Error('Categoría no encontrada');
+  return result.rows[0];
+};
+
+const eliminar = async (id) => {
+  const result = await db.query(
+    'DELETE FROM categorias WHERE id = $1 RETURNING *',
+    [id]
+  );
+  if (result.rowCount === 0) throw new Error('Categoría no encontrada');
+  return result.rows[0];
+};
+
+module.exports = { obtenerTodas, crear, actualizar, eliminar };

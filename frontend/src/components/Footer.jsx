@@ -36,20 +36,16 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Columna 4: Redes sociales */}
+        
         <div className="footer-section">
           <h4>Redes Sociales</h4>
           <div className="social-icons">
-            {/* Puedes reemplazar estos emojis por íconos de react-icons o FontAwesome */}
+           
             <a href="#" aria-label="Facebook" className="social-icon">📘</a>
             <a href="#" aria-label="Instagram" className="social-icon">📷</a>
-            <a href="#" aria-label="Twitter" className="social-icon">🐦</a>
-            <a href="#" aria-label="TikTok" className="social-icon">🎵</a>
-            <a href="#" aria-label="WhatsApp" className="social-icon">💬</a>
+           
           </div>
-          {/* Sugerencia: si deseas íconos más profesionales, instala react-icons y usa, por ejemplo:
-          import { FaFacebook, FaInstagram, FaTwitter, FaTiktok, FaWhatsapp } from 'react-icons/fa';
-          y luego reemplaza los emojis por <FaFacebook />, etc. */}
+         
         </div>
       </div>
 

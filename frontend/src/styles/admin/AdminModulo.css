@@ -1,0 +1,104 @@
+
+/* CONTENEDOR GENERAL */
+
+.modulo-container{
+    padding: 35px;
+    background: #f4f8f5;
+    min-height: 100vh;
+}
+
+.modulo-container h2{
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: #1b4332;
+}
+
+
+/* GRID DE TARJETAS */
+
+.modulo-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap: 25px;
+}
+
+
+/* TARJETAS */
+
+.modulo-card{
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-left: 6px solid #2d6a4f;
+}
+
+/* EFECTO HOVER */
+
+.modulo-card:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+
+/* TITULO TARJETA */
+
+.modulo-card h3{
+    margin: 0;
+    color: #2d6a4f;
+    font-size: 20px;
+}
+
+
+/* DESCRIPCIÓN */
+
+.modulo-card p{
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+}
+
+
+/* BOTÓN */
+
+.modulo-card button{
+    margin-top: auto;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg,#2d6a4f,#40916c);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+
+/* HOVER BOTÓN */
+
+.modulo-card button:hover{
+    background: linear-gradient(135deg,#1b4332,#2d6a4f);
+    transform: scale(1.03);
+}
+
+
+/* BOTÓN DESACTIVADO */
+
+.modulo-card button:disabled{
+    background: #cfcfcf;
+    cursor: not-allowed;
+}
+
+
+/* ERROR */
+
+.error{
+    margin-top: 5px;
+    color: #c1121f;
+    font-size: 13px;
+}

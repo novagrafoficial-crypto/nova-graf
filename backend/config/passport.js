@@ -1,8 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const Usuario = require('../models/public/Usuario');
-const { findOrCreateGoogleUser } = require('../models/public/userModel');
+const db = require('./db');
 
 // ─── GOOGLE ───────────────────────────────────────────────
 passport.use(new GoogleStrategy({
@@ -14,21 +13,30 @@ passport.use(new GoogleStrategy({
     const email = profile.emails[0].value;
     const nombre = profile.name.givenName || 'Usuario';
     const apellido_paterno = profile.name.familyName || '';
-    const googleId = profile.id;
 
-    const user = await findOrCreateGoogleUser({
-      googleId,
-      nombre,
-      apellido_paterno,
-      email
-    });
+    // Buscar si ya existe por correo
+    const existing = await db.query(
+      'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE correo_electronico = $1',
+      [email]
+    );
 
-    return done(null, user);
-  } catch (error) {
-    // Error controlado: correo ya registrado con otro proveedor
-    if (error.message === 'email_local' || error.message === 'email_facebook') {
-      return done(null, false, { message: error.message });
+    if (existing.rowCount > 0) {
+      const user = existing.rows[0];
+      if (user.proveedor === 'local')    return done(null, false, { message: 'email_local' });
+      if (user.proveedor === 'facebook') return done(null, false, { message: 'email_facebook' });
+      return done(null, user); // Ya es Google → login directo
     }
+
+    // Crear nuevo usuario Google
+    const result = await db.query(`
+      INSERT INTO usuarios 
+      (nombre, apellido_paterno, nombre_usuario, correo_electronico, activo, rol, proveedor, contrasena)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING id_usuario, nombre, correo_electronico, rol
+    `, [nombre, apellido_paterno, email, email, true, 'cliente', 'google', 'GOOGLE_AUTH']);
+
+    return done(null, result.rows[0]);
+  } catch (error) {
     return done(error, null);
   }
 }));
@@ -45,61 +53,46 @@ passport.use(new FacebookStrategy({
     const nombre = profile.name?.givenName || 'Usuario';
     const apellido_paterno = profile.name?.familyName || '';
 
-    // Verificar si ya existe
-    let user = await Usuario.findOne({ correo_electronico: email });
+    // Buscar si ya existe por correo
+    const existing = await db.query(
+      'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE correo_electronico = $1',
+      [email]
+    );
 
-    if (user) {
-      if (user.proveedor === 'local')
-        return done(null, false, { message: 'email_local' });
-      if (user.proveedor === 'google')
-        return done(null, false, { message: 'email_google' });
-      // Ya es cuenta Facebook → login directo
-      return done(null, {
-        id_usuario: user._id,
-        nombre: user.nombre,
-        correo_electronico: user.correo_electronico,
-        rol: user.rol
-      });
+    if (existing.rowCount > 0) {
+      const user = existing.rows[0];
+      if (user.proveedor === 'local')  return done(null, false, { message: 'email_local' });
+      if (user.proveedor === 'google') return done(null, false, { message: 'email_google' });
+      return done(null, user); // Ya es Facebook → login directo
     }
 
-    // Crear nuevo usuario con Facebook
-    const newUser = await Usuario.create({
-      nombre,
-      apellido_paterno,
-      correo_electronico: email,
-      nombre_usuario: email,
-      activo: true,
-      rol: 'cliente',
-      proveedor: 'facebook',
-    });
+    // Crear nuevo usuario Facebook
+    const result = await db.query(`
+      INSERT INTO usuarios
+      (nombre, apellido_paterno, nombre_usuario, correo_electronico, activo, rol, proveedor, contrasena)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING id_usuario, nombre, correo_electronico, rol
+    `, [nombre, apellido_paterno, email, email, true, 'cliente', 'facebook', 'FACEBOOK_AUTH']);
 
-    return done(null, {
-      id_usuario: newUser._id,
-      nombre: newUser.nombre,
-      correo_electronico: newUser.correo_electronico,
-      rol: newUser.rol
-    });
+    return done(null, result.rows[0]);
   } catch (error) {
     return done(error, null);
   }
 }));
 
 // ─── SESIÓN ───────────────────────────────────────────────
-// Guardar en sesión — usamos _id de MongoDB (string)
 passport.serializeUser((user, done) => {
-  done(null, user.id_usuario.toString()); // ← toString() importante en MongoDB
+  done(null, user.id_usuario); // PostgreSQL usa número entero, no necesita toString()
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await Usuario.findById(id);
-    if (!user) return done(null, false);
-    done(null, {
-      id_usuario: user._id,
-      nombre: user.nombre,
-      correo_electronico: user.correo_electronico,
-      rol: user.rol
-    });
+    const result = await db.query(
+      'SELECT id_usuario, nombre, correo_electronico, rol FROM usuarios WHERE id_usuario = $1',
+      [id]
+    );
+    if (result.rowCount === 0) return done(null, false);
+    done(null, result.rows[0]);
   } catch (err) {
     done(err, null);
   }
