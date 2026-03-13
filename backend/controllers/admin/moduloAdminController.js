@@ -1,6 +1,6 @@
 const db = require('../../config/db');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const archiver = require('archiver');
 
 const TABLAS = [
@@ -34,7 +34,7 @@ const generarRespaldo = async (req, res) => {
       }
     }
 
-    const timestamp = new Date().toISOString().replace(/:/g, '-');
+    const timestamp = new Date().toISOString().replaceAll(':', '-');
     const zipName   = `respaldo_${timestamp}.zip`;
     const zipPath   = path.join(backupRoot, zipName);
 

@@ -4,11 +4,13 @@ const cors = require('cors');
 
 const session = require('express-session');
 const passport = require('./config/passport');
-const connectDB = require('./config/db'); 
-const path = require('path');
+const path = require('node:path');
 
-
+const helmet = require('helmet'); // 1. Importar
 const app = express();
+app.disable('x-powered-by'); 
+
+app.use(helmet()); 
 const PORT = process.env.PORT || 5000;
 
 // CORS

@@ -30,6 +30,7 @@ router.get('/profile/:id', async (req, res) => {
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
     res.json(user);
   } catch (error) {
+    console.error('Error al obtener perfil:', error.message); // ✅ usa error
     res.status(500).json({ message: 'Error al obtener perfil' });
   }
 });
@@ -39,6 +40,7 @@ router.put('/profile/:id', async (req, res) => {
     const updated = await updateUserProfile(req.params.id, req.body);
     res.json({ message: 'Perfil actualizado', user: updated });
   } catch (error) {
+    console.error('Error al actualizar perfil:', error.message); // ✅ usa error
     res.status(500).json({ message: 'Error al actualizar perfil' });
   }
 });

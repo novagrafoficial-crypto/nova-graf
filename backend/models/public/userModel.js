@@ -1,8 +1,20 @@
 const db = require('../../config/db');
 const bcrypt = require('bcrypt');
+const crypto = require('node:crypto');
 
 // ─── HELPER ───────────────────────────────────────────────
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
+const generateOTP = () => crypto.randomInt(100000, 999999).toString();
+
+// ✅ Helper compartido para evitar duplicación (Sonar)
+const generateAndSaveOTP = async (userId) => {
+  const otp = generateOTP();
+  const expiration = new Date(Date.now() + 10 * 60 * 1000);
+  await db.query(
+    'UPDATE usuarios SET codigo_otp = $1, otp_expiracion = $2 WHERE id_usuario = $3',
+    [otp, expiration, userId]
+  );
+  return otp;
+};
 
 // ─── VERIFICAR EMAIL ──────────────────────────────────────
 const checkEmailExists = async (email) => {
@@ -15,14 +27,21 @@ const checkEmailExists = async (email) => {
 
 // ─── REGISTRO MANUAL ─────────────────────────────────────
 const createUser = async ({ name, lastNameP, lastNameM, username, birthDate, address, phone, email, password }) => {
-
-  const existing = await checkEmailExists(email);
+const existing = await checkEmailExists(email); 
   if (existing) {
-    if (existing.proveedor === 'google')
-      throw { status: 400, message: 'Este correo ya está registrado con Google. Inicia sesión con Google.' };
-    if (existing.proveedor === 'facebook')
-      throw { status: 400, message: 'Este correo ya está registrado con Facebook. Inicia sesión con Facebook.' };
-    throw { status: 400, message: 'Este correo ya está registrado. Inicia sesión normalmente.' };
+    if (existing.proveedor === 'google') {
+      const err = new Error('Este correo ya está registrado con Google. Inicia sesión con Google.');
+      err.status = 400;
+      throw err;
+    }
+    if (existing.proveedor === 'facebook') {
+      const err = new Error('Este correo ya está registrado con Facebook. Inicia sesión con Facebook.');
+      err.status = 400;
+      throw err;
+    }
+    const err = new Error('Este correo ya está registrado. Inicia sesión normalmente.');
+    err.status = 400;
+    throw err;
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,7 +49,7 @@ const createUser = async ({ name, lastNameP, lastNameM, username, birthDate, add
   const otpExpiration = new Date(Date.now() + 10 * 60 * 1000);
 
   const result = await db.query(`
-    INSERT INTO usuarios 
+    INSERT INTO usuarios
     (nombre, apellido_paterno, apellido_materno, nombre_usuario, fecha_nacimiento, 
      domicilio, telefono, correo_electronico, contrasena, codigo_otp, 
      otp_expiracion, activo, rol, proveedor)
@@ -50,21 +69,18 @@ const createUser = async ({ name, lastNameP, lastNameM, username, birthDate, add
 // ─── REGISTRO / LOGIN CON GOOGLE ─────────────────────────
 const findOrCreateGoogleUser = async ({ googleId, nombre, apellido_paterno, apellido_materno, email }) => {
 
-  // 1. Buscar si ya existe por google_id
   let result = await db.query(
     'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE google_id = $1',
     [googleId]
   );
   if (result.rowCount > 0) return result.rows[0];
 
-  // 2. Buscar si el correo ya existe con otro proveedor
   const existing = await checkEmailExists(email);
   if (existing) {
-    if (existing.proveedor === 'local')    throw { message: 'email_local' };
-    if (existing.proveedor === 'facebook') throw { message: 'email_facebook' };
+    if (existing.proveedor === 'local')    throw new Error('email_local');
+    if (existing.proveedor === 'facebook') throw new Error('email_facebook');
   }
 
-  // 3. Crear usuario nuevo con Google
   result = await db.query(`
     INSERT INTO usuarios
     (nombre, apellido_paterno, apellido_materno, nombre_usuario, correo_electronico, 
@@ -107,10 +123,10 @@ const loginUser = async (email, password) => {
   return {
     success: true,
     user: {
-      id_usuario:          user.id_usuario,
-      nombre:              user.nombre,
-      correo_electronico:  user.correo_electronico,
-      rol:                 user.rol,
+      id_usuario:         user.id_usuario,
+      nombre:             user.nombre,
+      correo_electronico: user.correo_electronico,
+      rol:                user.rol,
     }
   };
 };
@@ -169,13 +185,7 @@ const findUserById = async (id_usuario) => {
 
 // ─── RECUPERACIÓN DE CONTRASEÑA ───────────────────────────
 const saveRecoveryOTP = async (userId) => {
-  const otp = generateOTP();
-  const expiration = new Date(Date.now() + 10 * 60 * 1000);
-  await db.query(
-    'UPDATE usuarios SET codigo_otp = $1, otp_expiracion = $2 WHERE id_usuario = $3',
-    [otp, expiration, userId]
-  );
-  return otp;
+  return generateAndSaveOTP(userId); // ✅ usa helper
 };
 
 const verifyRecoveryOTP = async (userId, otp) => {
@@ -244,16 +254,10 @@ const updateUserProfile = async (id_usuario, fields) => {
 
 // ─── REENVIAR OTP DE ACTIVACIÓN ───────────────────────────
 const resendActivationOTP = async (userId) => {
-  const otp = generateOTP();
-  const expiration = new Date(Date.now() + 10 * 60 * 1000);
-  await db.query(
-    'UPDATE usuarios SET codigo_otp = $1, otp_expiracion = $2 WHERE id_usuario = $3',
-    [otp, expiration, userId]
-  );
-  return otp;
+  return generateAndSaveOTP(userId); // ✅ usa helper
 };
 
-// ─── OBTENER ID POR EMAIL (sin verificar activo) ──────────
+// ─── OBTENER ID POR EMAIL ─────────────────────────────────
 const getUserIdByEmail = async (email) => {
   const result = await db.query(
     'SELECT id_usuario FROM usuarios WHERE correo_electronico = $1',

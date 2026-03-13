@@ -1,195 +1,174 @@
-/* Home.css - Solo verdes y dorados */
-.home-main {
-  padding-top: 72px;
+/* ===== RESET / BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Hero Section */
-.hero-section {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: linear-gradient(135deg, var(--green-50) 0%, var(--white) 100%);
-  overflow: hidden;
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f9fafc;
+  color: #1e293b;
+  line-height: 1.5;
 }
 
-.hero-container {
-  text-align: center;
-  padding: 2rem;
-  max-width: 800px;
-  z-index: 2;
-}
-
-.hero-logo {
-  width: 200px;
-  height: auto;
-  margin-bottom: 2rem;
-  animation: fadeInDown 1s ease-out;
-}
-
-.hero-title {
-  font-family: var(--font-display);
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: var(--green-800);
-  margin-bottom: 1rem;
-  letter-spacing: -0.02em;
-  animation: fadeInUp 1s ease-out 0.2s both;
-}
-
-.hero-subtitle {
-  font-family: var(--font-body);
-  font-size: 1.25rem;
-  color: var(--green-600);
-  margin-bottom: 2.5rem;
-  opacity: 0.8;
-  animation: fadeInUp 1s ease-out 0.4s both;
-}
-
-.hero-cta {
-  display: inline-block;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--white);
-  background: var(--green-600);
-  padding: 1rem 2.5rem;
-  border-radius: 40px;
-  text-decoration: none;
-  transition: all 0.3s var(--ease-out);
-  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3); /* green-600 con opacidad */
-  animation: fadeInUp 1s ease-out 0.6s both;
-}
-
-.hero-cta:hover {
-  background: var(--green-800);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(26, 74, 30, 0.4); /* green-800 con opacidad */
-}
-
-.hero-decoration {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
-  background: linear-gradient(transparent, rgba(165, 214, 167, 0.3)); /* green-200 con opacidad */
-  z-index: 1;
-}
-
-/* Secciones genéricas */
-.section {
-  min-height: 60vh;
-  padding: 5rem 2rem;
-  border-bottom: 1px solid var(--green-200);
-  max-width: 1200px;
+/* ===== CONTENEDOR PRINCIPAL ===== */
+main {
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
-.section:last-child {
-  border-bottom: none;
-}
-
-.section-title {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: var(--green-800);
-  margin-bottom: 2rem;
+/* ===== TÍTULOS DE PASO (como en la imagen) ===== */
+.step-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 3rem 0 1.5rem 0;
   position: relative;
   display: inline-block;
 }
 
-.section-title::after {
+.step-title::after {
   content: '';
   position: absolute;
   bottom: -8px;
   left: 0;
   width: 60px;
-  height: 3px;
-  background: var(--gold);
-  border-radius: 2px;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 4px;
 }
 
-.section-text {
-  font-family: var(--font-body);
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: var(--green-900);
-  max-width: 800px;
+.step-title span {
+  font-weight: 600;
+  color: #3b82f6;
+  margin-right: 8px;
 }
 
-.values-list {
-  list-style: none;
-  padding: 0;
+/* ===== GRID DE PRODUCTOS ===== */
+.productos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
 }
 
-.values-list li {
-  font-family: var(--font-body);
-  font-size: 1.1rem;
-  padding: 1rem;
-  background: var(--green-50);
-  border-radius: 12px;
-  border-left: 4px solid var(--gold);
-  color: var(--green-900);
+/* ===== TARJETA DE PRODUCTO ===== */
+.producto-card {
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.1), 0 5px 10px -4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.producto-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 45px -12px rgba(0, 0, 0, 0.2);
+}
+
+.producto-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.producto-card h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 1.2rem 1.2rem 0.4rem 1.2rem;
+  color: #0f172a;
+}
+
+.producto-card p {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+  margin: 0 1.2rem 1.5rem 1.2rem;
+}
+
+.producto-card p::before {
+  content: '$';
+  font-size: 1rem;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(165, 214, 167, 0.3); /* green-200 con opacidad */
-  transition: transform 0.2s ease;
+  margin-right: 2px;
+  color: #64748b;
 }
 
-.values-list li:hover {
-  transform: translateY(-3px);
+/* ===== SECCIÓN CTA (LLAMADO A LA ACCIÓN) ===== */
+.cta {
+  text-align: center;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: white;
+  padding: 4rem 2rem;
+  border-radius: 48px;
+  margin: 4rem 0 2rem;
 }
 
-/* Animaciones */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.cta h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.cta p {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto 2rem;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
+.cta button {
+  background: white;
+  color: #0f172a;
+  border: none;
+  padding: 1rem 3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+}
+
+.cta button:hover {
+  background: #e2e8f0;
+  transform: scale(1.02);
+}
+
+/* ===== MENSAJE CUANDO NO HAY PRODUCTOS ===== */
+.productos-grid p {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 24px;
+  color: #64748b;
+  font-size: 1.2rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .step-title {
+    font-size: 1.5rem;
   }
 
-  .hero-subtitle {
-    font-size: 1rem;
+  .productos-grid {
+    gap: 1rem;
   }
 
-  .hero-logo {
-    width: 150px;
-  }
-
-  .section-title {
-    font-size: 2rem;
-  }
-
-  .section {
+  .cta {
     padding: 3rem 1.5rem;
+    border-radius: 32px;
+  }
+
+  .cta h2 {
+    font-size: 1.8rem;
   }
 }
