@@ -1,13 +1,23 @@
 const PublicacionModel = require('../../models/admin/publicacionModel');
 
-// ── ADMIN: Listado completo ───────────────────────────────────────────────────
+// ── PÚBLICO: Catálogo con variantes ───────────────────────────
+exports.getCatalogoPublico = async (req, res) => {
+  try {
+    const rows = await PublicacionModel.getProductosConVariantes();
+    res.json(rows);
+  } catch (error) {
+    console.error('getCatalogoPublico error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ── ADMIN: Listado completo ────────────────────────────────────
 exports.getListadoAdmin = async (req, res) => {
   const { tabla } = req.params;
   try {
     if (tabla !== 'productos' && tabla !== 'portafolio') {
       return res.status(400).json({ error: 'Tabla no válida. Use: productos | portafolio' });
     }
-
     const rows = tabla === 'productos'
       ? await PublicacionModel.getListadoProductosAdmin()
       : await PublicacionModel.getListadoPortafolioAdmin();
@@ -19,7 +29,7 @@ exports.getListadoAdmin = async (req, res) => {
   }
 };
 
-// ── PÚBLICO: Productos publicados ─────────────────────────────────────────────
+// ── PÚBLICO: Productos publicados simples ──────────────────────
 exports.getProductosPublicos = async (req, res) => {
   try {
     const rows = await PublicacionModel.getPublicos('productos');
@@ -30,10 +40,10 @@ exports.getProductosPublicos = async (req, res) => {
   }
 };
 
-// ── PÚBLICO: Portafolio publicado ─────────────────────────────────────────────
+// ── PÚBLICO: Portafolio publicado ─────────────────────────────
 exports.getPortafolioPublico = async (req, res) => {
   try {
-    const rows = await PublicacionModel.getPublicos('portafolio'); // ← tabla correcta
+    const rows = await PublicacionModel.getPublicos('portafolio');
     res.json(rows);
   } catch (error) {
     console.error('getPortafolioPublico error:', error);
@@ -41,22 +51,17 @@ exports.getPortafolioPublico = async (req, res) => {
   }
 };
 
-// ── ADMIN: Cambiar estado publicado/borrador ──────────────────────────────────
+// ── ADMIN: Toggle publicado/borrador ──────────────────────────
 exports.actualizarEstado = async (req, res) => {
   const { tabla, id } = req.params;
   const { publicado } = req.body;
 
-  const tablaMap = {
-    productos:  'productos',
-    portafolio: 'portafolio', // ← antes decía 'empresa', estaba mal
-  };
-
-  if (!tablaMap[tabla]) {
+  if (!['productos', 'portafolio'].includes(tabla)) {
     return res.status(400).json({ error: 'Tabla no válida' });
   }
 
   try {
-    const updated = await PublicacionModel.togglePublicado(tablaMap[tabla], id, publicado);
+    const updated = await PublicacionModel.togglePublicado(tabla, id, publicado);
     if (!updated) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ success: true, item: updated });
   } catch (error) {
