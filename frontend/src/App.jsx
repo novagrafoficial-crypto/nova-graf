@@ -10,11 +10,16 @@ import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
 import Mision from './pages/public/Mision';
 import Vision from './pages/public/Vision';
+import Valores from './pages/public/Valores';
+import Redes from './pages/public/RedesSociales';
 import VerificarRegistro from "./pages/public/VerificarRegistro";
 import ForgotPassword from "./pages/public/ForgotPassword";
 import VerifyRecovery from "./pages/public/VerifyRecovery";
 import ResetPassword from "./pages/public/ResetPassword";
 import AuthCallback from "./pages/public/AuthCallback";
+import Contacto from './pages/public/Contacto';
+import Catalogo from './pages/public/Catalogo';
+
 
 // Páginas cliente
 import ClienteHome from "./pages/Client/ClienteHome";
@@ -43,11 +48,15 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/nosotros/mision" element={<Mision />} />
           <Route path="/nosotros/vision" element={<Vision />} />
+          <Route path="/nosotros/valores" element={<Valores />} />
           <Route path="/verify-account/:id_usuario" element={<VerificarRegistro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-recovery/:id_usuario" element={<VerifyRecovery />} />
           <Route path="/reset-password/:id_usuario" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/redes-sociales" element={<Redes />} />
+          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/catalogo" element={<Catalogo />} />
         </Route>
 
         {/* Rutas cliente */}

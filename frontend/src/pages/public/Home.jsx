@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import '../../styles/public/Home.css';
 
 const API = 'http://localhost:5000';
 
 const Home = () => {
-  const [productos, setProductos]     = useState([]);
-  const [portafolio, setPortafolio]   = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [portafolio, setPortafolio] = useState([]);
+  const [mision, setMision] = useState(null);
+  const [vision, setVision] = useState(null);
+  const [valores, setValores] = useState([]);
+  const [antecedentes, setAntecedentes] = useState([]);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingNos, setLoadingNos] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,242 +26,258 @@ const Home = () => {
         setProductos(resProd.data);
         setPortafolio(resPort.data);
       } catch (error) {
-        console.error('Error cargando datos', error);
+        console.error('Error cargando productos:', error);
+      } finally {
+        setLoading(false);
       }
     };
+
+    const fetchNosotros = async () => {
+      try {
+        const [resMision, resVision, resValores, resAntecedentes] = await Promise.allSettled([
+          fetch(`${API}/api/public/mision`).then(r => r.json()),
+          fetch(`${API}/api/public/vision`).then(r => r.json()),
+          fetch(`${API}/api/public/valores`).then(r => r.json()),
+          fetch(`${API}/api/public/antecedentes`).then(r => r.json()),
+        ]);
+
+        if (resMision.status === 'fulfilled') {
+          const d = resMision.value;
+          setMision(d?.data ?? d);
+        }
+        if (resVision.status === 'fulfilled') {
+          const d = resVision.value;
+          setVision(d?.data ?? d);
+        }
+        if (resValores.status === 'fulfilled') {
+          const d = resValores.value?.data ?? resValores.value;
+          setValores(Array.isArray(d) ? d : (d ? [d] : []));
+        }
+        if (resAntecedentes.status === 'fulfilled') {
+          const d = resAntecedentes.value?.data ?? resAntecedentes.value;
+          setAntecedentes(Array.isArray(d) ? d : (d ? [d] : []));
+        }
+      } catch (err) {
+        console.error('Error en fetchNosotros:', err);
+      } finally {
+        setLoadingNos(false);
+      }
+    };
+
     fetchData();
+    fetchNosotros();
+
+    const hash = window.location.hash;
+    if (hash) {
+      setTimeout(() => {
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 400);
+    }
   }, []);
 
-  // ── Aplanar variantes: una card por color ──────────────────────
-  const variantesFlat = productos.length > 0
-    ? productos.flatMap(prod =>
-        prod.variantes?.length > 0
-          ? prod.variantes.map(v => ({
-              id:          v.variante_id,
-              nombre:      prod.nombre,
-              precio_final: Number(prod.precio_base) + Number(v.precio_adicional || 0),
-              imagen_url:  v.imagen_url,
-              color:       v.color,
-              atributos:   v.atributos || [],
-            }))
-          : [{
-              id:          prod.id,
-              nombre:      prod.nombre,
-              precio_final: Number(prod.precio_base),
-              imagen_url:  '/placeholder.png',
-              color:       null,
-              atributos:   [],
-            }]
-      )
-    : [
-        { id: 1, nombre: 'Playera de Algodón',  precio_final: 150, imagen_url: '/placeholder.png', color: null, atributos: [] },
-        { id: 2, nombre: 'Termo de Acero',       precio_final: 210, imagen_url: '/placeholder.png', color: null, atributos: [] },
-        { id: 3, nombre: 'Vaso de Vidrio',       precio_final: 80,  imagen_url: '/placeholder.png', color: null, atributos: [] },
-      ];
-
-  const portafolioBase = portafolio.length > 0 ? portafolio : [
-    { id: 4, descripcion: 'Playera con Logo Personalizado', imagen_url: '/placeholder.png' },
-    { id: 5, descripcion: 'Termo Grabado Láser',            imagen_url: '/placeholder.png' },
-    { id: 6, descripcion: 'Vaso Sublimado a Full-Color',    imagen_url: '/placeholder.png' },
-  ];
-
-  const styles = {
-    scrollContainer: {
-      display: 'flex',
-      overflowX: 'auto',
-      gap: '24px',
-      padding: '20px 0 30px 0',
-      scrollbarWidth: 'thin',
-      WebkitOverflowScrolling: 'touch',
-    },
-    card: {
-      flex: '0 0 auto',
-      width: '240px',
-      textAlign: 'center',
-      background: '#e0f2f1',
-      borderRadius: '20px',
-      padding: '20px 12px',
-      boxShadow: '0 8px 20px rgba(0, 100, 100, 0.15)',
-      cursor: 'pointer',
-      border: '1px solid rgba(0,128,128,0.1)',
-      animation: 'fadeInUp 0.6s ease-out both',
-    },
-    image: {
-      width: '200px',
-      height: '200px',
-      objectFit: 'contain',
-      display: 'block',
-      margin: '0 auto 16px',
-      background: '#ffffff',
-      borderRadius: '16px',
-      padding: '12px',
-      boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.03), 0 4px 12px rgba(0,80,80,0.08)',
-    },
-    title: {
-      fontSize: '1rem',
-      margin: '10px 0 4px',
-      fontWeight: 600,
-      color: '#00695c',
-      letterSpacing: '-0.01em',
-    },
-    color: {
-      fontSize: '0.85rem',
-      color: '#00897b',
-      margin: '2px 0',
-      fontWeight: 500,
-    },
-    atributos: {
-      fontSize: '0.78rem',
-      color: '#607d8b',
-      margin: '2px 0 6px',
-    },
-    price: {
-      color: '#004d40',
-      fontWeight: 700,
-      fontSize: '1.1rem',
-      margin: '6px 0 0',
-    },
-    stepTitle: {
-      fontSize: '1.8rem',
-      fontWeight: 300,
-      margin: '40px 0 20px',
-      color: '#006064',
-      borderBottom: '2px solid #b2dfdb',
-      paddingBottom: '8px',
-    },
-    stepSpan: {
-      fontWeight: 700,
-      color: '#00796b',
-    },
-    cta: {
-      marginTop: '60px',
-      textAlign: 'center',
-      background: '#e0f2f1',
-      padding: '40px 20px',
-      borderRadius: '48px 48px 24px 24px',
-      boxShadow: '0 -4px 20px rgba(0,80,80,0.1)',
-    },
-    ctaButton: {
-      padding: '14px 36px',
-      background: '#00796b',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '40px',
-      fontSize: '1.2rem',
-      fontWeight: 600,
-      cursor: 'pointer',
-      boxShadow: '0 8px 16px rgba(0,100,80,0.3)',
-      transition: 'background 0.2s',
-    },
-  };
+  const variantesFlat = productos.flatMap(prod =>
+    prod.variantes?.length > 0
+      ? prod.variantes.map(v => ({
+          id: v.variante_id,
+          nombre: prod.nombre,
+          precio_final: Number(prod.precio_base) + Number(v.precio_adicional || 0),
+          imagen_url: v.imagen_url,
+          color: v.color,
+          atributos: v.atributos || [],
+        }))
+      : [{
+          id: prod.id,
+          nombre: prod.nombre,
+          precio_final: Number(prod.precio_base),
+          imagen_url: '/placeholder.png',
+          color: null,
+          atributos: [],
+        }]
+  );
 
   return (
-    <main style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+    <main className="home-container">
 
-      {/* ── PASO 1: una card por variante de color ── */}
-      <h2 style={styles.stepTitle}>
-        <span style={styles.stepSpan}>PASO 1:</span> ELIGE TU PRODUCTO BASE
-      </h2>
-      <div style={styles.scrollContainer}>
-        {variantesFlat.map((item, index) => (
-          <div
-            key={`v-${item.id}-${index}`}
-            style={{
-              ...styles.card,
-              transform:   hoveredCard === `v-${item.id}-${index}` ? 'scale(1.04)' : 'scale(1)',
-              boxShadow:   hoveredCard === `v-${item.id}-${index}`
-                ? '0 16px 32px rgba(0, 130, 120, 0.28)'
-                : styles.card.boxShadow,
-              transition:     'transform 0.3s ease, box-shadow 0.3s ease',
-              animationDelay: `${index * 0.07}s`,
-            }}
-            onMouseEnter={() => setHoveredCard(`v-${item.id}-${index}`)}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            <img
-              src={item.imagen_url || '/placeholder.png'}
-              alt={`${item.nombre} ${item.color || ''}`}
-              style={styles.image}
-              onError={(e) => { e.target.src = '/placeholder.png'; }}
-            />
-            <h3 style={styles.title}>{item.nombre}</h3>
-
-            {item.color && (
-              <p style={styles.color}>{item.color}</p>
-            )}
-
-            {item.atributos.length > 0 && (
-              <p style={styles.atributos}>
-                {item.atributos.map(a => `${a.tipo}: ${a.valor}`).join(' · ')}
-              </p>
-            )}
-
-            <p style={styles.price}>
-              ${item.precio_final.toLocaleString('es-MX')}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── PASO 2: Portafolio ── */}
-      <h2 style={styles.stepTitle}>
-        <span style={styles.stepSpan}>PASO 2:</span> ASÍ LO PODEMOS PERSONALIZAR
-      </h2>
-      <div style={styles.scrollContainer}>
-        {portafolioBase.map((item, index) => (
-          <div
-            key={`f-${item.id}`}
-            style={{
-              ...styles.card,
-              transform:   hoveredCard === `f-${item.id}` ? 'scale(1.04)' : 'scale(1)',
-              boxShadow:   hoveredCard === `f-${item.id}`
-                ? '0 16px 32px rgba(0, 130, 120, 0.28)'
-                : styles.card.boxShadow,
-              transition:     'transform 0.3s ease, box-shadow 0.3s ease',
-              animationDelay: `${index * 0.07}s`,
-            }}
-            onMouseEnter={() => setHoveredCard(`f-${item.id}`)}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            <img
-              src={item.imagen_url || '/placeholder.png'}
-              alt={item.descripcion || 'portafolio'}
-              style={styles.image}
-              onError={(e) => { e.target.src = '/placeholder.png'; }}
-            />
-            <h3 style={styles.title}>
-              {item.descripcion ? item.descripcion.substring(0, 60) : '—'}
-            </h3>
-            {item.producto_nombre && (
-              <p style={styles.color}>{item.producto_nombre}</p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* ── CTA ── */}
-      <section style={styles.cta}>
-        <h2 style={{ fontSize: '2.2rem', fontWeight: 300, color: '#004d40', marginBottom: '16px' }}>
-          EMPIEZA A DISEÑAR TU PROPIO PRODUCTO
-        </h2>
-        <p style={{ fontSize: '1.2rem', color: '#00695c', marginBottom: '32px' }}>
-          Personaliza cada detalle y recibe una muestra gratis
-        </p>
-        <button
-          style={styles.ctaButton}
-          onMouseEnter={(e) => { e.target.style.background = '#00897b'; }}
-          onMouseLeave={(e) => { e.target.style.background = '#00796b'; }}
-        >
-          COMENZAR
-        </button>
+      {/* SECCIÓN HERO (opcional, la puedes agregar) */}
+      <section className="hero">
+        <h1 className="hero-title">Bienvenido a Nova Graf</h1>
+        <p className="hero-subtitle">Descubre productos únicos y personalizados que reflejan tu esencia.</p>
+        <Link to="/catalogo" className="btn">Explorar catálogo</Link>
       </section>
 
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+      {/* PASO 1: CATÁLOGO */}
+      <section id="catalogo" className="home-section">
+        <h2 className="step-title">
+          <span>PASO 1:</span> ELIGE TU PRODUCTO BASE
+        </h2>
+        {loading ? (
+          <p className="empty-message">Cargando productos...</p>
+        ) : variantesFlat.length === 0 ? (
+          <p className="empty-message">No hay productos disponibles por el momento.</p>
+        ) : (
+          <div className="scroll-row">
+            {variantesFlat.map((item, index) => {
+              const key = `v-${item.id}-${index}`;
+              return (
+                <div
+                  key={key}
+                  className="card"
+                  onMouseEnter={() => setHoveredCard(key)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  style={{ animationDelay: `${index * 0.06}s` }}
+                >
+                  <div className="card-image-wrapper">
+                    <img
+                      src={item.imagen_url || '/placeholder.png'}
+                      alt={`${item.nombre} ${item.color || ''}`}
+                      className="card-image"
+                      onError={(e) => { e.target.src = '/placeholder.png'; }}
+                    />
+                  </div>
+                  <h3 className="card-title">{item.nombre}</h3>
+                  {item.color && <p className="card-color">{item.color}</p>}
+                  {item.atributos.length > 0 && (
+                    <p className="card-attributes">
+                      {item.atributos.map(a => `${a.tipo}: ${a.valor}`).join(' · ')}
+                    </p>
+                  )}
+                  <p className="card-price">${item.precio_final.toLocaleString('es-MX')}</p>
+                  {hoveredCard === key && <button className="card-btn">Ver detalles</button>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* PASO 2: PORTAFOLIO */}
+      <section id="portafolio" className="home-section">
+        <h2 className="step-title">
+          <span>PASO 2:</span> ASÍ LO PODEMOS PERSONALIZAR
+        </h2>
+        {loading ? (
+          <p className="empty-message">Cargando portafolio...</p>
+        ) : portafolio.length === 0 ? (
+          <p className="empty-message">No hay ejemplos de portafolio disponibles.</p>
+        ) : (
+          <div className="scroll-row">
+            {portafolio.map((item, index) => {
+              const key = `f-${item.id}`;
+              return (
+                <div
+                  key={key}
+                  className="card"
+                  onMouseEnter={() => setHoveredCard(key)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  style={{ animationDelay: `${index * 0.06}s` }}
+                >
+                  <div className="card-image-wrapper">
+                    <img
+                      src={item.imagen_url || '/placeholder.png'}
+                      alt={item.descripcion || 'portafolio'}
+                      className="card-image"
+                      onError={(e) => { e.target.src = '/placeholder.png'; }}
+                    />
+                  </div>
+                  <h3 className="card-title">{item.descripcion?.substring(0, 60) || '—'}</h3>
+                  {item.producto_nombre && <p className="card-color">{item.producto_nombre}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* NOSOTROS: MISIÓN, VISIÓN, VALORES, ANTECEDENTES (vertical) */}
+      <section id="nosotros" className="home-section">
+        <h2 className="section-title">Conoce nuestra esencia</h2>
+
+        {loadingNos ? (
+          <p className="empty-message">Cargando información...</p>
+        ) : (
+          <div className="nosotros-stack">
+
+            {/* Misión */}
+            <div id="mision" className="nosotros-card animate-fadeInUp">
+              <span className="tag">Misión</span>
+              <p className="nosotros-text">
+                {mision?.descripcion || 'Sin información registrada.'}
+              </p>
+            </div>
+
+            {/* Visión */}
+            <div id="vision" className="nosotros-card animate-fadeInUp">
+              <span className="tag">Visión</span>
+              <p className="nosotros-text">
+                {vision?.descripcion || 'Sin información registrada.'}
+              </p>
+            </div>
+
+            {/* Valores */}
+            <div id="valores" className="nosotros-card animate-fadeInUp">
+              <span className="tag">Valores</span>
+              {valores.length === 0 ? (
+                <p className="nosotros-text">Sin información registrada.</p>
+              ) : (
+                <ul className="valores-list">
+                  {valores.map((v, i) => (
+                    <li key={i} className="valores-item">
+                      <span className="valor-bullet">●</span>
+                      <span className="nosotros-text">
+                        {v.descripcion || v.valor || v.nombre || v.texto || JSON.stringify(v)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Antecedentes - Timeline */}
+            <div id="antecedentes" className="timeline-container">
+              <span className="tag">Antecedentes</span>
+              {antecedentes.length === 0 ? (
+                <p className="nosotros-text">Sin información registrada.</p>
+              ) : (
+                <div className="timeline">
+                  {antecedentes.map((item, index) => (
+                    <div
+                      key={item.id ?? index}
+                      className="timeline-item animate-timelineItem"
+                      style={{ animationDelay: `${index * 0.15}s` }}
+                    >
+                      <div className="timeline-dot" />
+                      {index < antecedentes.length - 1 && <div className="timeline-line" />}
+                      <div className="timeline-content">
+                        {item.fecha_evento && (
+                          <span className="timeline-fecha">
+                            {new Date(item.fecha_evento).toLocaleDateString('es-MX', {
+                              year: 'numeric',
+                              month: 'long'
+                            })}
+                          </span>
+                        )}
+                        <p className="timeline-desc">
+                          {item.descripcion || item.texto || JSON.stringify(item)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+      </section>
+
+      {/* CTA FINAL (opcional) */}
+      <section className="cta-final">
+        <h2>¿Listo para empezar?</h2>
+        <p>Contáctanos y personaliza tus productos hoy mismo.</p>
+        <Link to="/contacto" className="btn btn-gold">Solicitar información</Link>
+      </section>
+
     </main>
   );
 };

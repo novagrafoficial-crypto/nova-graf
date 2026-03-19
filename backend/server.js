@@ -1,3 +1,4 @@
+require('newrelic');
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -41,6 +42,14 @@ const userRoutes = require('./routes/public/userRoutes');
 const authRoutes = require('./routes/public/authRoutes');
 const misionRoutes = require('./routes/public/misionRoutes');
 const visionRoutes = require('./routes/public/visionRoutes');
+const valoresRoutes = require('./routes/public/valoresRoutes'); 
+const redesRoutes = require('./routes/public/redesRoutes')
+const empresaRoutes = require('./routes/public/empresaRoutes');
+const ubicacionRoutes = require('./routes/public/ubicacionRoutes');
+const contactoRoutes = require('./routes/public/contactoRoutes');
+const antecedentesRoutes = require('./routes/public/antecedentesRoutes');
+const catalogoRoutes = require('./routes/public/catalogoRoutes');
+
 
 
 // Rutas públicas 
@@ -49,7 +58,13 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/public', misionRoutes);
 app.use('/api/public', visionRoutes);
-
+app.use('/api/public', valoresRoutes);
+app.use('/api/redes-sociales', redesRoutes);
+app.use('/api/empresa', empresaRoutes);
+app.use('/api/ubicacion', ubicacionRoutes);
+app.use('/api/contactos', contactoRoutes);
+app.use('/api/public/antecedentes', antecedentesRoutes);
+app.use('/api/catalogo', catalogoRoutes);
 
 /* ================================
    RUTAS ADMIN

@@ -9,7 +9,7 @@ const misionModel = {
   async getMision() {
     try {
       // Suponemos que queremos la primera misión (puedes cambiar el ORDER BY si es necesario)
-      const query = 'SELECT id, descripcion, fecha_creacion FROM mision ORDER BY id LIMIT 1';
+      const query = 'SELECT * FROM empresa.vw_mision';
       const { rows } = await pool.query(query);
       return rows[0] || null; // Devuelve null si no hay registros
     } catch (error) {
