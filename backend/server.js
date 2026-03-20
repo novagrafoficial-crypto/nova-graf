@@ -50,10 +50,11 @@ const contactoRoutes = require('./routes/public/contactoRoutes');
 const antecedentesRoutes = require('./routes/public/antecedentesRoutes');
 const catalogoRoutes = require('./routes/public/catalogoRoutes');
 
+// Rutas Cliente
+const productosClientRoutes = require('./routes/client/productosRoutes');
 
 
 // Rutas públicas 
-
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/public', misionRoutes);
@@ -66,6 +67,9 @@ app.use('/api/contactos', contactoRoutes);
 app.use('/api/public/antecedentes', antecedentesRoutes);
 app.use('/api/catalogo', catalogoRoutes);
 
+//Rutas Cliente
+app.use('/api/client/productos', productosClientRoutes);
+
 /* ================================
    RUTAS ADMIN
 ================================ */
@@ -76,6 +80,7 @@ const productosRoutes = require('./routes/admin/productosRoutes');
 const usuariosRoutes = require('./routes/admin/usuariosRoutes');
 const moduloAdminRoutes = require('./routes/admin/moduloAdminRoutes');
 const publicacionRoutes = require('./routes/admin/publicacionRoutes');
+
 
 app.use('/api/admin/marcas', marcasRoutes);
 app.use('/api/admin/categorias', categoriasRoutes);
