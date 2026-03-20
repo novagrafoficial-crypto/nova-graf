@@ -94,13 +94,6 @@ const ProductoDetalle = () => {
             </p>
           )}
 
-          {/* SKU */}
-          {varianteActiva?.sku && (
-            <p className="detalle-sku">
-              <strong>SKU:</strong> {varianteActiva.sku}
-            </p>
-          )}
-
           {/* Selector de colores */}
           <div className="detalle-colores">
             <p className="detalle-colores__label">

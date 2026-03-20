@@ -1,5 +1,9 @@
 // backend/controllers/client/productosController.js
-const { getProductosCatalogo, getProductoDetalle } = require('../../models/client/productosModel');
+const {
+  getProductosCatalogo,
+  getProductoDetalle,
+  getCategorias,
+} = require('../../models/client/productosModel');
 
 // GET /api/client/productos/catalogo
 const mostrarCatalogo = async (req, res) => {
@@ -27,9 +31,10 @@ const mostrarDetalle = async (req, res) => {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
 
-    // Estructuramos la respuesta: info del producto + array de variantes
-    const { producto_id, producto_nombre, descripcion, precio_base,
-            categoria, subcategoria, marca, material } = variantes[0];
+    const {
+      producto_id, producto_nombre, descripcion, precio_base,
+      categoria, subcategoria, marca, material,
+    } = variantes[0];
 
     const detalle = {
       producto_id,
@@ -42,7 +47,6 @@ const mostrarDetalle = async (req, res) => {
       material,
       variantes: variantes.map(v => ({
         variante_id:      v.variante_id,
-        sku:              v.sku,
         precio_adicional: v.precio_adicional,
         imagen_url:       v.imagen_url,
         color:            v.color,
@@ -57,7 +61,19 @@ const mostrarDetalle = async (req, res) => {
   }
 };
 
+// GET /api/client/productos/categorias
+const mostrarCategorias = async (req, res) => {
+  try {
+    const categorias = await getCategorias();
+    res.json(categorias);
+  } catch (error) {
+    console.error('Error al obtener categorías:', error);
+    res.status(500).json({ error: 'Error al obtener categorías' });
+  }
+};
+
 module.exports = {
   mostrarCatalogo,
   mostrarDetalle,
+  mostrarCategorias,
 };

@@ -9,6 +9,7 @@ const getProductosCatalogo = async () => {
         p.nombre                      AS producto_nombre,
         p.descripcion,
         p.precio_base,
+        c.nombre                      AS categoria,
         (
           SELECT pv2.imagen_url
           FROM productos.producto_variantes pv2
@@ -17,14 +18,17 @@ const getProductosCatalogo = async () => {
           LIMIT 1
         )                             AS imagen_url,
         json_agg(DISTINCT col.nombre)
-          FILTER (WHERE col.nombre IS NOT NULL)
-                                      AS colores_disponibles
+          FILTER (WHERE col.nombre IS NOT NULL)  AS colores_disponibles,
+        json_agg(
+          json_build_object('color', col.nombre, 'imagen_url', pv.imagen_url)
+        ) FILTER (WHERE col.nombre IS NOT NULL)  AS colores_imagenes
     FROM productos.productos p
+    LEFT JOIN productos.categorias c ON p.categoria_id = c.id
     LEFT JOIN productos.producto_variantes pv
            ON pv.producto_id = p.id AND pv.activo = TRUE
     LEFT JOIN productos.colores col ON col.id = pv.color_id
     WHERE p.activo = TRUE
-    GROUP BY p.id
+    GROUP BY p.id, c.nombre
     ORDER BY p.fecha_creacion DESC;
   `;
   const { rows } = await pool.query(query);
@@ -44,7 +48,6 @@ const getProductoDetalle = async (productoId) => {
         m.nombre              AS marca,
         mat.nombre            AS material,
         pv.id                 AS variante_id,
-        pv.sku,
         pv.precio_adicional,
         pv.imagen_url,
         col.nombre            AS color,
@@ -74,7 +77,21 @@ const getProductoDetalle = async (productoId) => {
   return rows;
 };
 
+// ─── CATEGORÍAS PARA EL SLIDER ───────────────────────────────────────────────
+const getCategorias = async () => {
+  const query = `
+    SELECT DISTINCT c.id, c.nombre
+    FROM productos.categorias c
+    INNER JOIN productos.productos p ON p.categoria_id = c.id
+    WHERE p.activo = TRUE
+    ORDER BY c.nombre;
+  `;
+  const { rows } = await pool.query(query);
+  return rows;
+};
+
 module.exports = {
   getProductosCatalogo,
   getProductoDetalle,
+  getCategorias,
 };

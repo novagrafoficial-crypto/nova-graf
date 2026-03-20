@@ -20,6 +20,61 @@
   font-size: 1.1rem;
 }
 
+.catalogo-sin-resultados {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-size: 1rem;
+}
+
+/* ── BUSCADOR ── */
+.catalogo-busqueda {
+  margin-bottom: 1rem;
+}
+.catalogo-busqueda__input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 2px solid #ddd;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.catalogo-busqueda__input:focus {
+  border-color: #1a1a2e;
+}
+
+/* ── SLIDER CATEGORÍAS ── */
+.catalogo-slider {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  scrollbar-width: none;
+}
+.catalogo-slider::-webkit-scrollbar { display: none; }
+
+.slider-chip {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 2px solid #ddd;
+  background: #f5f5f5;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #333;
+}
+.slider-chip:hover,
+.slider-chip--activo {
+  background: #1a1a2e;
+  border-color: #1a1a2e;
+  color: #fff;
+}
+
 /* ── GRID ── */
 .catalogo-grid {
   display: grid;
