@@ -6,6 +6,7 @@ export default function AdminRedes() {
   const [redes, setRedes] = useState([]);
   const [red, setRed] = useState("");
   const [url, setUrl] = useState("");
+  const [editandoId, setEditandoId] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => { cargar(); }, []);
@@ -13,46 +14,53 @@ export default function AdminRedes() {
   const cargar = async () => {
     try {
       const res = await fetch(API);
-      const data = await res.json();
-      setRedes(data);
-    } catch {
-      setError("No se pudieron cargar las redes sociales.");
-    }
+      setRedes(await res.json());
+    } catch { setError("No se pudieron cargar las redes sociales."); }
   };
 
-  const crear = async () => {
+  const guardar = async () => {
     if (!red.trim() || !url.trim()) {
       setError("La red social y la URL son requeridas");
       return;
     }
     setError(null);
     try {
-      const res = await fetch(API, {
-        method: "POST",
+      const urlReq = editandoId ? `${API}/${editandoId}` : API;
+      const method = editandoId ? "PUT" : "POST";
+      const res = await fetch(urlReq, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ empresa_id: 1, red_social: red, url_red_social: url }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Error al crear");
-      }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
       setRed("");
       setUrl("");
+      setEditandoId(null);
       cargar();
-    } catch (err) {
-      setError(err.message);
-    }
+    } catch (err) { setError(err.message); }
   };
 
-  const eliminar = async (id) => {
+  const handleEditar = (r) => {
+    setRed(r.red_social);
+    setUrl(r.url_red_social);
+    setEditandoId(r.red_social_id);
+    setError(null);
+  };
+
+  const handleEliminar = async (id) => {
     if (!window.confirm("¿Eliminar esta red social?")) return;
     try {
       const res = await fetch(`${API}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Error al eliminar");
       cargar();
-    } catch (err) {
-      setError(err.message);
-    }
+    } catch (err) { setError(err.message); }
+  };
+
+  const handleCancelar = () => {
+    setRed("");
+    setUrl("");
+    setEditandoId(null);
+    setError(null);
   };
 
   return (
@@ -65,19 +73,10 @@ export default function AdminRedes() {
       {error && <p className="empresa-status error">{error}</p>}
 
       <div className="empresa-add-row">
-        <input
-          className="empresa-input"
-          placeholder="Red social (ej. Facebook)"
-          value={red}
-          onChange={(e) => setRed(e.target.value)}
-        />
-        <input
-          className="empresa-input"
-          placeholder="URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        <button className="btn-agregar" onClick={crear}>Agregar</button>
+        <input className="empresa-input" placeholder="Red social (ej. Facebook)" value={red} onChange={(e) => setRed(e.target.value)} />
+        <input className="empresa-input" placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
+        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
       </div>
 
       <div className="empresa-item-list">
@@ -87,7 +86,8 @@ export default function AdminRedes() {
               <strong>{r.red_social}</strong>
               <div className="empresa-item-sub">{r.url_red_social}</div>
             </div>
-            <button className="btn-eliminar-item" onClick={() => eliminar(r.red_social_id)}>Eliminar</button>
+            <button className="btn-agregar" onClick={() => handleEditar(r)}>Editar</button>
+            <button className="btn-eliminar-item" onClick={() => handleEliminar(r.red_social_id)}>Eliminar</button>
           </div>
         ))}
       </div>

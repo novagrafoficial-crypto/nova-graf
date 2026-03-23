@@ -28,4 +28,16 @@ const eliminarRed = async (id) => {
   return result.rows[0];
 };
 
-module.exports = { obtenerRedes, crearRed, eliminarRed };
+const actualizarRed = async (id, red_social, url_red_social) => {
+  if (!red_social?.trim()) throw new Error("La red social es requerida");
+  if (!url_red_social?.trim()) throw new Error("La URL es requerida");
+  const result = await db.query(
+    `UPDATE empresa.redes_sociales_empresa SET red_social = $1, url_red_social = $2
+     WHERE red_social_id = $3 RETURNING *`,
+    [red_social.trim(), url_red_social.trim(), id]
+  );
+  if (result.rowCount === 0) throw new Error("Red social no encontrada");
+  return result.rows[0];
+};
+
+module.exports = { obtenerRedes, crearRed, actualizarRed, eliminarRed };

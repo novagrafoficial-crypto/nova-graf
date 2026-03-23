@@ -1,66 +1,70 @@
 import { useEffect, useState } from "react";
 
 const API = "http://localhost:5000/api/admin/ubicacion";
-
 const VACIO = { direccion: "", ciudad: "", pais: "", codigo_postal: "" };
 
 export default function AdminUbicacion() {
+  const [ubicaciones, setUbicaciones] = useState([]);
   const [form, setForm] = useState(VACIO);
-  const [guardado, setGuardado] = useState(null);
-  const [editando, setEditando] = useState(false);
-  const [status, setStatus] = useState(null);
+  const [editandoId, setEditandoId] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => { cargar(); }, []);
 
   const cargar = async () => {
     try {
       const res = await fetch(API);
-      const data = await res.json();
-      if (data.length > 0) setGuardado(data[0]);
-    } catch {
-      setStatus({ tipo: "error", msg: "No se pudo cargar la ubicación." });
-    }
+      setUbicaciones(await res.json());
+    } catch { setError("No se pudo cargar la ubicación."); }
   };
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const guardar = async () => {
     if (!form.direccion.trim()) {
-      setStatus({ tipo: "error", msg: "La dirección es requerida" });
+      setError("La dirección es requerida");
       return;
     }
-    setStatus(null);
+    setError(null);
     try {
-      const res = await fetch(API, {
-        method: "POST",
+      const url = editandoId ? `${API}/${editandoId}` : API;
+      const method = editandoId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ empresa_id: 1, ...form }),
       });
-      if (!res.ok) throw new Error("Error al guardar");
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
       setForm(VACIO);
-      setEditando(false);
-      setStatus({ tipo: "ok", msg: "Ubicación guardada correctamente" });
+      setEditandoId(null);
       cargar();
-    } catch (err) {
-      setStatus({ tipo: "error", msg: err.message });
-    }
+    } catch (err) { setError(err.message); }
   };
 
-  const handleEditar = () => {
+  const handleEditar = (u) => {
     setForm({
-      direccion: guardado.direccion || "",
-      ciudad: guardado.ciudad || "",
-      pais: guardado.pais || "",
-      codigo_postal: guardado.codigo_postal || "",
+      direccion: u.direccion || "",
+      ciudad: u.ciudad || "",
+      pais: u.pais || "",
+      codigo_postal: u.codigo_postal || "",
     });
-    setEditando(true);
-    setStatus(null);
+    setEditandoId(u.ubicacion_id);
+    setError(null);
+  };
+
+  const handleEliminar = async (id) => {
+    if (!window.confirm("¿Eliminar esta ubicación?")) return;
+    try {
+      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Error al eliminar");
+      cargar();
+    } catch (err) { setError(err.message); }
   };
 
   const handleCancelar = () => {
     setForm(VACIO);
-    setEditando(false);
-    setStatus(null);
+    setEditandoId(null);
+    setError(null);
   };
 
   return (
@@ -70,40 +74,31 @@ export default function AdminUbicacion() {
         <h2>Ubicación</h2>
       </div>
 
-      {status && <p className={`empresa-status ${status.tipo}`}>{status.msg}</p>}
+      {error && <p className="empresa-status error">{error}</p>}
 
       <div className="empresa-add-row">
         <input className="empresa-input" name="direccion" placeholder="Dirección" value={form.direccion} onChange={handleChange} />
         <input className="empresa-input" name="ciudad" placeholder="Ciudad" value={form.ciudad} onChange={handleChange} />
         <input className="empresa-input" name="pais" placeholder="País" value={form.pais} onChange={handleChange} />
         <input className="empresa-input" name="codigo_postal" placeholder="Código Postal" value={form.codigo_postal} onChange={handleChange} style={{ maxWidth: "150px" }} />
+        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
+        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
       </div>
 
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button className="btn-guardar" onClick={guardar}>
-          {editando ? "Actualizar" : "Guardar"}
-        </button>
-        {editando && (
-          <button className="btn-guardar" onClick={handleCancelar}
-            style={{ background: "var(--surface2)", boxShadow: "none" }}>
-            Cancelar
-          </button>
-        )}
-      </div>
-
-      {guardado && (
-        <div className="empresa-item-list" style={{ marginTop: "16px" }}>
-          <div className="empresa-item">
+      <div className="empresa-item-list">
+        {ubicaciones.map((u) => (
+          <div key={u.ubicacion_id} className="empresa-item">
             <div className="empresa-item-text">
-              <strong>{guardado.direccion}</strong>
+              <strong>{u.direccion}</strong>
               <div className="empresa-item-sub">
-                {[guardado.ciudad, guardado.pais, guardado.codigo_postal].filter(Boolean).join(", ")}
+                {[u.ciudad, u.pais, u.codigo_postal].filter(Boolean).join(", ")}
               </div>
             </div>
-            <button className="btn-agregar" onClick={handleEditar}>Editar</button>
+            <button className="btn-agregar" onClick={() => handleEditar(u)}>Editar</button>
+            <button className="btn-eliminar-item" onClick={() => handleEliminar(u.ubicacion_id)}>Eliminar</button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

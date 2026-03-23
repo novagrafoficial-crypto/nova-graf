@@ -31,4 +31,16 @@ const eliminarRed = async (req, res) => {
   }
 };
 
-module.exports = { obtenerRedes, crearRed, eliminarRed };
+const actualizarRed = async (req, res) => {
+  const { id } = req.params;
+  const { red_social, url_red_social } = req.body;
+  try {
+    const red = await redesModel.actualizarRed(id, red_social, url_red_social);
+    res.json(red);
+  } catch (error) {
+    res.status(error.message.includes("no encontrada") ? 404 : 500)
+      .json({ error: error.message });
+  }
+};
+
+module.exports = { obtenerRedes, crearRed, actualizarRed, eliminarRed };

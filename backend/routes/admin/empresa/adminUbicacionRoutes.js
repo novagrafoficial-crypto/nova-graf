@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const { obtenerUbicacion, guardarUbicacion } = require("../../../controllers/admin/empresa/ubicacionController");
+const { obtenerUbicacion, crearUbicacion, actualizarUbicacion, eliminarUbicacion } =
+  require("../../../controllers/admin/empresa/ubicacionController");
 
 router.get("/", obtenerUbicacion);
-router.post("/", guardarUbicacion);
+router.post("/", crearUbicacion);
+router.put("/:id", actualizarUbicacion);
+router.delete("/:id", eliminarUbicacion);
 
 module.exports = router;
