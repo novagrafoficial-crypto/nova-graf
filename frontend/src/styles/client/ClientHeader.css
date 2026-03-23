@@ -1,0 +1,135 @@
+/* Variables de color en tonos verdes */
+:root {
+  --verde-oscuro: #1b5e20;
+  --verde-medio: #2e7d32;
+  --verde-claro: #2a8b2d;
+  --verde-hoja: #81c784;
+  --verde-lima: #a5d6a7;
+  --fondo-claro: #f1f8e9;
+  --texto-claro: #ffffff;
+  --texto-oscuro: #1b5e20;
+  --gris-oscuro: #2d3748;
+  --gris-claro: #e2e8f0;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-medio));
+  color: var(--texto-claro);
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo */
+.logo {
+  color: var(--texto-claro);
+  text-decoration: none;
+  font-size: 1.4rem;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+/* Navegación */
+.nav {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--verde-lima);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--texto-claro);
+  border-bottom-color: var(--verde-claro);
+}
+
+/* Sección de usuario */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-info {
+  color: var(--texto-claro);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--verde-lima);
+  color: var(--verde-oscuro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 2px solid var(--texto-claro);
+  transition: transform 0.2s ease;
+}
+
+.user-info:hover .avatar {
+  transform: scale(1.1);
+}
+
+.user-name {
+  font-size: 0.9rem;
+}
+
+/* Botón de cerrar sesión */
+.logout-button {
+  background: #0b5e3a; /* Se mantiene rojo para acción destructiva, pero puedes cambiarlo a un tono verde oscuro si prefieres */
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.logout-button:hover {
+  background: #32dc26;
+  transform: scale(1.02);
+}
+
+/* Responsive básico */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .nav {
+    gap: 12px;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+  }
+
+  .user-name {
+    display: none; /* Ocultar nombre en móvil para ahorrar espacio */
+  }
+}

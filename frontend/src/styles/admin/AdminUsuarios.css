@@ -1,0 +1,114 @@
+.admin-container {
+  padding: 40px;
+  background-color: #f4f6f9;
+  min-height: 100vh;
+}
+
+.admin-title {
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+}
+
+.table-container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  background-color: #1f2937;
+  color: white;
+  padding: 14px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.admin-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.admin-table tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Badges */
+
+.badge-admin {
+  background-color: #ef4444;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.badge-user {
+  background-color: #3b82f6;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.badge-active {
+  background-color: #10b981;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.badge-inactive {
+  background-color: #6b7280;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Buttons */
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-role {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.btn-role:hover {
+  background-color: #4f46e5;
+}
+
+.btn-status {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.btn-status:hover {
+  background-color: #d97706;
+}
