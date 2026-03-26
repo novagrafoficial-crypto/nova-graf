@@ -83,6 +83,7 @@ const adminUbicacionRoutes = require("./routes/admin/empresa/adminUbicacionRoute
 const adminValoresRoutes = require("./routes/admin/empresa/adminValoresRoutes");
 const inventarioRoutes=require('./routes/admin/inventarioRoutes')
 const adminVisionRoutes = require('./routes/admin/empresa/adminVisionRoutes');
+const MonitoreoRoutes = require('./routes/admin/MonitoreoRoutes');
 
 
 // Empresa
@@ -95,6 +96,7 @@ app.use("/api/admin/ubicacion", adminUbicacionRoutes);
 app.use("/api/admin/valores", adminValoresRoutes);
 app.use('/api/admin/mision', adminMisionRoutes);
 app.use('/api/admin/inventario', inventarioRoutes);
+app.use('/api/admin/Monitoreo', MonitoreoRoutes); 
 
 // Catálogos y módulos
 app.use('/api/admin/marcas', marcasRoutes);
