@@ -392,10 +392,10 @@ export default function AdminModulo() {
   const [historial,         setHistorial]        = useState([]);
   const [tablas,            setTablas]            = useState([]);
   const [tablaSeleccionada, setTablaSeleccionada] = useState("");
-  const [tablaCSV,      setTablaCSV]      = useState("");
-  const [archivoCSV,    setArchivoCSV]    = useState(null);
-  const [mensajeImport, setMensajeImport] = useState("");
-  const [cargandoCSV,   setCargandoCSV]   = useState(false);
+  const [tablaCSV,          setTablaCSV]          = useState("");
+  const [archivoCSV,        setArchivoCSV]        = useState(null);
+  const [mensajeImport,     setMensajeImport]     = useState("");
+  const [cargandoCSV,       setCargandoCSV]       = useState(false);
 
   const [monitor,     setMonitor]     = useState(null);
   const [cargando,    setCargando]    = useState(false);
@@ -409,6 +409,19 @@ export default function AdminModulo() {
   const [usuariosActivos,  setUsuariosActivos]  = useState(null);
   const [ultimasConsultas, setUltimasConsultas] = useState(null);
   const [subQ,             setSubQ]             = useState("enCurso");
+
+  // ── Estados para los 5 nuevos endpoints ─────────────────────────────────────
+  const [salud,           setSalud]           = useState(null);
+  const [indices,         setIndices]         = useState(null);
+  const [espacio,         setEspacio]         = useState(null);
+  const [querySQL,        setQuerySQL]        = useState("");
+  const [queryResultado,  setQueryResultado]  = useState(null);
+  const [queryError,      setQueryError]      = useState("");
+  const [queryCargando,   setQueryCargando]   = useState(false);
+  const [explainSQL,      setExplainSQL]      = useState("");
+  const [explainResult,   setExplainResult]   = useState(null);
+  const [explainError,    setExplainError]    = useState("");
+  const [explainCargando, setExplainCargando] = useState(false);
 
   useEffect(()=>{
     fetchJSON(`${API_MODULO}/historial`).then(setHistorial).catch(()=>{});
@@ -438,10 +451,42 @@ export default function AdminModulo() {
     }catch{ setMensajeImport("Error de red"); } finally{ setCargandoCSV(false); }
   };
 
+  // ── Ejecutor de queries ──────────────────────────────────────────────────────
+  const ejecutarQueryInteractiva = async () => {
+    if (!querySQL.trim()) return;
+    setQueryCargando(true); setQueryError(""); setQueryResultado(null);
+    try {
+      const res = await fetch(`${API_MONITOREO}/query/ejecutar`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sql: querySQL })
+      });
+      const d = await res.json();
+      if (!res.ok) setQueryError(d.error + (d.detalle ? ` — ${d.detalle}` : ""));
+      else setQueryResultado(d);
+    } catch { setQueryError("Error de red"); }
+    finally { setQueryCargando(false); }
+  };
+
+  // ── EXPLAIN ANALYZE ──────────────────────────────────────────────────────────
+  const ejecutarExplain = async () => {
+    if (!explainSQL.trim()) return;
+    setExplainCargando(true); setExplainError(""); setExplainResult(null);
+    try {
+      const res = await fetch(`${API_MONITOREO}/query/explain`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sql: explainSQL })
+      });
+      const d = await res.json();
+      if (!res.ok) setExplainError(d.error + (d.detalle ? ` — ${d.detalle}` : ""));
+      else setExplainResult(d);
+    } catch { setExplainError("Error de red"); }
+    finally { setExplainCargando(false); }
+  };
+
   const cargar = useCallback(async()=>{
     setCargando(true); setError(null); setMsgTerm("");
     try{
-      const [resumen,actividad,bloqueos,lentas,tablasMon,tU,cT,uA,uQ]=await Promise.all([
+      const [resumen,actividad,bloqueos,lentas,tablasMon,tU,cT,uA,uQ,sal,idx,esp]=await Promise.all([
         fetchJSON(`${API_MONITOREO}/resumen`),
         fetchJSON(`${API_MONITOREO}/actividad`),
         fetchJSON(`${API_MONITOREO}/bloqueos`),
@@ -451,10 +496,18 @@ export default function AdminModulo() {
         fetchJSON(`${API_MONITOREO}/consultas-por-tipo`).catch(()=>null),
         fetchJSON(`${API_MONITOREO}/usuarios-activos`).catch(()=>null),
         fetchJSON(`${API_MONITOREO}/ultimas-consultas`).catch(()=>null),
+        fetchJSON(`${API_MONITOREO}/salud`).catch(()=>null),
+        fetchJSON(`${API_MONITOREO}/indices`).catch(()=>null),
+        fetchJSON(`${API_MONITOREO}/espacio`).catch(()=>null),
       ]);
       setMonitor({resumen,actividad,bloqueos,lentas,tablas:tablasMon});
-      setTablasUsadas(tU||[]); setConsultasTipo(cT||null);
-      setUsuariosActivos(uA||null); setUltimasConsultas(uQ||null);
+      setTablasUsadas(tU||[]);
+      setConsultasTipo(cT||null);
+      setUsuariosActivos(uA||null);
+      setUltimasConsultas(uQ||null);
+      setSalud(sal||null);
+      setIndices(idx||null);
+      setEspacio(esp||null);
       setUltimaAct(new Date().toLocaleTimeString());
     }catch{ setError("No se pudo conectar con el servidor de monitoreo."); }
     finally{ setCargando(false); }
@@ -789,6 +842,347 @@ export default function AdminModulo() {
                       ))}</tbody>
                     </table></div>
                 }
+              </Block>
+
+              {/* 10. Salud general */}
+              <Block title="Salud general del servidor" sub="Score 0–100 basado en métricas clave">
+                {!salud ? <Empty icon="❤️" text="Sin datos de salud" /> : (
+                  <>
+                    <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:18 }}>
+                      <div style={{
+                        width:80, height:80, borderRadius:"50%", flexShrink:0,
+                        background: salud.score>=85 ? P.greenA : salud.score>=60 ? P.amberA : P.redA,
+                        border:`3px solid ${salud.score>=85 ? P.green : salud.score>=60 ? P.amber : P.red}`,
+                        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"
+                      }}>
+                        <b style={{ fontSize:22, color: salud.score>=85 ? P.green : salud.score>=60 ? P.amber : P.red }}>{salud.score}</b>
+                        <small style={{ fontSize:9, color:P.slate, textTransform:"uppercase", letterSpacing:".05em" }}>score</small>
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontWeight:700, fontSize:15, marginBottom:6, textTransform:"capitalize" }}>
+                          Estado: <span style={{ color: salud.nivel==="saludable" ? P.green : salud.nivel==="advertencia" ? P.amber : P.red }}>{salud.nivel}</span>
+                        </div>
+                        <div className="adm-gauges" style={{ gap:10 }}>
+                          <Gauge pct={salud.resumen.cache_hit_ratio} label="Cache hit" invert />
+                          <Gauge pct={salud.resumen.pct_conexiones} label="Conexiones" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="adm-kpi-grid" style={{ marginBottom:16 }}>
+                      <KpiCard icon="🔒" label="Bloqueos activos"   color={salud.resumen.bloqueos_activos>0?"bad":"ok"}   value={salud.resumen.bloqueos_activos}/>
+                      <KpiCard icon="↩️" label="Rollback ratio"     color={salud.resumen.rollback_ratio>10?"warn":"ok"}   value={`${salud.resumen.rollback_ratio}%`}/>
+                      <KpiCard icon="🗑️" label="Tablas con bloat"   color={salud.resumen.tablas_con_bloat>0?"warn":"ok"}  value={salud.resumen.tablas_con_bloat}/>
+                      <KpiCard icon="⏳" label="Idle in tx >5m"     color={salud.resumen.idle_in_tx_largo>0?"warn":"ok"}  value={salud.resumen.idle_in_tx_largo}/>
+                    </div>
+                    {salud.alertas.length === 0
+                      ? <Empty icon="✅" text="Sin alertas activas — servidor saludable" />
+                      : <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                          {salud.alertas.map((a, i) => {
+                            const colMap = { critica:P.red, advertencia:P.amber, info:P.blue };
+                            const bgMap  = { critica:P.redA, advertencia:P.amberA, info:P.blueA };
+                            const c = colMap[a.severidad] || P.slate;
+                            return (
+                              <div key={i} style={{
+                                borderLeft:`3px solid ${c}`, background:bgMap[a.severidad]||P.slateA,
+                                borderRadius:4, padding:"10px 14px"
+                              }}>
+                                <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
+                                  <span style={{ fontSize:10, fontWeight:700, color:c, textTransform:"uppercase", letterSpacing:".06em" }}>
+                                    {a.severidad}
+                                  </span>
+                                  <span style={{ fontSize:10, color:P.slate, background:"#eee", borderRadius:3, padding:"1px 6px" }}>
+                                    {a.categoria}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize:13, fontWeight:600, marginBottom:3 }}>{a.mensaje}</div>
+                                <div style={{ fontSize:12, color:"#555" }}>💡 {a.recomendacion}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                    }
+                  </>
+                )}
+              </Block>
+
+              {/* 11. Análisis de índices */}
+              <Block title="Análisis de índices" sub="Candidatos faltantes, inutilizados y duplicados">
+                {!indices ? <Empty icon="🔍" text="Sin datos de índices" /> : (
+                  <>
+                    <div className="adm-section-mini-title" style={{ marginBottom:8 }}>
+                      Tablas candidatas a índice — demasiados seq scans ({indices.candidatos.length})
+                    </div>
+                    {indices.candidatos.length === 0
+                      ? <Empty icon="✅" text="Sin tablas problemáticas" />
+                      : <div className="adm-tbl-wrap" style={{ marginBottom:20 }}>
+                          <table className="adm-tbl">
+                            <thead><tr><th>Esquema</th><th>Tabla</th><th>Seq scans</th><th>Idx scans</th><th>% secuencial</th><th>Filas vivas</th><th>Tamaño</th></tr></thead>
+                            <tbody>{indices.candidatos.map((r, i) => (
+                              <tr key={i} className={parseFloat(r.pct_secuencial) > 80 ? "adm-tr--warn" : ""}>
+                                <td className="adm-dim">{r.esquema}</td>
+                                <td>{r.tabla}</td>
+                                <td className="mono">{parseInt(r.seq_scan).toLocaleString()}</td>
+                                <td className="mono">{parseInt(r.idx_scan).toLocaleString()}</td>
+                                <td className={`mono ${parseFloat(r.pct_secuencial)>80?"adm-txt--warn":""}`}>{r.pct_secuencial}%</td>
+                                <td className="mono">{parseInt(r.filas_vivas).toLocaleString()}</td>
+                                <td className="mono">{r.tamaño}</td>
+                              </tr>
+                            ))}</tbody>
+                          </table>
+                        </div>
+                    }
+
+                    <div className="adm-section-mini-title" style={{ marginBottom:8 }}>
+                      Índices nunca usados ({indices.indicesInutiles.length})
+                    </div>
+                    {indices.indicesInutiles.length === 0
+                      ? <Empty icon="✅" text="Todos los índices están siendo utilizados" />
+                      : <div className="adm-tbl-wrap" style={{ marginBottom:20 }}>
+                          <table className="adm-tbl">
+                            <thead><tr><th>Esquema</th><th>Tabla</th><th>Índice</th><th>Usos</th><th>Tamaño</th></tr></thead>
+                            <tbody>{indices.indicesInutiles.map((r, i) => (
+                              <tr key={i} className="adm-tr--warn">
+                                <td className="adm-dim">{r.esquema}</td>
+                                <td>{r.tabla}</td>
+                                <td className="mono">{r.indice}</td>
+                                <td className="mono adm-txt--warn">0</td>
+                                <td className="mono">{r.tamaño_indice}</td>
+                              </tr>
+                            ))}</tbody>
+                          </table>
+                        </div>
+                    }
+
+                    <div className="adm-section-mini-title" style={{ marginBottom:8 }}>
+                      Índices duplicados ({indices.indicesDuplicados.length})
+                    </div>
+                    {indices.indicesDuplicados.length === 0
+                      ? <Empty icon="✅" text="Sin índices duplicados detectados" />
+                      : <div className="adm-tbl-wrap">
+                          <table className="adm-tbl">
+                            <thead><tr><th>Esquema</th><th>Tabla</th><th>Índices duplicados</th><th>Tamaño total</th></tr></thead>
+                            <tbody>{indices.indicesDuplicados.map((r, i) => (
+                              <tr key={i} className="adm-tr--error">
+                                <td className="adm-dim">{r.esquema}</td>
+                                <td>{r.tabla}</td>
+                                <td className="mono" style={{ fontSize:12 }}>{
+                                  (Array.isArray(r.indices)
+                                    ? r.indices
+                                    : String(r.indices || "").replace(/^\{|\}$/g, "").split(",").filter(Boolean)
+                                  ).join(", ")
+                                }</td>
+                                <td className="mono adm-txt--warn">{r.tamaño_total}</td>
+                              </tr>
+                            ))}</tbody>
+                          </table>
+                        </div>
+                    }
+                  </>
+                )}
+              </Block>
+
+              {/* 12. Espacio por esquema */}
+              <Block title="Uso de espacio en disco" sub="Por esquema y top 20 tablas más grandes">
+                {!espacio ? <Empty icon="💽" text="Sin datos de espacio" /> : (
+                  <>
+                    <div className="adm-kpi-grid" style={{ marginBottom:16 }}>
+                      {espacio.porEsquema.map((e, i) => (
+                        <KpiCard key={i} icon="🗂️" label={e.esquema} value={e.tamaño_total}
+                          sub={`${e.num_tablas} tabla${e.num_tablas != 1 ? "s" : ""}`} color="purple" />
+                      ))}
+                    </div>
+                    <div className="adm-section-mini-title" style={{ marginBottom:8 }}>Top 20 tablas por tamaño total</div>
+                    <div className="adm-tbl-wrap">
+                      <table className="adm-tbl">
+                        <thead><tr><th style={{width:32}}>#</th><th>Esquema</th><th>Tabla</th><th>Datos</th><th>Índices</th><th>Total</th><th>Filas</th></tr></thead>
+                        <tbody>{espacio.porTabla.map((r, i) => (
+                          <tr key={i}>
+                            <td className="mono adm-dim">{i + 1}</td>
+                            <td className="adm-dim">{r.esquema}</td>
+                            <td><strong>{r.tabla}</strong></td>
+                            <td className="mono">{r.tamaño_datos}</td>
+                            <td className="mono">{r.tamaño_indices}</td>
+                            <td className="mono"><strong>{r.tamaño_total}</strong></td>
+                            <td className="mono">{r.filas != null ? parseInt(r.filas).toLocaleString() : "—"}</td>
+                          </tr>
+                        ))}</tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </Block>
+
+              {/* 13. Ejecutor de queries */}
+              <Block title="Ejecutor de queries" sub="Solo SELECT / WITH — máx. 500 filas, timeout 10 s" defaultOpen={false}>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  <textarea
+                    style={{
+                      width:"100%", minHeight:110, fontFamily:"monospace", fontSize:12,
+                      border:"1px solid #ddd", borderRadius:4, padding:"8px 10px",
+                      resize:"vertical", boxSizing:"border-box", lineHeight:1.6,
+                      outline:"none"
+                    }}
+                    placeholder={"SELECT *\nFROM empresa.clientes\nLIMIT 20;"}
+                    value={querySQL}
+                    onChange={e => { setQuerySQL(e.target.value); setQueryError(""); setQueryResultado(null); }}
+                    onKeyDown={e => { if (e.ctrlKey && e.key === "Enter") ejecutarQueryInteractiva(); }}
+                  />
+                  <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap" }}>
+                    <button className="adm-btn adm-btn--primary"
+                      disabled={queryCargando || !querySQL.trim()}
+                      onClick={ejecutarQueryInteractiva}>
+                      {queryCargando ? <><span className="adm-spin"/> Ejecutando…</> : "▶ Ejecutar"}
+                    </button>
+                    <span style={{ fontSize:11, color:P.slate }}>Ctrl + Enter para ejecutar</span>
+                    {queryResultado && (
+                      <span style={{ fontSize:12, color:P.slate, marginLeft:"auto" }}>
+                        {queryResultado.total} fila{queryResultado.total !== 1 ? "s" : ""}
+                        {queryResultado.truncado ? " (truncado a 500)" : ""}
+                        {" · "}{queryResultado.duracion_ms} ms
+                      </span>
+                    )}
+                  </div>
+                  {queryError && <div className="adm-alert adm-alert--error">{queryError}</div>}
+                  {queryResultado?.filas?.length > 0 && (
+                    <div className="adm-tbl-wrap">
+                      <table className="adm-tbl">
+                        <thead>
+                          <tr>{queryResultado.columnas.map(c => <th key={c}>{c}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                          {queryResultado.filas.map((row, i) => (
+                            <tr key={i}>
+                              {queryResultado.columnas.map(c => (
+                                <td key={c} className="mono"
+                                  style={{ fontSize:12, maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}
+                                  title={String(row[c] ?? "")}>
+                                  {row[c] === null
+                                    ? <span className="adm-dim">NULL</span>
+                                    : String(row[c])}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {queryResultado?.filas?.length === 0 && (
+                    <Empty icon="📭" text="La consulta no devolvió filas" />
+                  )}
+                </div>
+              </Block>
+
+              {/* 14. EXPLAIN ANALYZE */}
+              <Block title="EXPLAIN ANALYZE" sub="Analiza el plan de ejecución de cualquier SELECT" defaultOpen={false}>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  <textarea
+                    style={{
+                      width:"100%", minHeight:110, fontFamily:"monospace", fontSize:12,
+                      border:"1px solid #ddd", borderRadius:4, padding:"8px 10px",
+                      resize:"vertical", boxSizing:"border-box", lineHeight:1.6,
+                      outline:"none"
+                    }}
+                    placeholder={"SELECT *\nFROM empresa.pedidos\nWHERE cliente_id = 1;"}
+                    value={explainSQL}
+                    onChange={e => { setExplainSQL(e.target.value); setExplainError(""); setExplainResult(null); }}
+                    onKeyDown={e => { if (e.ctrlKey && e.key === "Enter") ejecutarExplain(); }}
+                  />
+                  <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap" }}>
+                    <button className="adm-btn adm-btn--primary"
+                      disabled={explainCargando || !explainSQL.trim()}
+                      onClick={ejecutarExplain}>
+                      {explainCargando ? <><span className="adm-spin"/> Analizando…</> : "🔍 Analizar plan"}
+                    </button>
+                    <span style={{ fontSize:11, color:P.slate }}>Ctrl + Enter para analizar</span>
+                    {explainResult && (
+                      <span style={{ fontSize:12, color:P.slate, marginLeft:"auto" }}>
+                        Costo: {explainResult.resumen.costo_total}
+                        {" · "}{explainResult.resumen.tiempo_ejecucion_ms} ms
+                      </span>
+                    )}
+                  </div>
+                  {explainError && <div className="adm-alert adm-alert--error">{explainError}</div>}
+
+                  {explainResult && (
+                    <>
+                      {/* Resumen de tiempos */}
+                      <div className="adm-kpi-grid">
+                        <KpiCard icon="⚖️" label="Costo total estimado" color="blue"
+                          value={explainResult.resumen.costo_total} />
+                        <KpiCard icon="⏱️" label="Tiempo de ejecución"
+                          color={explainResult.resumen.tiempo_ejecucion_ms > 1000 ? "bad" : explainResult.resumen.tiempo_ejecucion_ms > 200 ? "warn" : "ok"}
+                          value={`${explainResult.resumen.tiempo_ejecucion_ms} ms`} />
+                        <KpiCard icon="📐" label="Tiempo de planificación" color="purple"
+                          value={`${explainResult.resumen.tiempo_planificacion_ms} ms`} />
+                      </div>
+
+                      {/* Recomendaciones automáticas */}
+                      {explainResult.recomendaciones.length > 0 && (
+                        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                          <div className="adm-section-mini-title">Recomendaciones automáticas</div>
+                          {explainResult.recomendaciones.map((r, i) => (
+                            <div key={i} style={{
+                              borderLeft:`3px solid ${P.amber}`, background:P.amberA,
+                              borderRadius:4, padding:"9px 13px", fontSize:13
+                            }}>
+                              💡 {r.mensaje}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Nodos costosos */}
+                      {explainResult.nodos_costosos.length > 0 && (
+                        <>
+                          <div className="adm-section-mini-title">Nodos más costosos del plan</div>
+                          <div className="adm-tbl-wrap">
+                            <table className="adm-tbl">
+                              <thead>
+                                <tr>
+                                  <th>Tipo de nodo</th>
+                                  <th>Relación</th>
+                                  <th>Tiempo (ms)</th>
+                                  <th>Filas reales</th>
+                                  <th>Filas estimadas</th>
+                                  <th>Filtradas</th>
+                                  <th>Filtro / Cond.</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {explainResult.nodos_costosos.map((n, i) => {
+                                  const estimErr = n.filas_estimadas > 0 &&
+                                    Math.abs(n.filas_reales - n.filas_estimadas) / n.filas_estimadas > 5;
+                                  return (
+                                    <tr key={i} className={n.tiempo_ms > 100 ? "adm-tr--warn" : ""}>
+                                      <td>
+                                        <span style={{
+                                          fontSize:10, fontWeight:700, padding:"2px 7px",
+                                          borderRadius:3, background:P.blueA, color:P.blue,
+                                          whiteSpace:"nowrap"
+                                        }}>{n.tipo}</span>
+                                      </td>
+                                      <td className="mono">{n.relacion || "—"}</td>
+                                      <td className={`mono ${n.tiempo_ms > 100 ? "adm-txt--warn" : ""}`}>{n.tiempo_ms}</td>
+                                      <td className="mono">{n.filas_reales.toLocaleString()}</td>
+                                      <td className={`mono ${estimErr ? "adm-txt--warn" : ""}`}>{n.filas_estimadas.toLocaleString()}</td>
+                                      <td className="mono">{n.removidas_por_filtro > 0 ? n.removidas_por_filtro.toLocaleString() : "—"}</td>
+                                      <td className="adm-qcell" style={{ fontSize:11 }} title={n.filtro || ""}>{n.filtro || "—"}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
+                      )}
+
+                      {explainResult.recomendaciones.length === 0 && explainResult.nodos_costosos.length === 0 && (
+                        <Empty icon="✅" text="Plan eficiente — sin nodos costosos ni alertas" />
+                      )}
+                    </>
+                  )}
+                </div>
               </Block>
 
             </>)}
