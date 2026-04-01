@@ -31,6 +31,8 @@ import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminInventario from './pages/Admin/AdminInventario';
+import AdminProveedores from './pages/Admin/AdminProveedores';
+
 
 function App() {
   return (
@@ -72,6 +74,7 @@ function App() {
           <Route path="mision" element={<AdminMision />} />
           <Route path="empresa" element={<AdminEmpresaCom />} />
           <Route path="inventario" element={<AdminInventario />} />
+          <Route path="proveedores" element={<AdminProveedores />} />
         </Route>
 
       </Routes>

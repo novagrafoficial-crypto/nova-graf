@@ -146,6 +146,7 @@ function AdminLayout() {
           <Link to="pedidos">📦 Gestión de Pedidos</Link>
           <Link to="empresa">🏢 Gestión de Empresa</Link>
           <Link to="inventario">🏢 Gestión de inventario</Link>
+          <Link to="proveedores">🏢 Gestión de proveedores</Link>
         </nav>
       </aside>
 

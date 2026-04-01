@@ -74,6 +74,7 @@ const usuariosRoutes = require('./routes/admin/usuariosRoutes');
 const moduloAdminRoutes = require('./routes/admin/moduloAdminRoutes');
 const publicacionRoutes = require('./routes/admin/publicacionRoutes');
 
+
 const adminMisionRoutes = require('./routes/admin/empresa/adminMisionRoutes');
 const adminAntecedentesRoutes = require("./routes/admin/empresa/adminAntecedentesRoutes");
 const adminContactosRoutes = require("./routes/admin/empresa/adminContactosRoutes");
@@ -84,6 +85,7 @@ const adminValoresRoutes = require("./routes/admin/empresa/adminValoresRoutes");
 const inventarioRoutes=require('./routes/admin/inventarioRoutes')
 const adminVisionRoutes = require('./routes/admin/empresa/adminVisionRoutes');
 const MonitoreoRoutes = require('./routes/admin/MonitoreoRoutes');
+const proveedoresRoutes = require('./routes/admin/proveedoresRoutes');
 
 
 // Empresa
@@ -97,6 +99,8 @@ app.use("/api/admin/valores", adminValoresRoutes);
 app.use('/api/admin/mision', adminMisionRoutes);
 app.use('/api/admin/inventario', inventarioRoutes);
 app.use('/api/admin/Monitoreo', MonitoreoRoutes); 
+app.use('/api/admin/provedores', proveedoresRoutes); 
+
 
 // Catálogos y módulos
 app.use('/api/admin/marcas', marcasRoutes);
