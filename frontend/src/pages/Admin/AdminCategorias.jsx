@@ -70,7 +70,7 @@ function AdminCategorias() {
   const handleEditar = (cat) => {
     setNombre(cat.nombre);
     setEditando(true);
-    setIdEditar(cat._id);          // ←←← ESTO ERA EL ERROR PRINCIPAL
+    setIdEditar(cat.id); // ✅ PostgreSQL usa "id", no "_id"
   };
 
   const handleCancelar = () => {
@@ -107,7 +107,7 @@ function AdminCategorias() {
         </thead>
         <tbody>
           {categorias.map((cat) => (
-            <tr key={cat._id}>
+            <tr key={cat.id}> {/* ✅ */}
               <td>{cat.nombre}</td>
               <td>
                 <button
@@ -120,7 +120,7 @@ function AdminCategorias() {
                 <button
                   type="button"
                   className="btn-eliminar"
-                  onClick={() => handleEliminar(cat._id)}
+                  onClick={() => handleEliminar(cat.id)} // ✅
                 >
                   Eliminar
                 </button>

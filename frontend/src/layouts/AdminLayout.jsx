@@ -145,6 +145,7 @@ function AdminLayout() {
           <Link to="publicacion">📦Administrar Publicacion</Link>
           <Link to="pedidos">📦 Gestión de Pedidos</Link>
           <Link to="empresa">🏢 Gestión de Empresa</Link>
+          <Link to="stock">🏢 Predicción de Reabastecimiento</Link>
         </nav>
       </aside>
 

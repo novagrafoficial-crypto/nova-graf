@@ -44,9 +44,6 @@ function ClientHeader({ user }) {
                 className="ch-logo__img"
                 onError={e => { e.target.style.display = "none"; }}
               />
-              {empresa.nombre_empresa && (
-                <span className="ch-logo__name">{empresa.nombre_empresa}</span>
-              )}
             </>
           ) : (
             <>

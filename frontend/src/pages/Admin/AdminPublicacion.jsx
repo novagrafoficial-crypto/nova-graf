@@ -1,14 +1,93 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Eye, EyeOff, Package, Briefcase, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, EyeOff, Package, Briefcase, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 const API = 'http://localhost:5000';
 
+// ─── MODAL DE CONFIRMACIÓN ───────────────────────────────────────────────────
+const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) => {
+  if (!visible) return null;
+
+  const esPublicar = tipo === 'publicar';
+
+  return (
+    <div style={modalStyles.overlay}>
+      <div style={modalStyles.card}>
+
+        {/* Ícono */}
+        <div style={{
+          ...modalStyles.iconWrap,
+          background: esPublicar ? '#dbeafe' : '#fee2e2',
+        }}>
+          {esPublicar
+            ? <Eye size={28} color="#2563eb" />
+            : <EyeOff size={28} color="#dc2626" />
+          }
+        </div>
+
+        {/* Título */}
+        <h2 style={modalStyles.titulo}>
+          {esPublicar ? `Publicar ${entidad}` : `Ocultar ${entidad}`}
+        </h2>
+
+        {/* Mensaje */}
+        <p style={modalStyles.mensaje}>
+          {esPublicar
+            ? `Este ${entidad} será visible para todos los clientes en el sitio.`
+            : `Este ${entidad} dejará de ser visible para los clientes.`
+          }
+        </p>
+
+        {/* Aviso */}
+        <div style={{
+          ...modalStyles.aviso,
+          background: esPublicar ? '#eff6ff' : '#fff7ed',
+          border: `1px solid ${esPublicar ? '#bfdbfe' : '#fed7aa'}`,
+        }}>
+          <AlertTriangle size={14} color={esPublicar ? '#2563eb' : '#ea580c'} style={{ flexShrink: 0 }} />
+          <span style={{ color: esPublicar ? '#1e40af' : '#9a3412', fontSize: '13px' }}>
+            {esPublicar
+              ? 'Podrás ocultarlo en cualquier momento.'
+              : 'Podrás volver a publicarlo cuando quieras.'
+            }
+          </span>
+        </div>
+
+        {/* Botones */}
+        <div style={modalStyles.botones}>
+          <button style={modalStyles.btnCancelar} onClick={onCancelar}>
+            Cancelar
+          </button>
+          <button
+            style={esPublicar ? modalStyles.btnConfirmarPublicar : modalStyles.btnConfirmarOcultar}
+            onClick={onConfirmar}
+          >
+            {esPublicar
+              ? <><Eye size={15} /> Sí, publicar</>
+              : <><EyeOff size={15} /> Sí, ocultar</>
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+// ─── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────
 const AdminPublicacion = () => {
-  const [items, setItems] = useState([]);
-  const [tab, setTab] = useState('productos');
+  const [items, setItems]     = useState([]);
+  const [tab, setTab]         = useState('productos');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError]     = useState(null);
+
+  const [modal, setModal] = useState({
+    visible: false,
+    id: null,
+    estadoActual: null,
+    tipo: null,
+    entidad: null,
+  });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -24,19 +103,36 @@ const AdminPublicacion = () => {
     }
   }, [tab]);
 
-  useEffect(() => {
-    fetchData();
-  }, [tab, fetchData]);
+  useEffect(() => { fetchData(); }, [tab, fetchData]);
 
-  const handleToggle = async (id, estadoActual) => {
+  // Abre el modal con la info del item
+  const handleToggle = (id, estadoActual) => {
+    setModal({
+      visible: true,
+      id,
+      estadoActual,
+      tipo: estadoActual ? 'ocultar' : 'publicar',
+      entidad: tab === 'productos' ? 'producto' : 'elemento del portafolio',
+    });
+  };
+
+  // Confirmar — ejecuta el cambio
+  const handleConfirmar = async () => {
+    const { id, estadoActual } = modal;
     const nuevoEstado = !estadoActual;
+    setModal(m => ({ ...m, visible: false }));
     setItems(prev => prev.map(i => i.id === id ? { ...i, publicado: nuevoEstado } : i));
     try {
       await axios.put(`${API}/api/admin/publicar/${tab}/${id}`, { publicado: nuevoEstado });
     } catch (err) {
       setItems(prev => prev.map(i => i.id === id ? { ...i, publicado: estadoActual } : i));
-      alert('Error al actualizar. Intenta de nuevo.');
+      setError('Error al actualizar. Intenta de nuevo.');
     }
+  };
+
+  // Cancelar — cierra sin hacer nada
+  const handleCancelar = () => {
+    setModal(m => ({ ...m, visible: false }));
   };
 
   const renderHeaders = () => {
@@ -120,6 +216,15 @@ const AdminPublicacion = () => {
 
   return (
     <div style={styles.container}>
+
+      <ModalConfirmacion
+        visible={modal.visible}
+        tipo={modal.tipo}
+        entidad={modal.entidad}
+        onConfirmar={handleConfirmar}
+        onCancelar={handleCancelar}
+      />
+
       <div style={styles.header}>
         <h1 style={styles.title}>Gestión de Publicaciones</h1>
         <p style={styles.subtitle}>Administra qué productos y portafolio son visibles al público</p>
@@ -148,7 +253,12 @@ const AdminPublicacion = () => {
         </button>
       </div>
 
-      {error && <div style={styles.errorBox}>{error}</div>}
+      {error && (
+        <div style={styles.errorBox}>
+          {error}
+          <button style={styles.errorClose} onClick={() => setError(null)}>✕</button>
+        </div>
+      )}
 
       {loading && items.length === 0 ? (
         <div style={styles.loader}>Cargando datos...</div>
@@ -185,273 +295,147 @@ const AdminPublicacion = () => {
   );
 };
 
-// Estilos mejorados
+// ─── ESTILOS TABLA ───────────────────────────────────────────────────────────
 const styles = {
   container: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    padding: '32px 24px',
+    maxWidth: '1400px', margin: '0 auto', padding: '32px 24px',
     fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    backgroundColor: '#f8fafc',
-    minHeight: '100vh',
+    backgroundColor: '#f8fafc', minHeight: '100vh',
   },
-  header: {
-    marginBottom: '32px',
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: 600,
-    color: '#0f172a',
-    margin: 0,
-    letterSpacing: '-0.02em',
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: '#475569',
-    marginTop: '8px',
-  },
+  header: { marginBottom: '32px' },
+  title: { fontSize: '28px', fontWeight: 600, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' },
+  subtitle: { fontSize: '16px', color: '#475569', marginTop: '8px' },
   tabBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
-    gap: '16px',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: '24px', flexWrap: 'wrap', gap: '16px',
   },
   tabs: {
-    display: 'flex',
-    gap: '8px',
-    backgroundColor: '#ffffff',
-    padding: '4px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+    display: 'flex', gap: '8px', backgroundColor: '#ffffff',
+    padding: '4px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
   },
   tab: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '10px',
-    background: 'transparent',
-    color: '#64748b',
-    fontSize: '15px',
-    fontWeight: 500,
-    cursor: 'pointer',
+    display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
+    border: 'none', borderRadius: '10px', background: 'transparent',
+    color: '#64748b', fontSize: '15px', fontWeight: 500, cursor: 'pointer',
     transition: 'all 0.2s ease',
-    ':hover': {
-      background: '#f1f5f9',
-      color: '#1e293b',
-    },
   },
-  tabActive: {
-    background: '#e2e8f0',
-    color: '#0f172a',
-    fontWeight: 600,
-    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)',
-  },
+  tabActive: { background: '#e2e8f0', color: '#0f172a', fontWeight: 600, boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)' },
   refreshBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '10px',
-    fontSize: '14px',
-    fontWeight: 500,
-    color: '#334155',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-    ':hover': {
-      background: '#f8fafc',
-      borderColor: '#cbd5e1',
-    },
-    ':disabled': {
-      opacity: 0.6,
-      cursor: 'not-allowed',
-    },
+    display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
+    background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px',
+    fontSize: '14px', fontWeight: 500, color: '#334155', cursor: 'pointer',
+    transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
   },
-  spinning: {
-    animation: 'spin 1s linear infinite',
-  },
+  spinning: { animation: 'spin 1s linear infinite' },
   stats: {
-    display: 'flex',
-    gap: '24px',
-    marginBottom: '20px',
-    padding: '12px 16px',
-    background: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+    display: 'flex', gap: '24px', marginBottom: '20px', padding: '12px 16px',
+    background: '#ffffff', borderRadius: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
     border: '1px solid #e9eef2',
   },
-  statItem: {
-    fontSize: '15px',
-    color: '#1e293b',
-    '& strong': {
-      fontSize: '18px',
-      fontWeight: 600,
-      color: '#0f172a',
-      marginRight: '4px',
-    },
-  },
+  statItem: { fontSize: '15px', color: '#1e293b' },
   tableWrapper: {
-    background: '#ffffff',
-    borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    border: '1px solid #e9eef2',
-    overflow: 'auto',
-    maxWidth: '100%',
+    background: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    border: '1px solid #e9eef2', overflow: 'auto', maxWidth: '100%',
   },
-  table: {
-    width: '100%',
-    borderCollapse: 'separate',
-    borderSpacing: 0,
-    fontSize: '14px',
-    minWidth: '1000px', // Forzar scroll horizontal en pantallas pequeñas si es necesario
-  },
-  thead: {
-    background: '#f1f5f9',
-    borderBottom: '2px solid #e2e8f0',
-  },
+  table: { width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: '14px', minWidth: '1000px' },
+  thead: { background: '#f1f5f9', borderBottom: '2px solid #e2e8f0' },
   th: {
-    padding: '16px 12px',
-    textAlign: 'left',
-    fontWeight: 600,
-    color: '#334155',
-    fontSize: '13px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.03em',
-    whiteSpace: 'nowrap',
+    padding: '16px 12px', textAlign: 'left', fontWeight: 600, color: '#334155',
+    fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap',
   },
-  td: {
-    padding: '16px 12px',
-    borderBottom: '1px solid #e9eef2',
-    color: '#1e293b',
-    verticalAlign: 'middle',
-    whiteSpace: 'nowrap',
-  },
-  rowPublic: {
-    background: '#ffffff',
-    transition: 'background 0.2s',
-    ':hover': {
-      background: '#f8fafc',
-    },
-  },
-  rowDraft: {
-    background: '#ffffff',
-    ':hover': {
-      background: '#f8fafc',
-    },
-  },
-  thumb: {
-    width: '48px',
-    height: '48px',
-    objectFit: 'cover',
-    borderRadius: '8px',
-    border: '1px solid #e2e8f0',
-    background: '#f1f5f9',
-  },
-  badge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: 500,
-    lineHeight: 1,
-    whiteSpace: 'nowrap',
-  },
-  badgePublic: {
-    background: '#dcfce7',
-    color: '#166534',
-    border: '1px solid #bbf7d0',
-  },
-  badgeDraft: {
-    background: '#fee2e2',
-    color: '#991b1b',
-    border: '1px solid #fecaca',
-  },
+  td: { padding: '16px 12px', borderBottom: '1px solid #e9eef2', color: '#1e293b', verticalAlign: 'middle', whiteSpace: 'nowrap' },
+  rowPublic: { background: '#ffffff', transition: 'background 0.2s' },
+  rowDraft:  { background: '#ffffff' },
+  thumb: { width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f1f5f9' },
+  badge: { display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, lineHeight: 1, whiteSpace: 'nowrap' },
+  badgePublic: { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' },
+  badgeDraft:  { background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca' },
   btnPublicar: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 14px',
-    background: '#2563eb',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '30px',
-    fontSize: '12px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'background 0.2s, transform 0.1s',
-    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)',
-    ':hover': {
-      background: '#1d4ed8',
-    },
-    ':active': {
-      transform: 'scale(0.97)',
-    },
+    display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px',
+    background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '30px',
+    fontSize: '12px', fontWeight: 500, cursor: 'pointer',
+    transition: 'background 0.2s, transform 0.1s', boxShadow: '0 2px 4px rgba(37,99,235,0.2)',
   },
   btnOcultar: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 14px',
-    background: '#dc2626',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '30px',
-    fontSize: '12px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'background 0.2s, transform 0.1s',
-    boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)',
-    ':hover': {
-      background: '#b91c1c',
-    },
-    ':active': {
-      transform: 'scale(0.97)',
-    },
+    display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px',
+    background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '30px',
+    fontSize: '12px', fontWeight: 500, cursor: 'pointer',
+    transition: 'background 0.2s, transform 0.1s', boxShadow: '0 2px 4px rgba(220,38,38,0.2)',
   },
   errorBox: {
-    background: '#fee2e2',
-    color: '#991b1b',
-    padding: '16px 20px',
-    borderRadius: '12px',
-    marginBottom: '24px',
-    border: '1px solid #fecaca',
-    fontSize: '15px',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    background: '#fee2e2', color: '#991b1b', padding: '16px 20px',
+    borderRadius: '12px', marginBottom: '24px', border: '1px solid #fecaca', fontSize: '15px',
   },
-  loader: {
-    textAlign: 'center',
-    padding: '60px',
-    color: '#64748b',
-    fontSize: '16px',
-    background: '#ffffff',
-    borderRadius: '16px',
-    border: '1px solid #e9eef2',
+  errorClose: { background: 'transparent', border: 'none', color: '#991b1b', fontSize: '16px', cursor: 'pointer', padding: '0 4px' },
+  loader: { textAlign: 'center', padding: '60px', color: '#64748b', fontSize: '16px', background: '#ffffff', borderRadius: '16px', border: '1px solid #e9eef2' },
+  emptyMessage: { textAlign: 'center', padding: '48px', color: '#94a3b8', fontSize: '15px', fontStyle: 'italic' },
+};
+
+// ─── ESTILOS MODAL ───────────────────────────────────────────────────────────
+const modalStyles = {
+  overlay: {
+    position: 'fixed', inset: 0,
+    background: 'rgba(15, 23, 42, 0.55)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 9999,
+    animation: 'fadeIn 0.15s ease',
   },
-  emptyMessage: {
-    textAlign: 'center',
-    padding: '48px',
-    color: '#94a3b8',
-    fontSize: '15px',
-    fontStyle: 'italic',
+  card: {
+    background: '#ffffff', borderRadius: '20px', padding: '36px 32px',
+    width: '100%', maxWidth: '420px',
+    boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+    animation: 'slideUp 0.2s ease',
+  },
+  iconWrap: {
+    width: '64px', height: '64px', borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  titulo: { fontSize: '20px', fontWeight: 700, color: '#0f172a', margin: 0, textAlign: 'center' },
+  mensaje: { fontSize: '15px', color: '#475569', margin: 0, textAlign: 'center', lineHeight: 1.6 },
+  aviso: {
+    display: 'flex', alignItems: 'center', gap: '8px',
+    padding: '10px 14px', borderRadius: '10px',
+    width: '100%', boxSizing: 'border-box',
+  },
+  botones: { display: 'flex', gap: '12px', width: '100%', marginTop: '8px' },
+  btnCancelar: {
+    flex: 1, padding: '11px 0', background: '#f1f5f9', color: '#334155',
+    border: '1px solid #e2e8f0', borderRadius: '12px',
+    fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s',
+  },
+  btnConfirmarPublicar: {
+    flex: 1, padding: '11px 0', background: '#2563eb', color: '#ffffff',
+    border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+    boxShadow: '0 4px 12px rgba(37,99,235,0.3)', transition: 'background 0.2s',
+  },
+  btnConfirmarOcultar: {
+    flex: 1, padding: '11px 0', background: '#dc2626', color: '#ffffff',
+    border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+    boxShadow: '0 4px 12px rgba(220,38,38,0.3)', transition: 'background 0.2s',
   },
 };
 
-// Añadir keyframes para animación de giro (puedes ponerlo en un CSS global)
-const styleSheet = document.createElement("style");
+// ─── ANIMACIONES GLOBALES ────────────────────────────────────────────────────
+const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   @keyframes spin {
     from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    to   { transform: rotate(360deg); }
   }
-  .action-btn:hover {
-    filter: brightness(0.95);
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .action-btn:hover { filter: brightness(0.92); }
 `;
 document.head.appendChild(styleSheet);
 

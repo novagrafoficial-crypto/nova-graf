@@ -1,31 +1,88 @@
-const express  = require('express');
-const router   = express.Router();
-const multer   = require('multer');
-const path     = require('node:path');
-const ctrl     = require('../../controllers/admin/productosController');
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+
+const ctrl = require('../../controllers/admin/productosController');
+
+// ─── CONFIGURACIÓN DE MULTER ─────────────────────────────
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename:    (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const nombre = Date.now() + path.extname(file.originalname);
+    cb(null, nombre);
+  }
 });
 
-// SOLUCIÓN: Agregar límite de 5MB (5 * 1024 * 1024 bytes)
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 } 
-});
+const upload = multer({ storage });
 
-router.get('/catalogos',            ctrl.obtenerCatalogos);
-router.get('/',                     ctrl.obtenerProductos);
-router.get('/:id',                  ctrl.obtenerProductoDetalle);
-router.post('/',   upload.single('imagen'), ctrl.crearProducto);
-router.put('/:id', upload.single('imagen'), ctrl.actualizarProducto);
-router.delete('/:id',               ctrl.eliminarProducto);
+// ─── MIDDLEWARE VALIDAR ID ─────────────────────────────
 
-// Variantes
-router.post('/:id/variantes',                    ctrl.agregarVariante);
-router.delete('/:id/variantes/:varianteId',      ctrl.eliminarVariante);
-router.patch('/:id/variantes/:varianteId/stock', ctrl.actualizarStock);
+const validarId = (req, res, next) => {
+  const { id } = req.params;
+
+  if (isNaN(id)) {
+    return res.status(400).json({
+      error: "ID inválido"
+    });
+  }
+
+  next();
+};
+
+// ─── RUTAS ─────────────────────────────────────────────
+
+// Catálogos auxiliares
+router.get('/catalogos', ctrl.obtenerCatalogos);
+
+// Productos
+router.get('/', ctrl.obtenerProductos);
+router.get('/:id', validarId, ctrl.obtenerProductoDetalle);
+
+// Crear producto
+router.post(
+  '/',
+  upload.single('imagen'),
+  ctrl.crearProducto
+);
+
+// Actualizar producto
+router.put(
+  '/:id',
+  validarId,
+  upload.single('imagen'),
+  ctrl.actualizarProducto
+);
+
+// Eliminar producto
+router.delete(
+  '/:id',
+  validarId,
+  ctrl.eliminarProducto
+);
+
+// ─── VARIANTES ─────────────────────────────────────────
+
+// Crear variante
+router.post(
+  '/:id/variantes',
+  validarId,
+  ctrl.agregarVariante
+);
+
+// Eliminar variante
+router.delete(
+  '/:id/variantes/:varianteId',
+  ctrl.eliminarVariante
+);
+
+// Actualizar stock
+router.patch(
+  '/:id/variantes/:varianteId/stock',
+  ctrl.actualizarStock
+);
 
 module.exports = router;
-

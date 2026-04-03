@@ -1,122 +1,65 @@
-.footer {
-  background-color: #1e3a2f;
-  color: #ffffff;
-  padding: 3rem 1rem 1rem;
-  font-family: 'Arial', sans-serif;
+footer#contacto {
+  /* Este es el tono exacto que se ve en tu sección de valores */
+  background-color: #174d44 !important; 
+  background: #174d44 !important;
+  color: #ffffff !important;
+  /* El borde superior en el verde acento que ya tienes */
+  border-top: 6px solid #35BA99 !important;
 }
-
-.footer-content {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 columnas */
-  gap: 2rem;
+.footer-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 60px 24px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr;
+  gap: 40px;
 }
 
-.footer-section h4 {
-  color: #ffffff;
-  margin-bottom: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  font-size: 1.2rem;
+.footer-brand h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: #ffffff !important;
 }
 
-.footer-logo-img {
-  max-width: 150px; /* Ajusta según el tamaño de tu logo */
-  height: auto;
-  margin-bottom: 1rem;
+.footer-brand h3 span {
+  color: #35BA99 !important;
 }
 
-.footer-description {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  opacity: 0.9;
+.footer-col-title {
+  color: #35BA99 !important;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(53, 186, 153, 0.3);
+  padding-bottom: 5px;
 }
 
-.footer-links,
-.contact-info {
+.footer-list {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
-.footer-links li,
-.contact-info li {
-  margin-bottom: 0.8rem;
-  font-size: 0.95rem;
-  opacity: 0.9;
-}
-
-.footer-links a {
-  color: #ffffff;
+.footer-list-link {
+  color: rgba(255, 255, 255, 0.9) !important;
   text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover {
-  color: #a5d6a5;
-  text-decoration: underline;
-}
-
-.contact-info li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.social-icons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.social-icon {
-  color: white;
-  font-size: 2rem; /* Tamaño más grande para mejor presentación */
-  text-decoration: none;
-  transition: transform 0.2s, opacity 0.2s;
-  display: inline-block;
-}
-
-.social-icon:hover {
-  transform: translateY(-3px);
-  opacity: 0.8;
-}
-
-.footer-bottom {
-  text-align: center;
-  padding-top: 1.5rem;
   font-size: 0.9rem;
-  opacity: 0.8;
+}
+
+.footer-list-link:hover {
+  color: #35BA99 !important;
+}
+.footer-bottom {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  padding: 20px 0; /* Ajuste de padding */
+  width: 100%;
+}
+
+.footer-bottom-content {
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.footer-credit {
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .footer-content {
-    grid-template-columns: repeat(2, 1fr); /* 2 columnas en tablets */
-  }
-}
-
-@media (max-width: 600px) {
-  .footer-content {
-    grid-template-columns: 1fr; /* 1 columna en móviles */
-    text-align: center;
-  }
-
-  .contact-info li {
-    justify-content: center;
-  }
-
-  .social-icons {
-    justify-content: center;
-  }
+  padding: 0 24px; /* Margen interno para que no toque las orillas */
+  display: flex;
+  justify-content: space-between; /* Esto separa el texto a la izquierda y derecha */
+  align-items: center;
 }

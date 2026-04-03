@@ -5,7 +5,6 @@ const obtenerCategorias = async (req, res) => {
     const categorias = await categoriasModel.obtenerTodas();
     res.json(categorias);
   } catch (err) {
-    console.error('Error al obtener categorías:', err.message); // ✅ usar err
     res.status(500).json({ error: 'Error al obtener categorías' });
   }
 };
@@ -16,11 +15,10 @@ const crearCategoria = async (req, res) => {
     const nueva = await categoriasModel.crear(nombre);
     res.status(201).json(nueva);
   } catch (err) {
-    console.error('Error al crear categoría:', err.message); // ✅ usar err
-    if (err.code === '23505') {
-      return res.status(409).json({ error: 'La categoría ya existe' });
-    }
-    res.status(500).json({ error: 'Error al crear categoría' });
+    if (err.code === '23505')
+      return res.status(400).json({ error: 'La categoría ya existe' });
+    res.status(err.message.includes('requerido') ? 400 : 500)
+       .json({ error: err.message || 'Error al crear categoría' });
   }
 };
 

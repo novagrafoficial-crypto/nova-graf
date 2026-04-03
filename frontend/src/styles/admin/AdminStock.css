@@ -1,0 +1,146 @@
+/* AdminPanel.css */
+.dashboard-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  background: #f0f2f5;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.header h1 {
+  font-size: 1.9rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1e2a3a, #0f172a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.header p {
+  color: #4b5563;
+  margin-top: 0.35rem;
+}
+
+.selector-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-bottom: 2.2rem;
+}
+
+.card-option {
+  background: white;
+  border-radius: 1.2rem;
+  padding: 1rem 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #e9eef3;
+  transition: all 0.25s ease;
+  background: white;
+}
+
+.card-option:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
+}
+
+.card-option.active {
+  background: #1e293b;
+  border-color: #1e293b;
+}
+
+.card-option.active .option-title {
+  color: white;
+}
+
+.card-option.active .option-icon {
+  color: #facc15;
+}
+
+.option-icon {
+  font-size: 1.8rem;
+}
+
+.option-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #1e293b;
+}
+
+.table-panel {
+  background: white;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  border: 1px solid #edf2f7;
+}
+
+.panel-header {
+  padding: 1.2rem 1.8rem;
+  border-bottom: 1px solid #eef2f6;
+  background: #fafcff;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.panel-header h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-count {
+  background: #e2e8f0;
+  border-radius: 40px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.2rem 0.7rem;
+  margin-left: 0.6rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 580px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 1rem 1.2rem;
+  background-color: #f8fafc;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table td {
+  padding: 0.9rem 1.2rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.footer-note {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6c757d;
+  border-top: 1px solid #e2edf2;
+  padding-top: 1.5rem;
+}

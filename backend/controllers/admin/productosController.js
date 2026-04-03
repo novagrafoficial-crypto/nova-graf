@@ -1,6 +1,6 @@
 const productosModel = require('../../models/admin/productosModel');
-const path = require('node:path');
-const fs   = require('node:fs');
+const path = require('path');
+const fs   = require('fs');
 
 // ─── CATÁLOGOS ────────────────────────────────────────────
 const obtenerCatalogos = async (req, res) => {
@@ -12,11 +12,9 @@ const obtenerCatalogos = async (req, res) => {
     ]);
     res.json({ colores, materiales, tiposAtributo });
   } catch (err) {
-    console.error('Error al obtener catálogos:', err.message); // ✅ usa err
     res.status(500).json({ error: 'Error al obtener catálogos' });
   }
 };
-
 
 // ─── LISTAR ───────────────────────────────────────────────
 const obtenerProductos = async (req, res) => {
@@ -24,7 +22,6 @@ const obtenerProductos = async (req, res) => {
     const productos = await productosModel.obtenerProductos();
     res.json(productos);
   } catch (err) {
-    console.error('Error al obtener productos:', err.message); // ✅ usa err
     res.status(500).json({ error: err.message });
   }
 };

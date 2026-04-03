@@ -18,7 +18,6 @@ import VerifyRecovery from "./pages/public/VerifyRecovery";
 import ResetPassword from "./pages/public/ResetPassword";
 import AuthCallback from "./pages/public/AuthCallback";
 import Contacto from './pages/public/Contacto';
-import Catalogo from './pages/public/Catalogo';
 
 
 // Páginas cliente
@@ -35,6 +34,12 @@ import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminModulo from "./pages/Admin/AdminModulo";
 import AdminPublicacion from './pages/Admin/AdminPublicacion';
+import AdminMision from './pages/Admin/AdminMision';
+import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
+import AdminInventario from './pages/Admin/AdminInventario';
+import Reabastecimiento from './pages/Admin/Reabastecimiento';
+import Ventasproducto from "./pages/Admin/Ventasproducto";
+
 
 
 function App() {
@@ -58,7 +63,6 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/redes-sociales" element={<Redes />} />
           <Route path="/contacto" element={<Contacto />} />
-          <Route path="/catalogo" element={<Catalogo />} />
         </Route>
 
         {/* Rutas cliente */}
@@ -80,6 +84,12 @@ function App() {
           <Route path="publicacion" element={<AdminPublicacion />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="modulo-extra" element={<AdminModulo />} />
+          <Route path="mision" element={<AdminMision />} />
+          <Route path="empresa" element={<AdminEmpresaCom />} />
+          <Route path="inventario" element={<AdminInventario />} />
+          <Route path="stock" element={<Reabastecimiento />} />
+          <Route path="stock/:id/ventas" element={<Ventasproducto/>} />
+          
         </Route>
 
       </Routes>

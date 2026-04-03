@@ -10,6 +10,8 @@ const getProductosCatalogo = async () => {
         p.descripcion,
         p.precio_base,
         c.nombre                      AS categoria,
+        s.nombre                      AS subcategoria,
+        m.nombre                      AS marca,
         (
           SELECT pv2.imagen_url
           FROM productos.producto_variantes pv2
@@ -23,12 +25,14 @@ const getProductosCatalogo = async () => {
           json_build_object('color', col.nombre, 'imagen_url', pv.imagen_url)
         ) FILTER (WHERE col.nombre IS NOT NULL)  AS colores_imagenes
     FROM productos.productos p
-    LEFT JOIN productos.categorias c ON p.categoria_id = c.id
+    LEFT JOIN productos.categorias c    ON p.categoria_id = c.id
+    LEFT JOIN productos.subcategorias s ON p.subcategoria_id = s.id
+    LEFT JOIN productos.marcas m        ON p.marca_id = m.id
     LEFT JOIN productos.producto_variantes pv
            ON pv.producto_id = p.id AND pv.activo = TRUE
     LEFT JOIN productos.colores col ON col.id = pv.color_id
-    WHERE p.activo = TRUE
-    GROUP BY p.id, c.nombre
+    WHERE p.activo = TRUE AND p.publicado = TRUE
+    GROUP BY p.id, c.nombre, s.nombre, m.nombre
     ORDER BY p.fecha_creacion DESC;
   `;
   const { rows } = await pool.query(query);
@@ -77,7 +81,7 @@ const getProductoDetalle = async (productoId) => {
   return rows;
 };
 
-// ─── CATEGORÍAS PARA EL SLIDER ───────────────────────────────────────────────
+// ─── CATEGORÍAS ──────────────────────────────────────────────────────────────
 const getCategorias = async () => {
   const query = `
     SELECT DISTINCT c.id, c.nombre
@@ -90,8 +94,36 @@ const getCategorias = async () => {
   return rows;
 };
 
+// ─── SUBCATEGORÍAS ───────────────────────────────────────────────────────────
+const getSubcategorias = async () => {
+  const query = `
+    SELECT DISTINCT s.id, s.nombre
+    FROM productos.subcategorias s
+    INNER JOIN productos.productos p ON p.subcategoria_id = s.id
+    WHERE p.activo = TRUE
+    ORDER BY s.nombre;
+  `;
+  const { rows } = await pool.query(query);
+  return rows;
+};
+
+// ─── MARCAS ──────────────────────────────────────────────────────────────────
+const getMarcas = async () => {
+  const query = `
+    SELECT DISTINCT m.id, m.nombre
+    FROM productos.marcas m
+    INNER JOIN productos.productos p ON p.marca_id = m.id
+    WHERE p.activo = TRUE
+    ORDER BY m.nombre;
+  `;
+  const { rows } = await pool.query(query);
+  return rows;
+};
+
 module.exports = {
   getProductosCatalogo,
   getProductoDetalle,
   getCategorias,
+  getSubcategorias,
+  getMarcas,
 };

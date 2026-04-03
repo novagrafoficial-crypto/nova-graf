@@ -27,8 +27,8 @@ function ClientLayout() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <ClientHeader user={user} />
-      <main style={{ flex: 1, padding: "32px 40px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
-        <Outlet context={{ user }} />
+      <main style={{ flex: 1, width: "100%", padding: 0 }}>
+      <Outlet context={{ user }} />
       </main>
       <ClientFooter />
     </div>

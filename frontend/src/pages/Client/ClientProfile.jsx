@@ -19,13 +19,11 @@ const CAMPOS = [
    OPCIONES DEL MENÚ LATERAL (similar a Mercado Libre)
    ───────────────────────────────────────────── */
 const MENU = [
+   { id: "mi-perfil",      icon: "👤", label: "Mi perfil"      },
   { id: "compras",        icon: "🛒", label: "Compras"        },
   { id: "ventas",         icon: "💰", label: "Ventas"         },
-  { id: "marketing",      icon: "📢", label: "Marketing"      },
-  { id: "creditos",       icon: "💳", label: "Créditos"       },
-  { id: "suscripciones",  icon: "📦", label: "Suscripciones"  },
   { id: "facturacion",    icon: "🧾", label: "Facturación"    },
-  { id: "mi-perfil",      icon: "👤", label: "Mi perfil"      },
+  { id: "historial",      icon: "📜", label: "Historial"      },
   { id: "configuracion",  icon: "⚙️", label: "Configuración"  },
 ];
 
@@ -172,7 +170,7 @@ function ClientProfile() {
     }
   };
 
-  /* ── Vista Dashboard (similar a Mercado Libre) ── */
+  /* ── Vista Dashboard  ── */
   const renderDashboard = () => {
     return (
       <>
@@ -248,24 +246,6 @@ function ClientProfile() {
             <span className="cp-badge">{esGoogle ? 'Google' : 'Local'}</span>
           </div>
           <p className="cp-card-text">Datos que representan a la cuenta en NovaGraf.</p>
-        </div>
-
-        {/* Tarjeta: Seguridad */}
-        <div className="cp-card cp-card--simple">
-          <div className="cp-card__header-simple">
-            <span>🛡️ Seguridad</span>
-            <span className="cp-badge cp-badge--warning">Pendiente</span>
-          </div>
-          <p className="cp-card-text">Tienes configuraciones pendientes.</p>
-        </div>
-
-        {/* Tarjeta: Suscripción (Melli+ como ejemplo) */}
-        <div className="cp-card cp-card--simple">
-          <div className="cp-card__header-simple">
-            <span>⭐ Melli+</span>
-            <button className="cp-btn-link">Ver beneficios</button>
-          </div>
-          <p className="cp-card-text">Suscripción con beneficios en envíos, compras y entretenimiento.</p>
         </div>
 
         {/* Tarjeta: Tarjetas guardadas */}

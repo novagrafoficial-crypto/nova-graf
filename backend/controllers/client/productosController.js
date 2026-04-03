@@ -3,6 +3,8 @@ const {
   getProductosCatalogo,
   getProductoDetalle,
   getCategorias,
+  getSubcategorias, // ✅ agregado
+  getMarcas,        // ✅ agregado
 } = require('../../models/client/productosModel');
 
 // GET /api/client/productos/catalogo
@@ -72,8 +74,32 @@ const mostrarCategorias = async (req, res) => {
   }
 };
 
+// GET /api/client/productos/subcategorias ✅
+const mostrarSubcategorias = async (req, res) => {
+  try {
+    const subcategorias = await getSubcategorias();
+    res.json(subcategorias);
+  } catch (error) {
+    console.error('Error al obtener subcategorías:', error);
+    res.status(500).json({ error: 'Error al obtener subcategorías' });
+  }
+};
+
+// GET /api/client/productos/marcas ✅
+const mostrarMarcas = async (req, res) => {
+  try {
+    const marcas = await getMarcas();
+    res.json(marcas);
+  } catch (error) {
+    console.error('Error al obtener marcas:', error);
+    res.status(500).json({ error: 'Error al obtener marcas' });
+  }
+};
+
 module.exports = {
   mostrarCatalogo,
   mostrarDetalle,
   mostrarCategorias,
+  mostrarSubcategorias, // ✅ agregado
+  mostrarMarcas,        // ✅ agregado
 };

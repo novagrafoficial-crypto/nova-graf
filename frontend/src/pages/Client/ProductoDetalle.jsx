@@ -7,22 +7,26 @@ import '../../styles/client/ProductoDetalle.css';
 const API = 'http://localhost:5000/api/client/productos';
 
 const ProductoDetalle = () => {
-  const { id }                  = useParams();
-  const { state }               = useLocation();
-  const navigate                = useNavigate();
+  const { id }       = useParams();
+  const { state }    = useLocation();
+  const navigate     = useNavigate();
 
-  const [producto, setProducto]         = useState(null);
-  const [varianteActiva, setVariante]   = useState(null);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(null);
+  const [producto, setProducto]       = useState(null);
+  const [varianteActiva, setVariante] = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(null);
 
+  // Atributo seleccionado por tipo: { Capacidad: '500ml', Tamaño: 'M', ... }
+  const [atributosSeleccionados, setAtributos] = useState({});
+
+  // ── FETCH DETALLE ──────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchDetalle = async () => {
       try {
         const res = await axios.get(`${API}/${id}`);
         setProducto(res.data);
 
-        // Si venimos con un color preseleccionado desde el catálogo, lo usamos
+        // Si venimos con un color preseleccionado desde el catálogo lo usamos
         const colorInicial = state?.colorSeleccionado;
         if (colorInicial) {
           const variante = res.data.variantes.find(v => v.color === colorInicial);
@@ -44,8 +48,33 @@ const ProductoDetalle = () => {
   if (error)   return <div className="detalle-error">{error}</div>;
   if (!producto) return null;
 
-  const precioFinal = Number(producto.precio_base) +
-                      Number(varianteActiva?.precio_adicional || 0);
+  // ── COLORES ÚNICOS (una sola entrada por color) ────────────────────────────
+  const coloresUnicos = [
+    ...new Map(producto.variantes.map(v => [v.color, v])).values(),
+  ];
+
+  // ── VARIANTES DEL COLOR ACTIVO ─────────────────────────────────────────────
+  const variantesDelColor = producto.variantes.filter(
+    v => v.color === varianteActiva?.color
+  );
+
+  // ── ATRIBUTOS AGRUPADOS POR TIPO ──────────────────────────────────────────
+  // Ejemplo: { Capacidad: Set(['250ml','500ml','750ml']), Tamaño: Set(['M','L']) }
+  const atributosAgrupados = variantesDelColor.reduce((acc, v) => {
+    (v.atributos || []).forEach(({ tipo, valor }) => {
+      if (!acc[tipo]) acc[tipo] = new Set();
+      acc[tipo].add(valor);
+    });
+    return acc;
+  }, {});
+
+  const seleccionarAtributo = (tipo, valor) => {
+    setAtributos(prev => ({ ...prev, [tipo]: valor }));
+  };
+
+  const precioFinal =
+    Number(producto.precio_base) +
+    Number(varianteActiva?.precio_adicional || 0);
 
   return (
     <div className="detalle-wrapper">
@@ -60,7 +89,10 @@ const ProductoDetalle = () => {
         {/* ── IMAGEN ── */}
         <div className="detalle-imagen">
           <img
-            src={varianteActiva?.imagen_url || 'https://via.placeholder.com/500x400?text=Sin+imagen'}
+            src={
+              varianteActiva?.imagen_url ||
+              'https://via.placeholder.com/500x400?text=Sin+imagen'
+            }
             alt={producto.producto_nombre}
           />
         </div>
@@ -94,18 +126,20 @@ const ProductoDetalle = () => {
             </p>
           )}
 
-          {/* Selector de colores */}
+          {/* ── SELECTOR DE COLOR ── */}
           <div className="detalle-colores">
             <p className="detalle-colores__label">
-              Color seleccionado: <strong>{varianteActiva?.color || '—'}</strong>
+              Color: <strong>{varianteActiva?.color || '—'}</strong>
             </p>
             <div className="detalle-colores__lista">
-              {producto.variantes.map((v) => (
+              {coloresUnicos.map((v) => (
                 <button
                   key={v.variante_id}
-                  className={`color-chip ${varianteActiva?.variante_id === v.variante_id ? 'color-chip--activo' : ''}`}
-                  onClick={() => setVariante(v)}
-                  title={v.color}
+                  className={`color-chip ${varianteActiva?.color === v.color ? 'color-chip--activo' : ''}`}
+                  onClick={() => {
+                    setVariante(v);
+                    setAtributos({}); // resetea atributos al cambiar color
+                  }}
                 >
                   {v.color}
                 </button>
@@ -113,22 +147,25 @@ const ProductoDetalle = () => {
             </div>
           </div>
 
-          {/* Atributos de la variante activa */}
-          {varianteActiva?.atributos?.length > 0 && (
-            <div className="detalle-atributos">
-              <h3>Especificaciones</h3>
-              <table className="atributos-tabla">
-                <tbody>
-                  {varianteActiva.atributos.map((atr, i) => (
-                    <tr key={i}>
-                      <td className="atr-tipo">{atr.tipo}</td>
-                      <td className="atr-valor">{atr.valor}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* ── ATRIBUTOS AGRUPADOS (Capacidad, Tamaño, etc.) ── */}
+          {Object.entries(atributosAgrupados).map(([tipo, valores]) => (
+            <div key={tipo} className="detalle-atributo-grupo">
+              <p className="detalle-atributo-grupo__label">
+                {tipo}: <strong>{atributosSeleccionados[tipo] || '—'}</strong>
+              </p>
+              <div className="detalle-atributo-grupo__opciones">
+                {[...valores].map(valor => (
+                  <button
+                    key={valor}
+                    className={`atributo-chip ${atributosSeleccionados[tipo] === valor ? 'atributo-chip--activo' : ''}`}
+                    onClick={() => seleccionarAtributo(tipo, valor)}
+                  >
+                    {valor}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+          ))}
 
           {/* CTA */}
           <button className="btn-agregar">

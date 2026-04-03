@@ -1,65 +1,153 @@
-const db = require('../../config/db');
-const fs = require('node:fs');
-const path = require('node:path');
-const archiver = require('archiver');
+const { exec } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+
+const historialRespaldos = [];
+
+const pgDumpPath = `"C:\\Program Files\\PostgreSQL\\17\\bin\\pg_dump.exe"`;
 
 const TABLAS = [
-  'usuarios', 'empresa', 'mision', 'vision', 'valores',
-  'antecedentes', 'politicas', 'contactos_empresa',
-  'redes_sociales_empresa', 'ubicacion_empresa',
-  'categorias', 'subcategorias', 'marcas', 'materiales', 'colores',
-  'tipos_atributo', 'valores_atributo', 'productos',
-  'producto_tipos_atributo', 'producto_variantes',
-  'variante_atributos', 'inventario', 'movimientos_inventario',
-  'descuentos', 'descuento_productos', 'promociones', 'promocion_descuentos'
+  "usuarios.usuarios",
+  "empresa.empresa",
+  "empresa.mision",
+  "empresa.vision",
+  "empresa.valores",
+  "empresa.antecedentes",
+  "empresa.politicas",
+  "empresa.contactos_empresa",
+  "empresa.redes_sociales_empresa",
+  "empresa.ubicacion_empresa",
+  "empresa.portafolio",
+  "productos.categorias",
+  "productos.subcategorias",
+  "productos.marcas",
+  "productos.materiales",
+  "productos.colores",
+  "productos.tipos_atributo",
+  "productos.valores_atributo",
+  "productos.productos",
+  "productos.producto_tipos_atributo",
+  "productos.producto_variantes",
+  "productos.variante_atributos",
+  "inventario.inventario",
+  "inventario.movimientos_inventario",
+  "marketing.descuentos",
+  "marketing.descuento_productos",
+  "marketing.promociones",
+  "marketing.promocion_descuentos",
+  "ventas.pedidos",
+  "ventas.pedido_detalle",
+  "ventas.pagos",
+  "ventas.personalizaciones"
 ];
 
-const generarRespaldo = async (req, res) => {
-  const backupRoot = path.join(__dirname, '../../../backups');
-  const tempDir    = path.join(backupRoot, 'temp');
+const generarRespaldo = (req, res) => {
+  const backupDir = path.join(__dirname, "../../../backups");
 
-  try {
-    if (!fs.existsSync(backupRoot)) fs.mkdirSync(backupRoot, { recursive: true });
-    if (!fs.existsSync(tempDir))    fs.mkdirSync(tempDir,    { recursive: true });
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
 
-    // Exportar cada tabla como JSON
-    for (const tabla of TABLAS) {
-      try {
-        const result = await db.query(`SELECT * FROM ${tabla}`);
-        const filePath = path.join(tempDir, `${tabla}.json`);
-        fs.writeFileSync(filePath, JSON.stringify(result.rows, null, 2));
-      } catch {
-        // Si la tabla no existe en este momento, la omite sin romper el respaldo
-        console.warn(`Tabla '${tabla}' omitida`);
-      }
+  const timestamp = new Date()
+    .toISOString()
+    .replace(/:/g, "-")
+    .replace("T", "_")
+    .split(".")[0];
+
+  const fileName = `respaldo_novagraf_${timestamp}.dump`;
+  const filePath = path.join(backupDir, fileName);
+
+  const connectionString = process.env.DATABASE_URL;
+
+  const comando = `${pgDumpPath} --dbname="${connectionString}" --format=custom --file="${filePath}" --no-owner --no-privileges`;
+
+  exec(comando, (error) => {
+    if (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Error al generar respaldo" });
     }
 
-    const timestamp = new Date().toISOString().replaceAll(':', '-');
-    const zipName   = `respaldo_${timestamp}.zip`;
-    const zipPath   = path.join(backupRoot, zipName);
+    const stats = fs.statSync(filePath);
 
-    const output  = fs.createWriteStream(zipPath);
-    const archive = archiver('zip', { zlib: { level: 9 } });
-
-    archive.pipe(output);
-    archive.directory(tempDir, false);
-    await archive.finalize();
-
-    output.on('close', () => {
-      res.download(zipPath, zipName, (err) => {
-        if (err) console.error('Error al descargar:', err);
-        // Limpiar archivos temporales
-        fs.rmSync(tempDir, { recursive: true, force: true });
-        fs.unlinkSync(zipPath);
-      });
+    historialRespaldos.unshift({
+      nombre: fileName,
+      fecha: new Date(),
+      tamaño: `${(stats.size / 1024).toFixed(2)} KB`,
+      tipo: "Completo"
     });
 
-  } catch (error) {
-    console.error(error);
-    // Limpiar temp si algo falló
-    if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
-    res.status(500).json({ error: 'Error al generar respaldo' });
-  }
+    // ✅ FIX: header explícito para que fetch lo lea correctamente
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+
+    res.download(filePath, fileName, () => {
+      fs.unlinkSync(filePath);
+    });
+  });
 };
 
-module.exports = { generarRespaldo };
+const generarRespaldoTabla = (req, res) => {
+  const { tabla } = req.params;
+
+  if (!TABLAS.includes(tabla)) {
+    return res.status(400).json({ error: "Tabla no permitida" });
+  }
+
+  const backupDir = path.join(__dirname, "../../../backups");
+
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
+
+  const timestamp = new Date()
+    .toISOString()
+    .replace(/:/g, "-")
+    .replace("T", "_")
+    .split(".")[0];
+
+  const fileName = `respaldo_${tabla.replace(".", "_")}_${timestamp}.dump`;
+  const filePath = path.join(backupDir, fileName);
+
+  const connectionString = process.env.DATABASE_URL;
+
+  const comando = `${pgDumpPath} --dbname="${connectionString}" --table=${tabla} --format=custom --file="${filePath}" --no-owner --no-privileges`;
+
+  exec(comando, (error) => {
+    if (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Error al generar respaldo" });
+    }
+
+    const stats = fs.statSync(filePath);
+
+    historialRespaldos.unshift({
+      nombre: fileName,
+      fecha: new Date(),
+      tamaño: `${(stats.size / 1024).toFixed(2)} KB`,
+      tipo: tabla
+    });
+
+    // ✅ FIX: header explícito para que fetch lo lea correctamente
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+
+    res.download(filePath, fileName, () => {
+      fs.unlinkSync(filePath);
+    });
+  });
+};
+
+const obtenerHistorialRespaldos = (req, res) => {
+  res.json(historialRespaldos.slice(0, 10));
+};
+
+const obtenerTablas = (req, res) => {
+  res.json(TABLAS);
+};
+
+module.exports = {
+  generarRespaldo,
+  generarRespaldoTabla,
+  obtenerHistorialRespaldos,
+  obtenerTablas
+};
