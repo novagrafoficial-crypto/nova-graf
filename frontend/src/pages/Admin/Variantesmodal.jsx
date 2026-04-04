@@ -1,171 +1,180 @@
-// src/pages/admin/VariantesModal.jsx
+// src/pages/Admin/VariantesProducto.jsx
 import { useState, useEffect } from "react";
-import "../../styles/Admin/VariantesModal.css";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import "../../styles/Admin/Variantesmodal.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// ─── Fila de variante ─────────────────────────────────────────────────────────
+function StockChip({ cantidad, minima }) {
+  if (Number(cantidad) === 0)
+    return <span className="vv-chip vv-chip--danger">Sin stock</span>;
+  if (Number(cantidad) <= Number(minima))
+    return <span className="vv-chip vv-chip--warn">Stock bajo · {cantidad}</span>;
+  return <span className="vv-chip vv-chip--ok">En stock · {cantidad}</span>;
+}
+
+function StockBar({ cantidad, minima }) {
+  const pct =
+    Number(minima) > 0
+      ? Math.min(100, Math.round((Number(cantidad) / Number(minima)) * 100))
+      : 100;
+  const color =
+    Number(cantidad) === 0 ? "#ef4444"
+    : Number(cantidad) <= Number(minima) ? "#f59e0b"
+    : "#22c55e";
+  return (
+    <div className="vv-bar-wrap">
+      <div className="vv-bar" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  );
+}
+
 function VarianteRow({ v, index }) {
   const [imgErr, setImgErr] = useState(false);
-
   return (
-    <tr className="vm-row" style={{ animationDelay: `${index * 40}ms` }}>
-
-      {/* Imagen */}
-      <td className="vm-td vm-td--img">
+    <tr className="vv-row" style={{ animationDelay: `${index * 35}ms` }}>
+      <td className="vv-td vv-td--img">
         {!imgErr && v.imagen_url ? (
-          <img
-            src={v.imagen_url}
-            alt={v.color}
-            onError={() => setImgErr(true)}
-            className="vm-thumb"
-          />
+          <img src={v.imagen_url} alt={v.color} className="vv-thumb" onError={() => setImgErr(true)} />
         ) : (
-          <div className="vm-thumb vm-thumb--fallback">📦</div>
+          <div className="vv-thumb vv-thumb--empty">📦</div>
         )}
       </td>
-
-      {/* ID variante */}
-      <td className="vm-td">
-        <span className="vm-id">#{v.variante_id}</span>
+      <td className="vv-td"><span className="vv-id">#{v.variante_id}</span></td>
+      <td className="vv-td">
+        <div className="vv-color">
+          <span className="vv-color__dot" style={{
+            background: v.color?.toLowerCase() === "multicolor"
+              ? "linear-gradient(135deg,#f00,#0f0,#00f)"
+              : v.color?.toLowerCase(),
+          }} />
+          {v.color}
+        </div>
       </td>
-
-      {/* Color */}
-      <td className="vm-td">
-        <span className="vm-color-dot" style={{ background: v.color?.toLowerCase() === 'multicolor' ? 'linear-gradient(135deg,#f00,#0f0,#00f)' : v.color?.toLowerCase() }} />
-        {v.color}
-      </td>
-
-      {/* Atributos */}
-      <td className="vm-td vm-td--desc">
+      <td className="vv-td vv-td--attrs">
         {v.descripcion
-          ? v.descripcion.split(', ').map((attr, i) => (
-              <span key={i} className="vm-attr">{attr}</span>
-            ))
-          : <span className="vm-muted">—</span>
-        }
+          ? v.descripcion.split(", ").map((a, i) => <span key={i} className="vv-attr">{a}</span>)
+          : <span className="vv-muted">—</span>}
       </td>
-
-      {/* Stock disponible */}
-      <td className="vm-td">{v.cantidad_disponible ?? 0}</td>
-
-      {/* Stock mínimo */}
-      <td className="vm-td">{v.cantidad_minima ?? 0}</td>
+      <td className="vv-td vv-td--stock">
+        <StockChip cantidad={v.cantidad_disponible} minima={v.cantidad_minima} />
+        <StockBar  cantidad={v.cantidad_disponible} minima={v.cantidad_minima} />
+        <span className="vv-stock-label">{v.cantidad_disponible} / mín {v.cantidad_minima}</span>
+      </td>
     </tr>
   );
 }
 
-// ─── Modal principal ──────────────────────────────────────────────────────────
-export default function VariantesModal({ producto, onClose }) {
+export default function VariantesProducto() {
+  const { id }   = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const productoNombre = location.state?.producto_nombre ?? "Producto";
+  const categoria      = location.state?.categoria       ?? "";
+  const subcategoria   = location.state?.subcategoria    ?? "";
+
   const [variantes, setVariantes] = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
 
   useEffect(() => {
-    if (!producto) return;
     setLoading(true);
     setError(null);
+    fetch(`${API}/api/admin/reabastecimiento/productos/${id}/variantes`)
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((d) => { setVariantes(d); setLoading(false); })
+      .catch((e) => { setError(`Error al cargar las variantes. (${e.message})`); setLoading(false); });
+  }, [id]);
 
-    fetch(`${API}/api/admin/reabastecimiento/productos/${producto.producto_id}/variantes`)
-      .then((r) => r.json())
-      .then((data) => { setVariantes(data); setLoading(false); })
-      .catch(() => { setError("Error al cargar las variantes."); setLoading(false); });
-  }, [producto]);
-
-  if (!producto) return null;
-
-  // ── Cerrar con Escape ──
-  const handleKey = (e) => { if (e.key === "Escape") onClose(); };
-
-  // ── Resumen rápido ──
-  const totalStock  = variantes.reduce((s, v) => s + Number(v.cantidad_disponible), 0);
-  const sinStock    = variantes.filter((v) => v.cantidad_disponible === 0).length;
-  const stockBajo   = variantes.filter((v) => v.cantidad_disponible > 0 && v.cantidad_disponible <= v.cantidad_minima).length;
+  const totalStock = variantes.reduce((s, v) => s + Number(v.cantidad_disponible), 0);
+  const sinStock   = variantes.filter((v) => Number(v.cantidad_disponible) === 0).length;
+  const stockBajo  = variantes.filter(
+    (v) => Number(v.cantidad_disponible) > 0 && Number(v.cantidad_disponible) <= Number(v.cantidad_minima)
+  ).length;
+  const enStock    = variantes.length - sinStock - stockBajo;
 
   return (
-    <div className="vm-overlay" onClick={onClose} onKeyDown={handleKey} tabIndex={-1}>
-      <div className="vm-panel" onClick={(e) => e.stopPropagation()}>
+    <div className="vv-page">
 
-        {/* ── Header ── */}
-        <div className="vm-header">
-          <div className="vm-header__left">
-            <p className="vm-header__cat">
-              {producto.categoria}
-              {producto.subcategoria && <> › {producto.subcategoria}</>}
-            </p>
-            <h2 className="vm-header__title">{producto.producto_nombre}</h2>
-            {producto.marca && <p className="vm-header__marca">{producto.marca}</p>}
-          </div>
-          <button className="vm-close" onClick={onClose}>✕</button>
-        </div>
-
-        {/* ── Pills de resumen ── */}
-        {!loading && !error && (
-          <div className="vm-summary">
-            <div className="vm-pill">
-              <span className="vm-pill__num">{variantes.length}</span>
-              <span className="vm-pill__label">variante{variantes.length !== 1 ? "s" : ""}</span>
-            </div>
-            <div className="vm-pill">
-              <span className="vm-pill__num">{totalStock}</span>
-              <span className="vm-pill__label">unidades totales</span>
-            </div>
-            {sinStock > 0 && (
-              <div className="vm-pill vm-pill--danger">
-                <span className="vm-pill__num">{sinStock}</span>
-                <span className="vm-pill__label">sin stock</span>
-              </div>
-            )}
-            {stockBajo > 0 && (
-              <div className="vm-pill vm-pill--warn">
-                <span className="vm-pill__num">{stockBajo}</span>
-                <span className="vm-pill__label">stock bajo</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Contenido ── */}
-        <div className="vm-body">
-          {loading && (
-            <div className="vm-state">
-              <span className="vm-spinner" />
-              Cargando variantes…
-            </div>
-          )}
-
-          {!loading && error && (
-            <div className="vm-state vm-state--error">⚠️ {error}</div>
-          )}
-
-          {!loading && !error && variantes.length === 0 && (
-            <div className="vm-state">📭 No hay variantes registradas.</div>
-          )}
-
-          {!loading && !error && variantes.length > 0 && (
-            <div className="vm-table-wrap">
-              <table className="vm-table">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>ID</th>
-                    <th>Color</th>
-                    <th>Atributos</th>
-                    <th>Stock disponible</th>
-                    <th>Stock mínimo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {variantes.map((v, i) => (
-                    <VarianteRow key={v.variante_id} v={v} index={i} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
+      {/* Breadcrumb */}
+      <div className="vv-breadcrumb">
+        <button className="vv-back" onClick={() => navigate(-1)}>← Volver</button>
+        <span className="vv-sep">/</span>
+        {categoria    && <><span className="vv-crumb vv-crumb--muted">{categoria}</span><span className="vv-sep">/</span></>}
+        {subcategoria && <><span className="vv-crumb vv-crumb--muted">{subcategoria}</span><span className="vv-sep">/</span></>}
+        <span className="vv-crumb">{productoNombre}</span>
+        <span className="vv-sep">/</span>
+        <span className="vv-crumb vv-crumb--active">Variantes</span>
       </div>
+
+      {/* Header */}
+      <header className="vv-header">
+        <div>
+          <h1 className="vv-title">{productoNombre}</h1>
+          <p className="vv-subtitle">Stock disponible por variante</p>
+        </div>
+      </header>
+
+      {/* KPIs */}
+      {!loading && !error && variantes.length > 0 && (
+        <div className="vv-kpis">
+          <div className="vv-kpi vv-kpi--blue">
+            <span className="vv-kpi__num">{variantes.length}</span>
+            <span className="vv-kpi__label">Variantes</span>
+          </div>
+          <div className="vv-kpi vv-kpi--green">
+            <span className="vv-kpi__num">{totalStock}</span>
+            <span className="vv-kpi__label">Unidades totales</span>
+          </div>
+          <div className="vv-kpi vv-kpi--green2">
+            <span className="vv-kpi__num">{enStock}</span>
+            <span className="vv-kpi__label">En stock</span>
+          </div>
+          {stockBajo > 0 && (
+            <div className="vv-kpi vv-kpi--warn">
+              <span className="vv-kpi__num">{stockBajo}</span>
+              <span className="vv-kpi__label">Stock bajo</span>
+            </div>
+          )}
+          {sinStock > 0 && (
+            <div className="vv-kpi vv-kpi--danger">
+              <span className="vv-kpi__num">{sinStock}</span>
+              <span className="vv-kpi__label">Sin stock</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Estados */}
+      {loading && <div className="vv-state"><span className="vv-spinner" />Cargando variantes…</div>}
+      {!loading && error && <div className="vv-state vv-state--error">⚠️ {error}</div>}
+      {!loading && !error && variantes.length === 0 && (
+        <div className="vv-state vv-state--empty"><span>📭</span><p>No hay variantes registradas.</p></div>
+      )}
+
+      {/* Tabla */}
+      {!loading && !error && variantes.length > 0 && (
+        <div className="vv-table-wrap">
+          <table className="vv-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Color</th>
+                <th>Atributos</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variantes.map((v, i) => (
+                <VarianteRow key={v.variante_id} v={v} index={i} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
     </div>
   );
 }

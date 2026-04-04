@@ -82,7 +82,7 @@
   border: 1px solid var(--rb-border);
   border-radius: var(--rb-radius);
   padding: .9rem 1.1rem;
-  margin-bottom: 2.5rem; /* más separación de la tabla */
+  margin-bottom: 2rem;
 }
 
 .rb-search {
@@ -186,58 +186,58 @@
 }
 @keyframes rb-spin { to { transform: rotate(360deg); } }
 
-/* ── Tabla: contenedor ────────────────────────────────────────────────────── */
-/* Envuelve header + filas para darle aspecto de tabla unificada */
+/* ── Tabla (contenedor principal) ───────────────────────────────────────── */
 .rb-grid {
   background: var(--rb-surface);
   border: 1px solid var(--rb-border);
   border-radius: var(--rb-radius);
-  overflow: hidden;
+  overflow-x: auto;      /* Evita desbordamiento horizontal */
   display: flex;
   flex-direction: column;
 }
 
-/* ── Encabezado de tabla ──────────────────────────────────────────────────── */
+/* ── Encabezado de tabla (mejorado) ─────────────────────────────────────── */
 .rb-list-header {
   display: grid;
-  grid-template-columns: 2fr 160px 320px;
+  grid-template-columns: minmax(200px, 2fr) 180px 1fr;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, var(--rb-surface2) 0%, #161929 100%);
+  background: linear-gradient(135deg, #1e2438 0%, #161929 100%);
   border-bottom: 2px solid var(--rb-accent);
-  padding: 0.9rem 1.4rem;
-  font-size: 0.72rem;
-  font-weight: 900;
+  padding: 1rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--rb-accent);
 }
 
 .rb-list-header__producto   { text-align: left; }
-.rb-list-header__stock      { text-align: center; }
-.rb-list-header__operaciones{ text-align: right; }
+.rb-list-header__stock      { text-align: left; }   /* ← alineado a la izquierda */
+.rb-list-header__operaciones{ text-align: center; } /* ← centrado */
 
-/* ── Fila de producto ─────────────────────────────────────────────────────── */
+/* ── Filas de producto ───────────────────────────────────────────────────── */
 .rb-list-item {
   display: grid;
-  grid-template-columns: 2fr 160px 320px;
+  grid-template-columns: minmax(200px, 2fr) 180px 1fr;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.4rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--rb-border);
   transition: background 0.15s;
 }
 
 .rb-list-item:last-child { border-bottom: none; }
-
 .rb-list-item:hover { background: var(--rb-surface2); }
 
 /* Columna: producto */
-.rb-list-item__main { min-width: 0; }
+.rb-list-item__main {
+  min-width: 0; /* Permite truncar texto */
+}
 
 .rb-list-item__nombre {
   margin: 0 0 0.3rem;
-  font-size: .95rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--rb-text);
   white-space: nowrap;
@@ -264,17 +264,17 @@
   color: #c084fc;
 }
 
-/* Columna: stock — centrada */
+/* Columna: stock – alineada a la izquierda */
 .rb-list-item__stats {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
+  align-items: flex-start;
+  gap: 0.2rem;
 }
 
 .rb-list-item__stock {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
@@ -285,20 +285,21 @@
   letter-spacing: 0.04em;
 }
 
-/* Columna: botones — alineados a la derecha */
+/* Columna: operaciones – centrada y con botones más grandes */
 .rb-list-item__actions {
   display: flex;
-  gap: .45rem;
-  justify-content: flex-end;
+  gap: 0.65rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-/* ── Botones ──────────────────────────────────────────────────────────────── */
+/* ── Botones (más grandes y con mejor espaciado) ─────────────────────────── */
 .rb-btn {
   font-family: inherit;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 0.45rem 0.85rem;
-  border-radius: 7px;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
@@ -327,30 +328,55 @@
 }
 .rb-btn--accent:hover { background: rgba(155,89,247,.22); }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
+/* ── Responsive (evita solapamiento en móvil) ────────────────────────────── */
 @media (max-width: 768px) {
-  .rb-page   { padding: 1.25rem 1rem; }
-  .rb-header { flex-direction: column; }
+  .rb-page {
+    padding: 1.25rem 1rem;
+  }
+  .rb-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rb-counter {
+    align-self: flex-end;
+  }
 }
 
 @media (max-width: 700px) {
-  .rb-list-header { display: none; }
+  /* Ocultamos el encabezado de tabla y mostramos cada producto como bloque */
+  .rb-list-header {
+    display: none;
+  }
 
   .rb-list-item {
     grid-template-columns: 1fr;
-    gap: .75rem;
+    gap: 0.75rem;
+    padding: 1.2rem;
   }
 
   .rb-list-item__stats {
     flex-direction: row;
     align-items: center;
-    gap: .75rem;
+    gap: 1rem;
   }
 
   .rb-list-item__actions {
     justify-content: stretch;
-    flex-wrap: wrap;
   }
 
-  .rb-btn { flex: 1; text-align: center; }
+  .rb-btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* Ajuste adicional para pantallas medianas (evita que se vean aplastados los botones) */
+@media (max-width: 1100px) and (min-width: 701px) {
+  .rb-list-item__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rb-btn {
+    text-align: center;
+  }
 }

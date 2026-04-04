@@ -39,7 +39,8 @@ import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminInventario from './pages/Admin/AdminInventario';
 import Reabastecimiento from './pages/Admin/Reabastecimiento';
 import Ventasproducto from "./pages/Admin/Ventasproducto";
-
+import Variantesmodal from "./pages/Admin/Variantesmodal";
+import PrediccionModal from "./pages/Admin/PrediccionModal";
 
 
 function App() {
@@ -89,6 +90,8 @@ function App() {
           <Route path="inventario" element={<AdminInventario />} />
           <Route path="stock" element={<Reabastecimiento />} />
           <Route path="stock/:id/ventas" element={<Ventasproducto/>} />
+          <Route path="stock/:id/variantes" element={<Variantesmodal/>} />
+          <Route path="stock/:id/prediccion" element={<PrediccionModal/>} />
           
         </Route>
 

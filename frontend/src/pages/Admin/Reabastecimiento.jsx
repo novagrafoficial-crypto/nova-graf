@@ -1,17 +1,29 @@
-// src/pages/admin/Reabastecimiento.jsx
+// src/pages/Admin/Reabastecimiento.jsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import VariantesModal from "./Variantesmodal";
-import PrediccionModal from "./PrediccionModal";
 import "../../styles/Admin/AdminReabastecimiento.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-function ProductoCard({ producto, onVerProducto, onVerPrediccion }) {
+function ProductoCard({ producto }) {
   const navigate = useNavigate();
+
+  const handleVariantes = () =>
+    navigate(`/admin/stock/${producto.producto_id}/variantes`, {
+      state: {
+        producto_nombre: producto.producto_nombre,
+        categoria:       producto.categoria,
+        subcategoria:    producto.subcategoria,
+      },
+    });
 
   const handleVentas = () =>
     navigate(`/admin/stock/${producto.producto_id}/ventas`, {
+      state: { producto_nombre: producto.producto_nombre },
+    });
+
+  const handlePrediccion = () =>
+    navigate(`/admin/stock/${producto.producto_id}/prediccion`, {
       state: { producto_nombre: producto.producto_nombre },
     });
 
@@ -21,7 +33,9 @@ function ProductoCard({ producto, onVerProducto, onVerPrediccion }) {
         <h3 className="rb-list-item__nombre">{producto.producto_nombre}</h3>
         <div className="rb-list-item__cats">
           <span className="rb-tag">{producto.categoria}</span>
-          {producto.subcategoria && <span className="rb-tag rb-tag--sub">{producto.subcategoria}</span>}
+          {producto.subcategoria && (
+            <span className="rb-tag rb-tag--sub">{producto.subcategoria}</span>
+          )}
         </div>
       </div>
 
@@ -30,11 +44,9 @@ function ProductoCard({ producto, onVerProducto, onVerPrediccion }) {
           className="rb-list-item__stock"
           style={{
             color:
-              Number(producto.stock_total) === 0
-                ? "var(--rb-danger)"
-                : Number(producto.stock_total) < 10
-                ? "var(--rb-warn)"
-                : "var(--rb-ok)",
+              Number(producto.stock_total) === 0 ? "var(--rb-danger)"
+              : Number(producto.stock_total) < 10 ? "var(--rb-warn)"
+              : "var(--rb-ok)",
           }}
         >
           {Number(producto.stock_total)} uds.
@@ -45,34 +57,25 @@ function ProductoCard({ producto, onVerProducto, onVerPrediccion }) {
       </div>
 
       <div className="rb-list-item__actions">
-        <button className="rb-btn rb-btn--primary" onClick={() => onVerProducto(producto)}>
-          📋 Ver productos
-        </button>
-        <button className="rb-btn rb-btn--secondary" onClick={handleVentas}>
-          📊 Ver ventas
-        </button>
-        <button className="rb-btn rb-btn--accent" onClick={() => onVerPrediccion(producto)}>
-          🔮 Ver predicción
-        </button>
+        <button className="rb-btn rb-btn--primary"   onClick={handleVariantes}>📋 Detalles Producto</button>
+        <button className="rb-btn rb-btn--secondary" onClick={handleVentas}>📊Detalles Venta</button>
+        <button className="rb-btn rb-btn--accent"    onClick={handlePrediccion}>🔮Predecir Abastecimiento</button>
       </div>
     </div>
   );
 }
 
 export default function Reabastecimiento() {
-  const [productos, setProductos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
+  const [productos,     setProductos]     = useState([]);
+  const [categorias,    setCategorias]    = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [productoSel, setProductoSel] = useState(null);
-  const [productoPrediccion, setProductoPrediccion] = useState(null);
+  const [loading,       setLoading]       = useState(false);
+  const [error,         setError]         = useState(null);
   const [filtros, setFiltros] = useState({ categoria_id: "", subcategoria_id: "", search: "" });
 
   useEffect(() => {
     fetch(`${API}/api/admin/reabastecimiento/categorias`)
-      .then((r) => r.json())
-      .then(setCategorias)
+      .then((r) => r.json()).then(setCategorias)
       .catch(() => setError("No se pudieron cargar las categorías."));
   }, []);
 
@@ -80,29 +83,19 @@ export default function Reabastecimiento() {
     const url = filtros.categoria_id
       ? `${API}/api/admin/reabastecimiento/subcategorias?categoria_id=${filtros.categoria_id}`
       : `${API}/api/admin/reabastecimiento/subcategorias`;
-    fetch(url)
-      .then((r) => r.json())
-      .then(setSubcategorias)
-      .catch(() => setSubcategorias([]));
+    fetch(url).then((r) => r.json()).then(setSubcategorias).catch(() => setSubcategorias([]));
   }, [filtros.categoria_id]);
 
   const fetchProductos = useCallback(() => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     const params = new URLSearchParams();
-    if (filtros.categoria_id) params.set("categoria_id", filtros.categoria_id);
+    if (filtros.categoria_id)    params.set("categoria_id",    filtros.categoria_id);
     if (filtros.subcategoria_id) params.set("subcategoria_id", filtros.subcategoria_id);
-    if (filtros.search) params.set("search", filtros.search);
+    if (filtros.search)          params.set("search",          filtros.search);
     fetch(`${API}/api/admin/reabastecimiento/productos?${params}`)
       .then((r) => r.json())
-      .then((data) => {
-        setProductos(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Error al cargar los productos.");
-        setLoading(false);
-      });
+      .then((d) => { setProductos(d); setLoading(false); })
+      .catch(() => { setError("Error al cargar los productos."); setLoading(false); });
   }, [filtros]);
 
   useEffect(() => {
@@ -114,11 +107,6 @@ export default function Reabastecimiento() {
 
   return (
     <div className="rb-page">
-      {productoSel && <VariantesModal producto={productoSel} onClose={() => setProductoSel(null)} />}
-      {productoPrediccion && (
-        <PrediccionModal producto={productoPrediccion} onClose={() => setProductoPrediccion(null)} />
-      )}
-
       <header className="rb-header">
         <div>
           <h1 className="rb-title">Predicción de Reabastecimiento</h1>
@@ -143,59 +131,39 @@ export default function Reabastecimiento() {
             onChange={(e) => setFiltros((f) => ({ ...f, search: e.target.value }))}
           />
           {filtros.search && (
-            <button className="rb-search__clear" onClick={() => setFiltros((f) => ({ ...f, search: "" }))}>
-              ✕
-            </button>
+            <button className="rb-search__clear"
+              onClick={() => setFiltros((f) => ({ ...f, search: "" }))}>✕</button>
           )}
         </div>
-        <select
-          value={filtros.categoria_id}
-          onChange={(e) =>
-            setFiltros({ categoria_id: e.target.value, subcategoria_id: "", search: filtros.search })
-          }
-        >
+
+        <select value={filtros.categoria_id}
+          onChange={(e) => setFiltros({ categoria_id: e.target.value, subcategoria_id: "", search: filtros.search })}>
           <option value="">Todas las categorías</option>
-          {categorias.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nombre}
-            </option>
-          ))}
+          {categorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <select
-          value={filtros.subcategoria_id}
-          disabled={!subcategorias.length}
-          onChange={(e) => setFiltros((f) => ({ ...f, subcategoria_id: e.target.value }))}
-        >
+
+        <select value={filtros.subcategoria_id} disabled={!subcategorias.length}
+          onChange={(e) => setFiltros((f) => ({ ...f, subcategoria_id: e.target.value }))}>
           <option value="">Todas las subcategorías</option>
-          {subcategorias.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.nombre}
-            </option>
-          ))}
+          {subcategorias.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
         </select>
+
         {hayFiltros && (
-          <button
-            className="rb-clear-btn"
-            onClick={() => setFiltros({ categoria_id: "", subcategoria_id: "", search: "" })}
-          >
+          <button className="rb-clear-btn"
+            onClick={() => setFiltros({ categoria_id: "", subcategoria_id: "", search: "" })}>
             ✕ Limpiar
           </button>
         )}
       </div>
 
-      {loading && (
-        <div className="rb-state">
-          <span className="rb-spinner" />
-          Cargando productos…
-        </div>
-      )}
+      {loading && <div className="rb-state"><span className="rb-spinner" />Cargando productos…</div>}
       {!loading && error && <div className="rb-state rb-state--error">⚠️ {error}</div>}
       {!loading && !error && productos.length === 0 && (
         <div className="rb-state rb-state--empty">
-          <span>📭</span>
-          <p>No hay productos con los filtros aplicados.</p>
+          <span>📭</span><p>No hay productos con los filtros aplicados.</p>
         </div>
       )}
+
       {!loading && !error && productos.length > 0 && (
         <>
           <div className="rb-list-header">
@@ -205,12 +173,7 @@ export default function Reabastecimiento() {
           </div>
           <div className="rb-grid">
             {productos.map((p) => (
-              <ProductoCard
-                key={p.producto_id}
-                producto={p}
-                onVerProducto={setProductoSel}
-                onVerPrediccion={setProductoPrediccion}
-              />
+              <ProductoCard key={p.producto_id} producto={p} />
             ))}
           </div>
         </>
