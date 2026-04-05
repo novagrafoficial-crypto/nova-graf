@@ -1,5 +1,3 @@
-/* src/styles/Admin/VariantesProducto.css */
-
 .vv-page {
   --vv-bg:      #0f1117;
   --vv-surface: #181c28;
@@ -47,9 +45,7 @@
 .vv-crumb--muted  { color: var(--vv-muted); }
 
 /* ── Header ───────────────────────────────────────────────────────────────── */
-.vv-header {
-  margin-bottom: 1.5rem;
-}
+.vv-header { margin-bottom: 1.5rem; }
 
 .vv-title {
   font-size: 1.6rem;
@@ -167,7 +163,6 @@
   white-space: nowrap;
 }
 
-/* Rows */
 .vv-row {
   border-bottom: 1px solid var(--vv-border);
   animation: vv-row-in .25s ease both;
@@ -181,10 +176,7 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
-.vv-td {
-  padding: .75rem 1rem;
-  vertical-align: middle;
-}
+.vv-td { padding: .75rem 1rem; vertical-align: middle; }
 
 /* Thumbnail */
 .vv-td--img { width: 58px; padding: .5rem .75rem; }
@@ -205,19 +197,8 @@
   color: var(--vv-muted);
 }
 
-/* ID */
-.vv-id {
-  font-family: monospace;
-  font-size: .78rem;
-  color: var(--vv-muted);
-}
-
 /* Color */
-.vv-color {
-  display: flex;
-  align-items: center;
-  gap: .45rem;
-}
+.vv-color { display: flex; align-items: center; gap: .45rem; }
 .vv-color__dot {
   width: 11px; height: 11px;
   border-radius: 50%;
@@ -242,39 +223,80 @@
 
 .vv-muted { color: var(--vv-muted); font-size: .8rem; }
 
-/* Stock */
-.vv-td--stock { min-width: 180px; }
-
-.vv-chip {
-  display: inline-block;
-  font-size: .68rem;
-  font-weight: 700;
-  letter-spacing: .05em;
-  padding: .18rem .5rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  margin-bottom: .3rem;
+/* Stock: solo número, sin badges ni barras */
+.vv-td--stock {
+  text-align: left;
+  white-space: nowrap;
 }
-.vv-chip--ok     { background: rgba(34,197,94,.12);  color: var(--vv-ok);     border: 1px solid var(--vv-ok); }
-.vv-chip--warn   { background: rgba(245,158,11,.12); color: var(--vv-warn);   border: 1px solid var(--vv-warn); }
-.vv-chip--danger { background: rgba(239,68,68,.12);  color: var(--vv-danger); border: 1px solid var(--vv-danger); }
-
-.vv-bar-wrap {
-  height: 4px;
-  background: var(--vv-border);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: .25rem;
-}
-.vv-bar {
-  height: 100%;
-  border-radius: 2px;
-  transition: width .4s ease;
+.vv-stock-number {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--vv-text);
+  background: none;
+  padding: 0;
+  border: none;
 }
 
-.vv-stock-label {
-  font-size: .7rem;
+/* ── Paginación ───────────────────────────────────────────────────────────── */
+.vv-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+  padding: .75rem 1rem;
+  background: var(--vv-surface);
+  border: 1px solid var(--vv-border);
+  border-radius: var(--vv-radius);
+}
+
+.vv-pagination__info {
+  font-size: .8rem;
   color: var(--vv-muted);
+}
+
+.vv-pagination__controls {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.vv-pagination__btn {
+  background: var(--vv-s2);
+  border: 1px solid var(--vv-border);
+  border-radius: 7px;
+  color: var(--vv-text);
+  font-family: inherit;
+  font-size: .8rem;
+  font-weight: 500;
+  padding: .4rem .8rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  white-space: nowrap;
+}
+
+.vv-pagination__btn:hover:not(:disabled) {
+  background: var(--vv-border);
+  border-color: var(--vv-accent);
+}
+
+.vv-pagination__btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.vv-pagination__btn--num {
+  min-width: 34px;
+  text-align: center;
+}
+
+.vv-pagination__btn--active {
+  background: rgba(79,124,255,.2);
+  border-color: var(--vv-accent);
+  color: var(--vv-accent);
+  font-weight: 700;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
@@ -282,4 +304,5 @@
   .vv-page { padding: 1.25rem 1rem; }
   .vv-kpis { gap: .65rem; }
   .vv-td--attrs { display: none; }
+  .vv-pagination { flex-direction: column; align-items: flex-start; }
 }

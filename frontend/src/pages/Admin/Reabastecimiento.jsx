@@ -1,11 +1,10 @@
-// src/pages/Admin/Reabastecimiento.jsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Admin/AdminReabastecimiento.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-function ProductoCard({ producto }) {
+function ProductoCard({ producto, estadoProducto }) {
   const navigate = useNavigate();
 
   const handleVariantes = () =>
@@ -26,6 +25,20 @@ function ProductoCard({ producto }) {
     navigate(`/admin/stock/${producto.producto_id}/prediccion`, {
       state: { producto_nombre: producto.producto_nombre },
     });
+
+  // Determinar clase y texto según el estado del producto (el más crítico de sus variantes)
+  let estadoClase = "";
+  let estadoTexto = "";
+  if (estadoProducto === "critico") {
+    estadoClase = "rb-estado--critico";
+    estadoTexto = "Crítico";
+  } else if (estadoProducto === "proximo") {
+    estadoClase = "rb-estado--proximo";
+    estadoTexto = "Próximo";
+  } else {
+    estadoClase = "rb-estado--abastecido";
+    estadoTexto = "Abastecido";
+  }
 
   return (
     <div className="rb-list-item">
@@ -56,6 +69,11 @@ function ProductoCard({ producto }) {
         </span>
       </div>
 
+      {/* Nueva columna de estado */}
+      <div className="rb-list-item__estado">
+        <span className={`rb-estado-badge ${estadoClase}`}>{estadoTexto}</span>
+      </div>
+
       <div className="rb-list-item__actions">
         <button className="rb-btn rb-btn--primary"   onClick={handleVariantes}>📋 Detalles Producto</button>
         <button className="rb-btn rb-btn--secondary" onClick={handleVentas}>📊Detalles Venta</button>
@@ -72,13 +90,16 @@ export default function Reabastecimiento() {
   const [loading,       setLoading]       = useState(false);
   const [error,         setError]         = useState(null);
   const [filtros, setFiltros] = useState({ categoria_id: "", subcategoria_id: "", search: "" });
+  const [estadosProductos, setEstadosProductos] = useState({}); // mapa: producto_id -> estado
 
+  // Cargar categorías
   useEffect(() => {
     fetch(`${API}/api/admin/reabastecimiento/categorias`)
       .then((r) => r.json()).then(setCategorias)
       .catch(() => setError("No se pudieron cargar las categorías."));
   }, []);
 
+  // Cargar subcategorías según categoría seleccionada
   useEffect(() => {
     const url = filtros.categoria_id
       ? `${API}/api/admin/reabastecimiento/subcategorias?categoria_id=${filtros.categoria_id}`
@@ -86,6 +107,7 @@ export default function Reabastecimiento() {
     fetch(url).then((r) => r.json()).then(setSubcategorias).catch(() => setSubcategorias([]));
   }, [filtros.categoria_id]);
 
+  // Cargar productos filtrados
   const fetchProductos = useCallback(() => {
     setLoading(true); setError(null);
     const params = new URLSearchParams();
@@ -102,6 +124,42 @@ export default function Reabastecimiento() {
     const t = setTimeout(fetchProductos, 350);
     return () => clearTimeout(t);
   }, [fetchProductos]);
+
+  // Cargar predicciones para obtener el estado más crítico por producto
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API}/api/admin/reabastecimiento/productos`).then(r => r.json()), // productos actuales (con stock_total)
+      fetch(`${API}/api/admin/reabastecimiento/prediccion`).then(r => r.json())
+    ])
+      .then(([productosList, variantes]) => {
+        const estadoPorProducto = {};
+        // Inicializar todos los productos con un estado basado en stock_total (por si no tienen variantes)
+        productosList.forEach(p => {
+          if (Number(p.stock_total) === 0) {
+            estadoPorProducto[p.producto_id] = "critico";
+          } else if (Number(p.stock_total) < 10) {
+            estadoPorProducto[p.producto_id] = "proximo";
+          } else {
+            estadoPorProducto[p.producto_id] = "abastecido";
+          }
+        });
+        // Luego sobreescribir con los estados reales de las variantes (prioridad crítico > próximo > abastecido)
+        variantes.forEach(v => {
+          const pid = v.producto_id;
+          const nuevoEstado = v.estado;
+          const actual = estadoPorProducto[pid];
+          if (nuevoEstado === "critico") {
+            estadoPorProducto[pid] = "critico";
+          } else if (nuevoEstado === "proximo" && actual !== "critico") {
+            estadoPorProducto[pid] = "proximo";
+          } else if (nuevoEstado === "abastecido" && actual !== "critico" && actual !== "proximo") {
+            estadoPorProducto[pid] = "abastecido";
+          }
+        });
+        setEstadosProductos(estadoPorProducto);
+      })
+      .catch(err => console.error("Error cargando datos:", err));
+  }, []);
 
   const hayFiltros = filtros.categoria_id || filtros.subcategoria_id || filtros.search;
 
@@ -169,11 +227,16 @@ export default function Reabastecimiento() {
           <div className="rb-list-header">
             <div className="rb-list-header__producto">Producto</div>
             <div className="rb-list-header__stock">Stock disponible</div>
+            <div className="rb-list-header__estado">Estado Productos</div>
             <div className="rb-list-header__operaciones">Operaciones</div>
           </div>
           <div className="rb-grid">
             {productos.map((p) => (
-              <ProductoCard key={p.producto_id} producto={p} />
+              <ProductoCard
+                key={p.producto_id}
+                producto={p}
+                estadoProducto={estadosProductos[p.producto_id] || "abastecido"}
+              />
             ))}
           </div>
         </>

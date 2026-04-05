@@ -1,13 +1,6 @@
 // src/pages/admin/VentasProducto.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import {
-  ResponsiveContainer,
-  LineChart, Line,
-  BarChart,  Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  PieChart,  Pie, Cell,
-} from "recharts";
 import "../../styles/Admin/VentasProducto.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -19,43 +12,66 @@ const PERIODOS = [
   { key: "todo",   label: "Todo" },
 ];
 
-const COLORS = ["#4f7cff","#22c55e","#f59e0b","#ef4444","#9b59f7","#06b6d4","#ec4899","#84cc16"];
+// Componente para cada fila de la tabla (maneja error de imagen)
+function FilaVenta({ row, index }) {
+  const [imgError, setImgError] = useState(false);
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
   return (
-    <div className="vp-tooltip">
-      <p className="vp-tooltip__label">{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color }}>
-          {p.name}: <strong>{p.value}</strong>
-        </p>
-      ))}
-    </div>
-  );
-};
-
-function KpiCard({ label, value, sub, color }) {
-  return (
-    <div className="vp-kpi" style={{ borderTopColor: color }}>
-      <span className="vp-kpi__val" style={{ color }}>{value}</span>
-      <span className="vp-kpi__label">{label}</span>
-      {sub && <span className="vp-kpi__sub">{sub}</span>}
-    </div>
+    <tr className="vp-tr" style={{ animationDelay: `${index * 35}ms` }}>
+      <td className="vp-td vp-td--fecha">
+        {new Date(row.fecha).toLocaleDateString("es-MX", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}
+      </td>
+      <td className="vp-td vp-td--img">
+        {!imgError && row.imagen_url ? (
+          <img
+            src={row.imagen_url}
+            alt={row.producto}
+            className="vp-thumb"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="vp-thumb vp-thumb--empty">📷</div>
+        )}
+      </td>
+      <td className="vp-td">{row.producto}</td>
+      <td className="vp-td">
+        <span className="vp-color-dot" style={{ backgroundColor: row.color_hex || "#4f7cff" }} />
+        {row.color}
+      </td>
+      <td className="vp-td vp-td--desc">
+        {row.atributos ? (
+          row.atributos.split(", ").map((a, j) => (
+            <span key={j} className="vp-attr">{a}</span>
+          ))
+        ) : (
+          <span className="vp-muted">—</span>
+        )}
+      </td>
+      <td className="vp-td vp-td--qty">
+        <strong>{row.cantidad_vendida}</strong> uds.
+      </td>
+    </tr>
   );
 }
 
 export default function VentasProducto() {
-  const { id }    = useParams();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const productoNombre = location.state?.producto_nombre ?? "Producto";
 
-  const [periodo,  setPeriodo]  = useState("mes");
-  const [data,     setData]     = useState(null);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState(null);
-  const [tabActiva, setTabActiva] = useState("linea");
+  const [periodo, setPeriodo] = useState("mes");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Paginación
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
 
   useEffect(() => {
     setLoading(true);
@@ -67,24 +83,33 @@ export default function VentasProducto() {
       })
       .then((d) => {
         setData({
-          detalle:     Array.isArray(d.detalle)     ? d.detalle     : [],
-          serie:       Array.isArray(d.serie)       ? d.serie       : [],
-          porVariante: Array.isArray(d.porVariante) ? d.porVariante : [],
+          detalle: Array.isArray(d.detalle) ? d.detalle : [],
+          serie: Array.isArray(d.serie) ? d.serie : [],
         });
         setLoading(false);
+        setPaginaActual(1);
       })
-      .catch((err) => { setError(`Error al cargar las ventas. (${err.message})`); setLoading(false); });
+      .catch((err) => {
+        setError(`Error al cargar las ventas. (${err.message})`);
+        setLoading(false);
+      });
   }, [id, periodo]);
 
-  const totalVendido  = data?.serie?.reduce((s, r) => s + Number(r.total_vendido), 0) ?? 0;
-  const diasConVentas = data?.serie?.length ?? 0;
-  const promDiario    = diasConVentas ? (totalVendido / diasConVentas).toFixed(1) : 0;
-  const varianteTop   = data?.porVariante?.[0];
+  const totalFilas = data?.detalle.length ?? 0;
+  const totalPaginas = Math.ceil(totalFilas / itemsPorPagina);
+  const inicio = (paginaActual - 1) * itemsPorPagina;
+  const filasPagina = data?.detalle.slice(inicio, inicio + itemsPorPagina) ?? [];
 
-  const formatFecha = (f) => {
-    if (!f) return "";
-    const d = new Date(f);
-    return `${d.getDate()}/${d.getMonth() + 1}`;
+  const cambiarPagina = (nuevaPagina) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+      setPaginaActual(nuevaPagina);
+    }
+  };
+
+  const handleVerGrafica = () => {
+    navigate(`/admin/ventas/${id}/grafica?periodo=${periodo}`, {
+      state: { producto_nombre: productoNombre }
+    });
   };
 
   return (
@@ -129,163 +154,68 @@ export default function VentasProducto() {
 
       {!loading && data && (
         <>
-          {/* ── 1. TABLA DE DETALLE (arriba) ── */}
-<div className="vp-table-section">
-  <h2 className="vp-section-title">Detalle de ventas</h2>
-  <div className="vp-table-wrap">
-    <table className="vp-table">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Producto</th>       {/* ← nueva columna */}
-          <th>Color</th>
-          <th>Atributos</th>
-          <th>Cantidad vendida</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.detalle.map((row, i) => (
-          <tr key={i} className="vp-tr">
-            <td className="vp-td vp-td--fecha">
-              {new Date(row.fecha).toLocaleDateString("es-MX", {
-                day: "2-digit", month: "short", year: "numeric"
-              })}
-            </td>
-            <td className="vp-td">
-              {row.producto}      {/* ← mostrar nombre del producto */}
-            </td>
-            <td className="vp-td">
-              <span className="vp-color-dot" />
-              {row.color}
-            </td>
-            <td className="vp-td vp-td--desc">
-              {row.atributos
-                ? row.atributos.split(", ").map((a, j) => (
-                    <span key={j} className="vp-attr">{a}</span>
-                  ))
-                : <span className="vp-muted">—</span>
-              }
-            </td>
-            <td className="vp-td vp-td--qty">
-              <strong>{row.cantidad_vendida}</strong> uds.
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
-          {/* ── 2. GRÁFICAS (medio) ── */}
-          {data.serie.length > 0 ? (
-            <div className="vp-charts">
-              <div className="vp-charts__header">
-                <h2 className="vp-section-title">Evolución de ventas</h2>
-                <div className="vp-tabs">
-                  {[
-                    { key: "linea", label: "📈 Línea" },
-                    { key: "barra", label: "📊 Barras" },
-                    { key: "pie",   label: "🥧 Distribución" },
-                  ].map((t) => (
-                    <button
-                      key={t.key}
-                      className={`vp-tab${tabActiva === t.key ? " vp-tab--active" : ""}`}
-                      onClick={() => setTabActiva(t.key)}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="vp-chart-box">
-                {tabActiva === "linea" && (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <LineChart data={data.serie} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2f4a" />
-                      <XAxis dataKey="fecha" tickFormatter={formatFecha} stroke="#64748b" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#64748b" tick={{ fontSize: 11 }} allowDecimals={false} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Line
-                        type="monotone"
-                        dataKey="total_vendido"
-                        name="Unidades vendidas"
-                        stroke="#4f7cff"
-                        strokeWidth={2.5}
-                        dot={{ r: 3, fill: "#4f7cff" }}
-                        activeDot={{ r: 5 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-
-                {tabActiva === "barra" && (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={data.serie} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2f4a" />
-                      <XAxis dataKey="fecha" tickFormatter={formatFecha} stroke="#64748b" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#64748b" tick={{ fontSize: 11 }} allowDecimals={false} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="total_vendido" name="Unidades vendidas" fill="#4f7cff" radius={[4,4,0,0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-
-                {tabActiva === "pie" && (
-                  <div className="vp-pie-wrap">
-                    <ResponsiveContainer width="55%" height={260}>
-                      <PieChart>
-                        <Pie
-                          data={data.porVariante}
-                          dataKey="total_vendido"
-                          nameKey="color"
-                          cx="50%" cy="50%"
-                          outerRadius={100}
-                          innerRadius={50}
-                          paddingAngle={3}
-                        >
-                          {data.porVariante.map((_, i) => (
-                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(v, n) => [`${v} uds.`, n]}
-                          contentStyle={{ background: "#1f2438", border: "1px solid #2a2f4a", borderRadius: 8, fontSize: 12 }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="vp-pie-legend">
-                      {data.porVariante.map((v, i) => (
-                        <div key={v.variante_id} className="vp-pie-legend__item">
-                          <span className="vp-pie-legend__dot" style={{ background: COLORS[i % COLORS.length] }} />
-                          <span className="vp-pie-legend__color">{v.color}</span>
-                          <span className="vp-pie-legend__desc">{v.descripcion}</span>
-                          <span className="vp-pie-legend__val">{v.total_vendido} uds.</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+          {/* Botón para ir a la gráfica */}
+          {data.serie.length > 0 && (
+            <div className="vp-toggle-graph">
+              <button className="vp-toggle-graph__btn" onClick={handleVerGrafica}>
+                📊 Ver gráfica de ventas
+              </button>
             </div>
-          ) : (
+          )}
+
+          {/* TABLA DE DETALLE CON PAGINACIÓN */}
+          <div className="vp-table-section">
+            <h2 className="vp-section-title">📋 Detalle de ventas</h2>
+            <div className="vp-table-wrap">
+              <table className="vp-table">
+                <thead>
+                  <tr>
+                    <th>FECHA</th>
+                    <th>IMAGEN</th>
+                    <th>PRODUCTO</th>
+                    <th>COLOR</th>
+                    <th>DESCRIPCIÓN DE PRODUCTO</th>
+                    <th>CANTIDAD VENDIDA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filasPagina.map((row, i) => (
+                    <FilaVenta key={i} row={row} index={i} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Controles de paginación */}
+            {totalPaginas > 1 && (
+              <div className="vp-pagination">
+                <button
+                  className="vp-pagination__btn"
+                  disabled={paginaActual === 1}
+                  onClick={() => cambiarPagina(paginaActual - 1)}
+                >
+                  ← Anterior
+                </button>
+                <span className="vp-pagination__info">
+                  Página {paginaActual} de {totalPaginas}
+                </span>
+                <button
+                  className="vp-pagination__btn"
+                  disabled={paginaActual === totalPaginas}
+                  onClick={() => cambiarPagina(paginaActual + 1)}
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
+          </div>
+
+          {data.serie.length === 0 && (
             <div className="vp-state vp-state--empty">
               <span>📭</span>
               <p>No hay ventas registradas en este período.</p>
             </div>
           )}
-
-          {/* ── 3. KPIs (abajo) ── */}
-          <div className="vp-kpis">
-            <KpiCard label="Unidades vendidas"  value={totalVendido}  color="#4f7cff" />
-            <KpiCard label="Días con ventas"    value={diasConVentas} color="#22c55e" />
-            <KpiCard label="Promedio diario"    value={promDiario}    sub="unidades/día" color="#f59e0b" />
-            <KpiCard
-              label="Variante más vendida"
-              value={varianteTop ? `${varianteTop.total_vendido} uds.` : "—"}
-              sub={varianteTop ? `${varianteTop.color}` : ""}
-              color="#9b59f7"
-            />
-          </div>
         </>
       )}
     </div>

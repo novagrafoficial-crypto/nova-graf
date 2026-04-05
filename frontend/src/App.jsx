@@ -40,7 +40,10 @@ import AdminInventario from './pages/Admin/AdminInventario';
 import Reabastecimiento from './pages/Admin/Reabastecimiento';
 import Ventasproducto from "./pages/Admin/Ventasproducto";
 import Variantesmodal from "./pages/Admin/Variantesmodal";
-import PrediccionModal from "./pages/Admin/PrediccionModal";
+import Prediccionpage from "./pages/Admin/Prediccionpage";
+import DetallePrediccion from './pages/Admin/DetallePrediccion';
+import VentasGrafica from "./pages/Admin/VentasGrafica";
+
 
 
 function App() {
@@ -91,8 +94,9 @@ function App() {
           <Route path="stock" element={<Reabastecimiento />} />
           <Route path="stock/:id/ventas" element={<Ventasproducto/>} />
           <Route path="stock/:id/variantes" element={<Variantesmodal/>} />
-          <Route path="stock/:id/prediccion" element={<PrediccionModal/>} />
-          
+          <Route path="stock/:id/prediccion" element={<Prediccionpage/>} />
+          <Route path="/admin/prediccion/variante/:varianteId" element={<DetallePrediccion />} />
+          <Route path="/admin/ventas/:id/grafica" element={<VentasGrafica />} />
         </Route>
 
       </Routes>
