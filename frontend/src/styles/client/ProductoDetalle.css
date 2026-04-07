@@ -1,7 +1,4 @@
-/* ============================================================
-   ProductoDetalle.css — diseño con tonos verdes y acabado moderno
-   ============================================================ */
-
+/* frontend/src/styles/client/ProductoDetalle.css */
 :root {
   --green-deep:    #1e4a2f;
   --green-primary: #2e7d32;
@@ -14,14 +11,16 @@
   --shadow-sm:     0 2px 8px rgba(0, 20, 0, 0.04);
   --shadow-md:     0 8px 24px rgba(46, 125, 50, 0.08);
   --transition:    0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-main:     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 .detalle-wrapper {
-  max-width: 1200px;
+  max-width: 1400px;          /* más ancho que antes (era 1200px) */
   margin: 0 auto;
   padding: 2rem;
   background: #fafdf8;
   min-height: 100vh;
+  font-family: var(--font-main);
 }
 
 /* Estados de carga / error */
@@ -29,7 +28,7 @@
 .detalle-error {
   text-align: center;
   padding: 4rem;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   border-radius: 24px;
   background: white;
   box-shadow: var(--shadow-sm);
@@ -46,7 +45,7 @@
   background: none;
   border: none;
   color: var(--gray-muted);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   padding: 0.5rem 0;
@@ -89,7 +88,7 @@
   }
 }
 
-/* ── IMAGEN ── */
+/* ── IMAGEN GRANDE ── */
 .detalle-imagen {
   position: relative;
   background: var(--green-mist);
@@ -113,14 +112,14 @@
 .detalle-info {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.9rem;
 }
 
 .detalle-nombre {
-  font-size: 2rem;
+  font-size: 2.5rem;        /* más grande */
   font-weight: 800;
   color: var(--green-deep);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
   margin: 0;
   line-height: 1.2;
 }
@@ -129,15 +128,15 @@
 .detalle-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin: 0.25rem 0 0.5rem;
 }
 .badge {
-  padding: 0.2rem 0.8rem;
+  padding: 0.3rem 1rem;
   border-radius: 40px;
   background: var(--green-soft);
   color: var(--green-primary);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.3px;
 }
@@ -147,27 +146,27 @@
 }
 
 .detalle-desc {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--gray-muted);
   line-height: 1.6;
   margin: 0.5rem 0;
 }
 
 .detalle-precio {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: var(--green-primary);
   margin: 0.5rem 0;
 }
 .detalle-precio small {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: #7d8c7d;
   margin-left: 0.5rem;
 }
 
 .detalle-material {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   color: var(--gray-muted);
   margin: 0;
   padding: 0.25rem 0;
@@ -175,67 +174,79 @@
   border-bottom: 1px dashed var(--border-light);
 }
 
-/* ── SELECTOR DE COLOR ── */
+/* ── SELECTOR DE COLOR CON MINIATURAS ── */
 .detalle-colores {
   margin: 0.5rem 0;
 }
 .detalle-colores__label {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--gray-text);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 .detalle-colores__lista {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
-.color-chip {
-  padding: 0.3rem 1rem;
-  border-radius: 40px;
-  border: 1.5px solid var(--border-light);
+.color-thumb {
+  width: 56px;              /* ligeramente más grande */
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
   background: white;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--gray-text);
   cursor: pointer;
   transition: all var(--transition);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.color-chip:hover {
+.color-thumb:hover {
+  transform: scale(1.05);
   border-color: var(--green-light);
-  background: var(--green-mist);
-  transform: translateY(-1px);
 }
-.color-chip--activo {
+.color-thumb--activo {
   border-color: var(--green-primary);
-  background: var(--green-primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(46,125,50,0.2);
+  box-shadow: 0 0 0 2px rgba(46,125,50,0.3);
+}
+.color-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.color-thumb__text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-align: center;
 }
 
 /* ── ATRIBUTOS (Capacidad, Tamaño, etc.) ── */
 .detalle-atributo-grupo {
-  margin: 0.6rem 0;
+  margin: 0.8rem 0;
 }
 .detalle-atributo-grupo__label {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--gray-text);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 .detalle-atributo-grupo__opciones {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .atributo-chip {
-  padding: 0.3rem 1rem;
+  padding: 0.4rem 1.2rem;
   border-radius: 40px;
   border: 1.5px solid var(--border-light);
   background: white;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--gray-text);
   cursor: pointer;
@@ -253,30 +264,177 @@
   box-shadow: 0 2px 4px rgba(46,125,50,0.2);
 }
 
-/* ── BOTÓN AGREGAR AL CARRITO ── */
-.btn-agregar {
-  width: 100%;
-  padding: 0.9rem;
+/* ── CANTIDAD ── */
+.detalle-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.detalle-cantidad label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-text);
+}
+.cantidad-input {
+  width: 90px;
+  padding: 0.6rem;
+  border: 1.5px solid var(--border-light);
+  border-radius: 40px;
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 500;
+  color: var(--green-deep);
+  background: white;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.cantidad-input:focus {
+  border-color: var(--green-primary);
+}
+
+/* ── BOTONES DE ACCIÓN ── */
+.detalle-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-agregar-carrito,
+.btn-comprar-ahora {
+  flex: 1;
+  padding: 1rem 1.2rem;
   border-radius: 60px;
   border: none;
-  background: linear-gradient(135deg, var(--green-primary), var(--green-light));
-  color: white;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 1.5rem;
   transition: all var(--transition);
-  box-shadow: 0 2px 6px rgba(46,125,50,0.2);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
 }
-.btn-agregar:hover {
+
+.btn-agregar-carrito {
+  background: white;
+  border: 2px solid var(--green-primary);
+  color: var(--green-primary);
+}
+.btn-agregar-carrito:hover {
+  background: var(--green-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(46,125,50,0.15);
+}
+
+.btn-comprar-ahora {
+  background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+  color: white;
+  box-shadow: 0 2px 6px rgba(46,125,50,0.2);
+}
+.btn-comprar-ahora:hover {
   background: linear-gradient(135deg, var(--green-deep), var(--green-primary));
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(46,125,50,0.25);
 }
-.btn-agregar:active {
+
+.btn-agregar-carrito:active,
+.btn-comprar-ahora:active {
   transform: translateY(1px);
+}
+
+/* Responsive para botones en móvil */
+@media (max-width: 480px) {
+  .detalle-acciones {
+    flex-direction: column;
+  }
+  .btn-agregar-carrito,
+  .btn-comprar-ahora {
+    width: 100%;
+  }
+}
+/* Botón personalizar */
+.btn-personalizar {
+  flex: 1;
+  padding: 1rem 1.2rem;
+  border-radius: 60px;
+  border: 2px solid #ff9800;
+  background: white;
+  color: #ff9800;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.btn-personalizar:hover {
+  background: #fff3e0;
+  transform: translateY(-2px);
+}
+
+/* Modal del personalizador */
+.personalizador-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.personalizador-contenido {
+  width: 90%;
+  height: 90%;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Badge de diseño personalizado sobre la imagen */
+.diseno-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #ff9800;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 40px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 5;
+}
+
+/* Información de diseño aplicado */
+.diseno-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e8f5e9;
+  padding: 0.6rem 1rem;
+  border-radius: 40px;
+  margin-top: 0.5rem;
+}
+.diseno-info span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2e7d32;
+}
+.btn-quitar-diseno {
+  background: none;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.btn-quitar-diseno:hover {
+  text-decoration: underline;
 }
