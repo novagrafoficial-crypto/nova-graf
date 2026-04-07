@@ -66,15 +66,38 @@ const getVariantesByProducto = async (producto_id) => {
   return rows;
 };
 
+// ─── HELPER: condición de fecha según período ─────────────────────────────────
+// Usa DATE_TRUNC y fechas de calendario, NO intervals de 24h.
+//   dia    → solo el día de hoy  (00:00:00 hasta ahora)
+//   semana → últimos 7 días calendario incluyendo hoy
+//   mes    → últimos 30 días calendario incluyendo hoy
+//   todo   → sin filtro
+function buildFechaCondicion(periodo, alias = 'v') {
+  switch (periodo) {
+    case 'dia':
+      // Desde las 00:00:00 del día de hoy en la zona del servidor
+      return `AND ${alias}.fecha_venta >= DATE_TRUNC('day', NOW())`;
+    case 'semana':
+      // Desde las 00:00:00 de hace 6 días (hoy incluido = 7 días)
+      return `AND ${alias}.fecha_venta >= DATE_TRUNC('day', NOW()) - INTERVAL '6 days'`;
+    case 'mes':
+      // Desde las 00:00:00 de hace 29 días (hoy incluido = 30 días)
+      return `AND ${alias}.fecha_venta >= DATE_TRUNC('day', NOW()) - INTERVAL '29 days'`;
+    default:
+      return ''; // todo → sin filtro
+  }
+}
+
 // ─── VENTAS DE UN PRODUCTO ────────────────────────────────────────────────────
 const getVentasByProducto = async (producto_id, periodo = 'mes') => {
-  const intervalMap = { dia: "INTERVAL '1 day'", semana: "INTERVAL '7 days'", mes: "INTERVAL '30 days'", todo: null };
-  const interval = intervalMap[periodo] ?? intervalMap['mes'];
-  const fechaCondicion = interval ? `AND v.fecha_venta >= NOW() - ${interval}` : '';
+  const fechaCondicion = buildFechaCondicion(periodo);
 
   const queryDetalle = `
-    SELECT v.fecha_venta::DATE AS fecha, p.nombre AS producto, pc.nombre AS color,
-      pv.imagen_url,   -- ← agregamos la imagen de la variante
+    SELECT
+      v.fecha_venta::DATE AS fecha,
+      p.nombre            AS producto,
+      pc.nombre           AS color,
+      pv.imagen_url,
       STRING_AGG(CONCAT(ta.nombre, ': ', vaa.valor), ', ' ORDER BY ta.nombre) AS atributos,
       vd.cantidad AS cantidad_vendida
     FROM inventario.ventas v
@@ -85,23 +108,32 @@ const getVentasByProducto = async (producto_id, periodo = 'mes') => {
     LEFT JOIN productos.variante_atributos va ON va.variante_id = pv.id
     LEFT JOIN productos.tipos_atributo ta ON ta.id = va.tipo_atributo_id
     LEFT JOIN productos.valores_atributo vaa ON vaa.id = va.valor_atributo_id
-    WHERE p.id = $1 ${fechaCondicion}
+    WHERE p.id = $1
+      ${fechaCondicion}
     GROUP BY v.fecha_venta::DATE, p.nombre, pc.nombre, pv.imagen_url, vd.cantidad
     ORDER BY v.fecha_venta::DATE DESC;
-`;
+  `;
+
   const querySerie = `
-    SELECT v.fecha_venta::DATE AS fecha, SUM(vd.cantidad) AS total_vendido
+    SELECT
+      v.fecha_venta::DATE      AS fecha,
+      SUM(vd.cantidad)::INT    AS total_vendido
     FROM inventario.ventas v
     JOIN inventario.ventas_detalle vd ON vd.venta_id = v.id
     JOIN productos.producto_variantes pv ON pv.id = vd.variante_id
     JOIN productos.productos p ON p.id = pv.producto_id
-    WHERE p.id = $1 ${fechaCondicion}
-    GROUP BY v.fecha_venta::DATE ORDER BY v.fecha_venta::DATE ASC;
+    WHERE p.id = $1
+      ${fechaCondicion}
+    GROUP BY v.fecha_venta::DATE
+    ORDER BY v.fecha_venta::DATE ASC;
   `;
+
   const queryPorVariante = `
-    SELECT pv.id AS variante_id, pc.nombre AS color,
+    SELECT
+      pv.id AS variante_id,
+      pc.nombre AS color,
       STRING_AGG(CONCAT(ta.nombre, ': ', vaa.valor), ', ' ORDER BY ta.nombre) AS descripcion,
-      SUM(vd.cantidad) AS total_vendido
+      SUM(vd.cantidad)::INT AS total_vendido
     FROM inventario.ventas v
     JOIN inventario.ventas_detalle vd ON vd.venta_id = v.id
     JOIN productos.producto_variantes pv ON pv.id = vd.variante_id
@@ -110,15 +142,23 @@ const getVentasByProducto = async (producto_id, periodo = 'mes') => {
     LEFT JOIN productos.variante_atributos va ON va.variante_id = pv.id
     LEFT JOIN productos.tipos_atributo ta ON ta.id = va.tipo_atributo_id
     LEFT JOIN productos.valores_atributo vaa ON vaa.id = va.valor_atributo_id
-    WHERE p.id = $1 ${fechaCondicion}
-    GROUP BY pv.id, pc.nombre ORDER BY total_vendido DESC;
+    WHERE p.id = $1
+      ${fechaCondicion}
+    GROUP BY pv.id, pc.nombre
+    ORDER BY total_vendido DESC;
   `;
+
   const [detalle, serie, porVariante] = await Promise.all([
-    pool.query(queryDetalle, [producto_id]),
-    pool.query(querySerie, [producto_id]),
-    pool.query(queryPorVariante, [producto_id]),
+    pool.query(queryDetalle,    [producto_id]),
+    pool.query(querySerie,      [producto_id]),
+    pool.query(queryPorVariante,[producto_id]),
   ]);
-  return { detalle: detalle.rows, serie: serie.rows, porVariante: porVariante.rows };
+
+  return {
+    detalle:    detalle.rows,
+    serie:      serie.rows,
+    porVariante: porVariante.rows,
+  };
 };
 
 // ─── CATEGORIAS ───────────────────────────────────────────────────────────────
@@ -143,9 +183,7 @@ const getSubcategorias = async (categoria_id) => {
 
 // ─── PREDICCION INDIVIDUAL ────────────────────────────────────────────────────
 const getPrediccion = async (producto_id, periodo = 'mes') => {
-  const intervalMap = { dia: "INTERVAL '1 day'", semana: "INTERVAL '7 days'", mes: "INTERVAL '30 days'", todo: null };
-  const interval = intervalMap[periodo] ?? intervalMap['mes'];
-  const fechaCondicion = interval ? `AND v.fecha_venta >= NOW() - ${interval}` : '';
+  const fechaCondicion = buildFechaCondicion(periodo);
 
   const stockRes = await pool.query(`
     SELECT COALESCE(SUM(i.cantidad), 0) AS stock_total
@@ -156,14 +194,16 @@ const getPrediccion = async (producto_id, periodo = 'mes') => {
   `, [producto_id]);
 
   const ventasRes = await pool.query(`
-    SELECT COALESCE(SUM(vd.cantidad), 0) AS total_vendido,
-      COUNT(DISTINCT v.fecha_venta::DATE) AS dias_con_ventas,
-      COALESCE(MAX(vd.cantidad), 0) AS max_diario
+    SELECT
+      COALESCE(SUM(vd.cantidad), 0)         AS total_vendido,
+      COUNT(DISTINCT v.fecha_venta::DATE)   AS dias_con_ventas,
+      COALESCE(MAX(vd.cantidad), 0)         AS max_diario
     FROM inventario.ventas v
     JOIN inventario.ventas_detalle vd ON vd.venta_id = v.id
     JOIN productos.producto_variantes pv ON pv.id = vd.variante_id
     JOIN productos.productos p ON p.id = pv.producto_id
-    WHERE p.id = $1 ${fechaCondicion}
+    WHERE p.id = $1
+      ${fechaCondicion}
   `, [producto_id]);
 
   const stockTotal     = parseInt(stockRes.rows[0]?.stock_total || 0, 10);
@@ -183,21 +223,8 @@ const getPrediccion = async (producto_id, periodo = 'mes') => {
 };
 
 // ─── PREDICCION GENERAL ───────────────────────────────────────────────────────
-// Usa la consulta verificada por el usuario como base.
-//
-// Modelo:  dx/dt = kx  =>  x(t) = x0 * e^(k*t)
-//   k      = ln(1 - d/x0)      d = promedio ventas diarias (30 dias)
-//   t_ROP  = ln(ROP/x0) / k   dias hasta llegar al punto de reorden
-//   ROP    = i.cantidad_minima  definido por el administrador
-//
-// Estado:
-//   critico    => stock_actual <= ROP   (ya alcanzo o supero el punto de reorden)
-//   proximo    => dias_hasta_rop <= 14  (llegara al ROP en <= 14 dias)
-//   abastecido => resto
-// ─────────────────────────────────────────────────────────────────────────────
 const getPrediccionGeneral = async () => {
 
-  // Query 1: tu consulta verificada + p.id y pv.imagen_url
   const variantesQuery = `
     SELECT
       pv.id                              AS variante_id,
@@ -212,7 +239,7 @@ const getPrediccionGeneral = async () => {
       STRING_AGG(
         CONCAT(ta.nombre, ': ', vaa.valor),
         ', ' ORDER BY ta.nombre
-      )                                  AS descripcion
+      ) AS descripcion
     FROM productos.productos p
     JOIN productos.producto_variantes  pv  ON pv.producto_id = p.id
     JOIN productos.colores             pc  ON pc.id          = pv.color_id
@@ -222,23 +249,20 @@ const getPrediccionGeneral = async () => {
     JOIN productos.tipos_atributo      ta  ON ta.id          = va.tipo_atributo_id
     JOIN productos.valores_atributo    vaa ON vaa.id         = va.valor_atributo_id
     LEFT JOIN inventario.inventario    i   ON i.variante_id  = pv.id
-    WHERE p.activo = TRUE
-      AND pv.activo = TRUE
-    GROUP BY
-      p.id, pv.id, pc.nombre, pct.nombre, ps.nombre,
-      i.cantidad, i.cantidad_minima, pv.imagen_url
+    WHERE p.activo = TRUE AND pv.activo = TRUE
+    GROUP BY p.id, pv.id, pc.nombre, pct.nombre, ps.nombre, i.cantidad, i.cantidad_minima, pv.imagen_url
     ORDER BY p.nombre, pv.id;
   `;
 
-  // Query 2: ventas por variante (ultimos 30 dias)
+  // Ventas últimos 30 días calendario (consistente con buildFechaCondicion 'mes')
   const ventasQuery = `
     SELECT
       vd.variante_id,
-      SUM(vd.cantidad)                    AS total_vendido,
+      SUM(vd.cantidad)::INT               AS total_vendido,
       COUNT(DISTINCT v.fecha_venta::DATE) AS dias_con_ventas
     FROM inventario.ventas_detalle vd
     JOIN inventario.ventas v ON v.id = vd.venta_id
-    WHERE v.fecha_venta >= NOW() - INTERVAL '30 days'
+    WHERE v.fecha_venta >= DATE_TRUNC('day', NOW()) - INTERVAL '29 days'
     GROUP BY vd.variante_id;
   `;
 
@@ -247,7 +271,6 @@ const getPrediccionGeneral = async () => {
     pool.query(ventasQuery),
   ]);
 
-  // Indice rapido por variante_id
   const ventasPorVariante = {};
   for (const row of ventRes.rows) {
     ventasPorVariante[row.variante_id] = {
@@ -256,43 +279,37 @@ const getPrediccionGeneral = async () => {
     };
   }
 
-  // Calculo exponencial por variante
   const resultado = varRes.rows.map((v) => {
-    const x0  = parseInt(v.cantidad_disponible, 10);  // stock actual
-    const rop = parseInt(v.cantidad_minima,     10);  // ROP del admin
+    const x0  = parseInt(v.cantidad_disponible, 10);
+    const rop = parseInt(v.cantidad_minima,     10);
 
     const venta         = ventasPorVariante[v.variante_id];
     const totalVendido  = venta?.total_vendido   ?? 0;
     const diasConVentas = venta?.dias_con_ventas ?? 0;
 
-    // d = promedio diario de ventas
     const d = diasConVentas > 0
       ? parseFloat((totalVendido / diasConVentas).toFixed(4))
       : 0;
 
-    // k = ln(1 - d/x0)  valido solo cuando x0 > d > 0
     let k            = null;
     let diasHastaRop = null;
 
     if (d > 0 && x0 > d) {
       k = parseFloat(Math.log(1 - d / x0).toFixed(6));
-
-      // t_ROP = ln(ROP/x0) / k  valido cuando 0 < ROP < x0
       if (rop > 0 && rop < x0) {
         diasHastaRop = parseFloat((Math.log(rop / x0) / k).toFixed(2));
       }
     }
 
-    /// Clasificación de estado con rangos personalizados
     let estado;
     if (x0 <= rop) {
       estado = 'critico';
     } else if (diasHastaRop !== null && diasHastaRop <= 3) {
-      estado = 'critico';        // 1 a 3 días → crítico
+      estado = 'critico';
     } else if (diasHastaRop !== null && diasHastaRop <= 7) {
-      estado = 'proximo';        // 4 a 7 días → próximo
+      estado = 'proximo';
     } else {
-      estado = 'abastecido';     // más de 7 días, null o infinito
+      estado = 'abastecido';
     }
 
     return {
@@ -316,17 +333,16 @@ const getPrediccionGeneral = async () => {
   return resultado;
 };
 
-// ─── REABASTECIMIENTO  ────────────────────────
-
+// ─── VENTAS POR VARIANTE ──────────────────────────────────────────────────────
 const getVentasByVariante = async (variante_id) => {
   const query = `
     SELECT
-      v.fecha_venta::DATE             AS fecha,
-      SUM(vd.cantidad)                AS cantidad_vendida
+      v.fecha_venta::DATE          AS fecha,
+      SUM(vd.cantidad)::INT        AS cantidad_vendida
     FROM inventario.ventas v
     JOIN inventario.ventas_detalle vd ON vd.venta_id = v.id
     WHERE vd.variante_id = $1
-      AND v.fecha_venta >= NOW() - INTERVAL '30 days'
+      AND v.fecha_venta >= DATE_TRUNC('day', NOW()) - INTERVAL '29 days'
     GROUP BY v.fecha_venta::DATE
     ORDER BY v.fecha_venta::DATE DESC;
   `;

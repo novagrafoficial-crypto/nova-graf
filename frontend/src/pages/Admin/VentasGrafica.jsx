@@ -1,3 +1,4 @@
+// src/pages/admin/VentasGrafica.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -5,6 +6,7 @@ import {
   LineChart, Line,
   BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
+  Label,
 } from "recharts";
 import "../../styles/Admin/VentasGrafica.css";
 
@@ -17,14 +19,48 @@ const PERIODOS = [
   { key: "todo",   label: "Todo" },
 ];
 
+// Convierte "2025-04-06" o "2025-04-06T00:00:00Z" a un objeto Date en hora local
+function parseFechaLocal(raw) {
+  if (typeof raw === "string" && raw.length >= 10) {
+    const [y, m, d] = raw.substring(0, 10).split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(raw);
+}
+
+// Formatea la fecha para mostrar en el eje X según el período activo
+function formatFechaEje(raw, periodo) {
+  const d = parseFechaLocal(raw);
+  if (periodo === "dia") {
+    return `${d.getDate()}/${d.getMonth() + 1}`;
+  }
+  if (periodo === "todo") {
+    // Formato más claro: "Abr 2025"
+    return d.toLocaleDateString("es-MX", { month: "short", year: "numeric" });
+  }
+  // semana y mes: día/mes
+  return `${d.getDate()}/${d.getMonth() + 1}`;
+}
+
+// Formatea la fecha para el tooltip (completa)
+function formatFechaTooltip(raw) {
+  const d = parseFechaLocal(raw);
+  return d.toLocaleDateString("es-MX", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="vg-tooltip">
-      <p className="vg-tooltip__label">{label}</p>
+      <p className="vg-tooltip__label">{formatFechaTooltip(label)}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color }}>
-          {p.name}: <strong>{p.value}</strong>
+        <p key={i} style={{ color: p.color, margin: "2px 0" }}>
+          {p.name}: <strong>{p.value}</strong> uds.
         </p>
       ))}
     </div>
@@ -65,12 +101,6 @@ export default function VentasGrafica() {
       });
   }, [id, periodo]);
 
-  const formatFecha = (f) => {
-    if (!f) return "";
-    const d = new Date(f);
-    return `${d.getDate()}/${d.getMonth() + 1}`;
-  };
-
   const handlePeriodoChange = (newPeriodo) => {
     setPeriodo(newPeriodo);
     navigate(`/admin/ventas/${id}/grafica?periodo=${newPeriodo}`, {
@@ -78,6 +108,27 @@ export default function VentasGrafica() {
       replace: true,
     });
   };
+
+  // Para período "dia": si solo hay 1 punto, añadimos un punto ficticio anterior
+  const serieConPadding = (() => {
+    if (!data?.serie) return [];
+    if (periodo === "dia" && data.serie.length === 1) {
+      const fechaHoy = data.serie[0].fecha;
+      return [{ fecha: fechaHoy, total_vendido: 0, _fantasma: true }, ...data.serie];
+    }
+    return data.serie;
+  })();
+
+  // Calcular rango de fechas para mostrar debajo del gráfico
+  const obtenerRangoFechas = () => {
+    if (!data?.serie.length) return null;
+    const fechas = data.serie.map(p => parseFechaLocal(p.fecha));
+    const minFecha = new Date(Math.min(...fechas));
+    const maxFecha = new Date(Math.max(...fechas));
+    const formato = { day: "numeric", month: "long", year: "numeric" };
+    return `${minFecha.toLocaleDateString("es-MX", formato)} – ${maxFecha.toLocaleDateString("es-MX", formato)}`;
+  };
+  const rangoFechas = obtenerRangoFechas();
 
   return (
     <div className="vg-page">
@@ -92,7 +143,7 @@ export default function VentasGrafica() {
       </div>
 
       <header className="vg-header">
-        <h1 className="vg-title">Gráfica de ventas - {productoNombre}</h1>
+        <h1 className="vg-title">Gráfica de ventas — {productoNombre}</h1>
         <div className="vg-periodos">
           {PERIODOS.map((p) => (
             <button
@@ -135,22 +186,43 @@ export default function VentasGrafica() {
                     📊 Barras
                   </button>
                 </div>
+
+                {/* Indicador de total del período */}
+                <span className="vg-total-label">
+                  Total:{" "}
+                  <strong>
+                    {data.serie.reduce((acc, r) => acc + Number(r.total_vendido), 0)} uds.
+                  </strong>
+                </span>
               </div>
+
               <div className="vg-chart-box">
                 {tabActiva === "linea" && (
                   <ResponsiveContainer width="100%" height={400}>
-                    <LineChart data={data.serie} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <LineChart
+                      data={serieConPadding}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#2a2f4a" />
-                      <XAxis 
-                        dataKey="fecha" 
-                        tickFormatter={formatFecha} 
-                        stroke="#64748b" 
+                      <XAxis
+                        dataKey="fecha"
+                        tickFormatter={(v) => formatFechaEje(v, periodo)}
+                        stroke="#64748b"
                         tick={{ fontSize: 12 }}
                         angle={-45}
                         textAnchor="end"
                         height={60}
-                      />
-                      <YAxis stroke="#64748b" tick={{ fontSize: 12 }} allowDecimals={false} />
+                      >
+                        <Label value="Fecha" position="insideBottom" offset={-5} style={{ fill: '#64748b', fontSize: 12 }} />
+                      </XAxis>
+                      <YAxis
+                        stroke="#64748b"
+                        tick={{ fontSize: 12 }}
+                        allowDecimals={false}
+                        width={40}
+                      >
+                        <Label value="Unidades vendidas" angle={-90} position="insideLeft" style={{ fill: '#64748b', fontSize: 12 }} />
+                      </YAxis>
                       <Tooltip content={<CustomTooltip />} />
                       <Line
                         type="monotone"
@@ -160,30 +232,57 @@ export default function VentasGrafica() {
                         strokeWidth={2.5}
                         dot={{ r: 4, fill: "#4f7cff" }}
                         activeDot={{ r: 6 }}
+                        isAnimationActive={false}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 )}
+
                 {tabActiva === "barra" && (
                   <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={data.serie} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <BarChart
+                      data={data.serie}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#2a2f4a" />
-                      <XAxis 
-                        dataKey="fecha" 
-                        tickFormatter={formatFecha} 
-                        stroke="#64748b" 
+                      <XAxis
+                        dataKey="fecha"
+                        tickFormatter={(v) => formatFechaEje(v, periodo)}
+                        stroke="#64748b"
                         tick={{ fontSize: 12 }}
                         angle={-45}
                         textAnchor="end"
                         height={60}
-                      />
-                      <YAxis stroke="#64748b" tick={{ fontSize: 12 }} allowDecimals={false} />
+                      >
+                        <Label value="Fecha" position="insideBottom" offset={-5} style={{ fill: '#64748b', fontSize: 12 }} />
+                      </XAxis>
+                      <YAxis
+                        stroke="#64748b"
+                        tick={{ fontSize: 12 }}
+                        allowDecimals={false}
+                        width={40}
+                      >
+                        <Label value="Unidades vendidas" angle={-90} position="insideLeft" style={{ fill: '#64748b', fontSize: 12 }} />
+                      </YAxis>
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="total_vendido" name="Unidades vendidas" fill="#4f7cff" radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="total_vendido"
+                        name="Unidades vendidas"
+                        fill="#4f7cff"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
+
+              {/* Información adicional debajo del gráfico: rango de fechas */}
+              {rangoFechas && (
+                <div className="vg-footer-info">
+                  <span className="vg-footer-info__label">Período mostrado:</span>
+                  <span className="vg-footer-info__value">{rangoFechas}</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="vg-state vg-state--empty">

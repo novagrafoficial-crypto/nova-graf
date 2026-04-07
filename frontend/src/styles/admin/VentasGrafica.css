@@ -157,3 +157,30 @@
   .vg-periodos { justify-content: center; }
   .vg-chart-box { height: 300px; }
 }
+/* Etiquetas de ejes y pie de gráfico */
+.vg-footer-info {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--vg-muted);
+  border-top: 1px solid var(--vg-border);
+  padding-top: 1rem;
+}
+.vg-footer-info__label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+.vg-footer-info__value {
+  font-family: monospace;
+}
+
+/* Ajuste para que el tooltip no se salga en móvil */
+@media (max-width: 768px) {
+  .vg-tooltip {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+  }
+  .vg-footer-info {
+    font-size: 0.7rem;
+  }
+}

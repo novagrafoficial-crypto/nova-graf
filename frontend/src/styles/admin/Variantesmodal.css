@@ -8,7 +8,7 @@
   --vv-warn:    #f59e0b;
   --vv-danger:  #ef4444;
   --vv-text:    #e2e8f0;
-  --vv-muted:   #64748b;
+  --vv-muted:   #22d5e9;
   --vv-radius:  12px;
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
   color: var(--vv-text);
@@ -153,9 +153,9 @@
 }
 
 .vv-table th {
-  padding: .7rem 1rem;
+  padding: .9rem 1rem;
   text-align: left;
-  font-size: .7rem;
+  font-size: .9rem;
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--vv-muted);

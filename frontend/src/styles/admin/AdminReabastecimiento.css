@@ -1,10 +1,12 @@
+/* src/styles/Admin/AdminReabastecimiento.css */
+
 /* ── Variables ────────────────────────────────────────────────────────────── */
 .rb-page {
   --rb-bg:       #0f1117;
   --rb-surface:  #181c28;
   --rb-surface2: #1f2438;
-  --rb-border:   #2a2f4a;
-  --rb-accent:   #4f7cff;
+  --rb-border:   #3b4890;
+  --rb-accent:   #507eea;
   --rb-purple:   #9b59f7;
   --rb-ok:       #22c55e;
   --rb-warn:     #f59e0b;
@@ -194,37 +196,33 @@
   flex-direction: column;
 }
 
-/* ── Encabezado de tabla ────────────────────────────────────────────────── */
-/* ✅ FIX: gap e padding ahora idénticos a .rb-list-item para alineación perfecta */
+/* ── Encabezado de tabla (alineado perfectamente con las filas) ─────────── */
 .rb-list-header {
   display: grid;
   grid-template-columns: 2.5fr 1.2fr 0.9fr 2fr;
-  align-items: center;
-  gap: 1rem;                /* ← antes: 0.1rem  */
-  padding: 1rem 1.5rem;     /* ← antes: 1rem .88rem */
+  align-items: center;           /* centrado vertical */
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;        /* mismo padding vertical que las filas (ajustado) */
   background: linear-gradient(135deg, #1e2438 0%, #161929 100%);
-  border-bottom: 3px solid var(--rb-accent);
-  font-size: 0.80rem;
-  font-weight: 900;
+  border-bottom: 2px solid var(--rb-accent); /* borde más delgado para no crear separación visual excesiva */
+  font-size: 0.85rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--rb-accent);
+  margin: 0;                     /* eliminar cualquier margen */
 }
 
-.rb-list-header__producto    { text-align: left; }
-.rb-list-header__stock       { text-align: left; }
-.rb-list-header__estado      { text-align: left; }
-.rb-list-header__operaciones { text-align: left; }
-
-/* ── Filas de producto ─────────────────────────────────────────────────── */
+/* ── Filas de producto (misma estructura que el header) ─────────────────── */
 .rb-list-item {
   display: grid;
   grid-template-columns: 2.5fr 1.2fr 0.9fr 2fr;
-  align-items: center;
+  align-items: center;           /* centrado vertical */
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.9rem 1.5rem;        /* exactamente el mismo padding que el header */
   border-bottom: 1px solid var(--rb-border);
   transition: background 0.15s;
+  margin: 0;
 }
 
 .rb-list-item:last-child { border-bottom: none; }
@@ -234,7 +232,7 @@
 .rb-list-item__main { min-width: 0; }
 
 .rb-list-item__nombre {
-  margin: 0 0 0.3rem;
+  margin: 0 0 0.2rem;
   font-size: 1rem;
   font-weight: 700;
   color: var(--rb-text);
@@ -287,7 +285,7 @@
 /* Columna: estado */
 .rb-list-item__estado {
   display: flex;
-  justify-content: flex-start;   /* ✅ alineado a la izquierda como el header */
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -328,16 +326,16 @@
   flex-direction: row;
   flex-wrap: nowrap;
   gap: 0.65rem;
-  justify-content: flex-start;  /* ✅ alineado a la izquierda como el header */
+  justify-content: flex-start;
   align-items: center;
 }
 
-/* ── Botones ─────────────────────────────────────────────────────────────── */
+/* ── Botones (tamaño compacto pero legible, evitan desborde) ────────────── */
 .rb-btn {
   font-family: inherit;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 0.6rem 1rem;
+  padding: 0.5rem 0.9rem;
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -367,15 +365,15 @@
 }
 .rb-btn--accent:hover { background: rgba(155,89,247,.22); }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* ── Responsive (ajustes para pantallas medianas y pequeñas) ────────────── */
 @media (max-width: 1100px) {
   .rb-list-header,
   .rb-list-item {
     grid-template-columns: 2fr 1.2fr 0.9fr 1.8fr;
   }
   .rb-btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.75rem;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
   }
 }
 
@@ -391,7 +389,7 @@
   }
   .rb-btn {
     font-size: 0.7rem;
-    padding: 0.4rem 0.6rem;
+    padding: 0.4rem 0.7rem;
   }
 }
 
@@ -408,13 +406,13 @@
   }
 
   .rb-list-header {
-    display: none;
+    display: none; /* oculto en móvil, las filas se muestran en bloque */
   }
 
   .rb-list-item {
     grid-template-columns: 1fr;
     gap: 0.75rem;
-    padding: 1.2rem;
+    padding: 1rem;
   }
 
   .rb-list-item__stats {
@@ -429,13 +427,13 @@
 
   .rb-list-item__actions {
     justify-content: center;
-    flex-wrap: nowrap;
-    gap: 0.4rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   .rb-btn {
     flex: 0 1 auto;
     font-size: 0.7rem;
-    padding: 0.4rem 0.6rem;
+    padding: 0.4rem 0.7rem;
   }
 }
 
@@ -445,6 +443,6 @@
   }
   .rb-btn {
     font-size: 0.65rem;
-    padding: 0.3rem 0.5rem;
+    padding: 0.35rem 0.6rem;
   }
 }
