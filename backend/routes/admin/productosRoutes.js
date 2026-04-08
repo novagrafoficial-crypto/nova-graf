@@ -1,87 +1,78 @@
 const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
+const router  = express.Router();
+const multer  = require('multer');
 
 const ctrl = require('../../controllers/admin/productosController');
 
-// ─── CONFIGURACIÓN DE MULTER ─────────────────────────────
+// ─── MULTER (memoria, sin guardar archivo) ────────────────
+// El frontend manda FormData para que los campos JSON string
+// lleguen parseados. No guardamos ningún archivo en disco
+// porque las imágenes van directo a Supabase Storage desde
+// el frontend. Multer solo se usa para poder leer req.body
+// cuando Content-Type es multipart/form-data.
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const nombre = Date.now() + path.extname(file.originalname);
-    cb(null, nombre);
-  }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
-const upload = multer({ storage });
-
-// ─── MIDDLEWARE VALIDAR ID ─────────────────────────────
+// ─── MIDDLEWARES: VALIDAR IDs ─────────────────────────────
 
 const validarId = (req, res, next) => {
-  const { id } = req.params;
-
-  if (isNaN(id)) {
-    return res.status(400).json({
-      error: "ID inválido"
-    });
-  }
-
+  if (isNaN(req.params.id))
+    return res.status(400).json({ error: 'ID inválido' });
   next();
 };
 
-// ─── RUTAS ─────────────────────────────────────────────
+const validarVarianteId = (req, res, next) => {
+  if (isNaN(req.params.varianteId))
+    return res.status(400).json({ error: 'ID de variante inválido' });
+  next();
+};
 
-// Catálogos auxiliares
+// ─── CATÁLOGOS ────────────────────────────────────────────
+
 router.get('/catalogos', ctrl.obtenerCatalogos);
 
-// Productos
-router.get('/', ctrl.obtenerProductos);
+// ─── PRODUCTOS ────────────────────────────────────────────
+
+router.get('/',    ctrl.obtenerProductos);
 router.get('/:id', validarId, ctrl.obtenerProductoDetalle);
 
-// Crear producto
-router.post(
-  '/',
-  upload.single('imagen'),
+// upload.any() acepta FormData con cualquier campo (incluyendo
+// el campo "imagen" que manda el frontend actual) sin guardar nada
+router.post('/',
+  upload.any(),
   ctrl.crearProducto
 );
 
-// Actualizar producto
-router.put(
-  '/:id',
+router.put('/:id',
   validarId,
-  upload.single('imagen'),
+  upload.any(),
   ctrl.actualizarProducto
 );
 
-// Eliminar producto
-router.delete(
-  '/:id',
-  validarId,
-  ctrl.eliminarProducto
-);
+router.delete('/:id', validarId, ctrl.eliminarProducto);
 
-// ─── VARIANTES ─────────────────────────────────────────
+// ─── VARIANTES ────────────────────────────────────────────
 
-// Crear variante
-router.post(
-  '/:id/variantes',
+router.post('/:id/variantes',
   validarId,
   ctrl.agregarVariante
 );
 
-// Eliminar variante
-router.delete(
-  '/:id/variantes/:varianteId',
+router.put('/:id/variantes/:varianteId',
+  validarId,
+  validarVarianteId,
+  ctrl.actualizarVariante
+);
+
+router.delete('/:id/variantes/:varianteId',
+  validarId,
+  validarVarianteId,
   ctrl.eliminarVariante
 );
 
-// Actualizar stock
-router.patch(
-  '/:id/variantes/:varianteId/stock',
+router.patch('/:id/variantes/:varianteId/stock',
+  validarId,
+  validarVarianteId,
   ctrl.actualizarStock
 );
 
