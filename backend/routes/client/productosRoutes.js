@@ -7,13 +7,17 @@ const {
   mostrarCategorias,
   mostrarSubcategorias, // ✅ agregado
   mostrarMarcas,        // ✅ agregado
+  crearProductoPersonalizado,
 } = require('../../controllers/client/productosController');
+const verificarToken = require('../../src/middlewares/auth'); // <-- añadir
 
 // ⚠️ Rutas con nombre fijo SIEMPRE antes de /:id
 router.get('/catalogo',      mostrarCatalogo);
 router.get('/categorias',    mostrarCategorias);
 router.get('/subcategorias', mostrarSubcategorias); // ✅ agregado
 router.get('/marcas',        mostrarMarcas);        // ✅ agregado
+router.post('/personalizados', verificarToken, crearProductoPersonalizado);
+
 
 // Ruta dinámica al final
 router.get('/:id', mostrarDetalle);

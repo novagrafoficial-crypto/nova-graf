@@ -2,18 +2,23 @@ require('newrelic');
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
 const session = require('express-session');
 const passport = require('./config/passport');
 const path = require('node:path');
+const helmet = require('helmet');
+
 // 🔒 Middleware de autenticación
 const verificarToken = require('./src/middlewares/auth');
-const helmet = require('helmet');
+
 const app = express();
 app.disable('x-powered-by');
 
+// Configurar límites de payload para JSON y URL encoded
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Helmet para seguridad de cabeceras
 app.use(helmet());
-const PORT = process.env.PORT || 5000;
 
 /* ================================
    CORS (solo una vez)
@@ -59,8 +64,8 @@ const antecedentesRoutes   = require('./routes/public/antecedentesRoutes');
 
 // Rutas Cliente
 const productosClientRoutes = require('./routes/client/productosRoutes');
+const borradoresClienteRoutes = require('./routes/client/borradores');
 
-// Rutas públicas
 app.use('/api/users',                  userRoutes);
 app.use('/api/auth',                   authRoutes);
 app.use('/api/public',                 misionRoutes);
@@ -75,6 +80,7 @@ app.use('/api/public/antecedentes',    antecedentesRoutes);
 
 // Rutas Cliente
 app.use('/api/client/productos',       productosClientRoutes);
+app.use('/api/client/borradores',      borradoresClienteRoutes);
 
 /* ================================
    RUTAS ADMIN
@@ -131,6 +137,7 @@ app.use('/api', publicacionRoutes);
 /* ================================
    INICIAR SERVIDOR
 ================================ */
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });

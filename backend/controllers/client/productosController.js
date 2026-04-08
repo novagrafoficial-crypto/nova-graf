@@ -7,6 +7,8 @@ const {
   getMarcas,        // ✅ agregado
 } = require('../../models/client/productosModel');
 
+const productosPersonalizadosModel = require('../../models/client/productosPersonalizadosModel');
+
 // GET /api/client/productos/catalogo
 const mostrarCatalogo = async (req, res) => {
   try {
@@ -96,10 +98,33 @@ const mostrarMarcas = async (req, res) => {
   }
 };
 
+// POST /api/client/productos/personalizados
+const crearProductoPersonalizado = async (req, res) => {
+  try {
+    const { variante_id, solicitud_diseno_id, texto_personalizado, imagen_personalizada_url, precio_adicional } = req.body;
+    if (!variante_id) {
+      return res.status(400).json({ message: 'variante_id es obligatorio' });
+    }
+    const nuevo = await productosPersonalizadosModel.crearProductoPersonalizado(
+      variante_id,
+      solicitud_diseno_id,
+      texto_personalizado,
+      imagen_personalizada_url,
+      precio_adicional
+    );
+    res.status(201).json(nuevo);
+  } catch (error) {
+    console.error('Error al crear producto personalizado:', error);
+    res.status(500).json({ message: 'Error al crear producto personalizado' });
+  }
+};
+
+
 module.exports = {
   mostrarCatalogo,
   mostrarDetalle,
   mostrarCategorias,
   mostrarSubcategorias, // ✅ agregado
   mostrarMarcas,        // ✅ agregado
+  crearProductoPersonalizado, // ✅ agregado
 };

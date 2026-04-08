@@ -25,6 +25,9 @@ import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
+import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
+
+
 
 // Páginas admin
 import AdminMarcas from "./pages/Admin/AdminMarcas";
@@ -77,6 +80,9 @@ function App() {
           <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
           <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
+          <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
+
+          
         </Route>
 
         {/* Rutas admin */}

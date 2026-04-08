@@ -134,7 +134,7 @@ const CatalogoCliente = () => {
     <div className="catalogo-wrapper">
       {/* Título y contador */}
       <div className="catalogo-header">
-        <h2 className="catalogo-titulo">Catálogo de Productos</h2>
+        <h2 className="catalogo-titulo">Elige tu producto base</h2>
         <span className="catalogo-conteo-header">{productosFiltrados.length} productos</span>
       </div>
 

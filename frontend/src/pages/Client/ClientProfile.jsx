@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { getToken } from "../../utils/auth";
 import "../../styles/client/ClientProfile.css";
 
-/* ─────────────────────────────────────────────
-   CAMPOS EDITABLES
-   ───────────────────────────────────────────── */
 const CAMPOS = [
   { label: "Nombre *",           name: "nombre",           required: true },
   { label: "Apellido Paterno *", name: "apellido_paterno", required: true },
@@ -15,11 +14,9 @@ const CAMPOS = [
   { label: "Teléfono",           name: "telefono" },
 ];
 
-/* ─────────────────────────────────────────────
-   OPCIONES DEL MENÚ LATERAL (similar a Mercado Libre)
-   ───────────────────────────────────────────── */
 const MENU = [
-   { id: "mi-perfil",      icon: "👤", label: "Mi perfil"      },
+  { id: "mi-perfil",      icon: "👤", label: "Mi perfil"      },
+  { id: "mis-disenos",    icon: "🎨", label: "Mis diseños"    },
   { id: "compras",        icon: "🛒", label: "Compras"        },
   { id: "ventas",         icon: "💰", label: "Ventas"         },
   { id: "facturacion",    icon: "🧾", label: "Facturación"    },
@@ -27,28 +24,26 @@ const MENU = [
   { id: "configuracion",  icon: "⚙️", label: "Configuración"  },
 ];
 
-/* ─────────────────────────────────────────────
-   COMPONENTE PRINCIPAL
-   ───────────────────────────────────────────── */
 function ClientProfile() {
   const navigate = useNavigate();
-  const [user]    = useState(() => JSON.parse(localStorage.getItem("user")));
+  const location = useLocation();
+  const [user] = useState(() => JSON.parse(localStorage.getItem("user")));
 
-  const [profile,        setProfile]        = useState(null);
-  const [form,           setForm]           = useState({});
-  const [editing,        setEditing]        = useState(false); // modo edición detallada
-  const [loading,        setLoading]        = useState(true);
-  const [saving,         setSaving]         = useState(false);
-  const [message,        setMessage]        = useState({ text: "", ok: true });
-  const [selectedOption, setSelectedOption] = useState("mi-perfil"); // por defecto Mi perfil
+  const [profile, setProfile] = useState(null);
+  const [form, setForm] = useState({});
+  const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ text: "", ok: true });
+  const [selectedOption, setSelectedOption] = useState(() => {
+    return location.state?.activeTab || "mi-perfil";
+  });
 
-  // ── Cambio de contraseña
-  const [pwForm, setPwForm]       = useState({ actual: "", nueva: "", confirmar: "" });
-  const [pwMsg,  setPwMsg]        = useState({ text: "", ok: true });
-  const [pwSaving, setPwSaving]   = useState(false);
-  const [showPw,   setShowPw]     = useState(false);
+  const [pwForm, setPwForm] = useState({ actual: "", nueva: "", confirmar: "" });
+  const [pwMsg, setPwMsg] = useState({ text: "", ok: true });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
-  /* ── Carga del perfil ── */
   useEffect(() => {
     if (!user) { navigate("/"); return; }
     fetch(`http://localhost:5000/api/users/profile/${user.id_usuario}`)
@@ -63,11 +58,10 @@ function ClientProfile() {
     setTimeout(() => setMessage({ text: "", ok: true }), 3500);
   };
 
-  /* ── Guardar perfil (edición detallada) ── */
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res  = await fetch(`http://localhost:5000/api/users/profile/${user.id_usuario}`, {
+      const res = await fetch(`http://localhost:5000/api/users/profile/${user.id_usuario}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -88,7 +82,6 @@ function ClientProfile() {
     setSaving(false);
   };
 
-  /* ── Cambiar contraseña ── */
   const handlePasswordSave = async () => {
     if (pwForm.nueva !== pwForm.confirmar) {
       setPwMsg({ text: "❌ Las contraseñas nuevas no coinciden", ok: false });
@@ -100,13 +93,13 @@ function ClientProfile() {
     }
     setPwSaving(true);
     try {
-      const res  = await fetch(`http://localhost:5000/api/users/profile/${user.id_usuario}/password`, {
+      const res = await fetch(`http://localhost:5000/api/users/profile/${user.id_usuario}/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ actual: pwForm.actual, nueva: pwForm.nueva }),
       });
       const data = await res.json();
-      const ok   = res.ok;
+      const ok = res.ok;
       setPwMsg({ text: (ok ? "✅ " : "❌ ") + data.message, ok });
       if (ok) { setPwForm({ actual: "", nueva: "", confirmar: "" }); setShowPw(false); }
     } catch {
@@ -116,26 +109,23 @@ function ClientProfile() {
     setPwSaving(false);
   };
 
-  const handleLogout = () => { localStorage.removeItem("user"); navigate("/"); };
+  const handleLogout = () => { localStorage.removeItem("user"); localStorage.removeItem("token"); navigate("/"); };
 
-  /* ── Guards de carga ── */
   if (loading) return <div className="cp-loading">Cargando perfil…</div>;
   if (!profile) return <div className="cp-loading">No se pudo cargar el perfil.</div>;
 
   const esGoogle = profile.proveedor === "google";
 
-  /* ======================================================
-     RENDERIZADO DE CONTENIDO SEGÚN OPCIÓN SELECCIONADA
-  ====================================================== */
   const renderContent = () => {
-    // Si está en modo edición detallada (desde "Mi perfil" -> botón Editar)
     if (selectedOption === "mi-perfil" && editing) {
       return renderEditProfile();
     }
 
     switch (selectedOption) {
       case "mi-perfil":
-        return renderDashboard(); // Vista tipo Mercado Libre con tarjetas
+        return renderDashboard();
+      case "mis-disenos":
+        return <MisDisenos />;
       case "compras":
         return (
           <div className="cp-card">
@@ -146,7 +136,7 @@ function ClientProfile() {
             ].map(p => <PedidoRow key={p.id} pedido={p} />)}
           </div>
         );
-      case "historial": // Lo agregamos aunque no esté en el menú, por si acaso
+      case "historial":
         return (
           <div className="cp-card">
             <h2 className="cp-card__title">Historial de compras</h2>
@@ -156,7 +146,6 @@ function ClientProfile() {
             ].map(p => <PedidoRow key={p.id} pedido={p} />)}
           </div>
         );
-      // Para las demás opciones (ventas, marketing, etc.) mostramos un placeholder
       default:
         return (
           <div className="cp-card">
@@ -170,11 +159,9 @@ function ClientProfile() {
     }
   };
 
-  /* ── Vista Dashboard  ── */
   const renderDashboard = () => {
     return (
       <>
-        {/* Banner de dirección (si tiene domicilio) */}
         {profile.domicilio && (
           <div className="cp-address-banner">
             <span className="cp-address-icon">📍</span>
@@ -185,7 +172,6 @@ function ClientProfile() {
           </div>
         )}
 
-        {/* Tarjeta: Modifica tu contraseña (solo si no es Google) */}
         {!esGoogle && (
           <div className="cp-card cp-card--simple">
             <div className="cp-card__header-simple">
@@ -194,28 +180,11 @@ function ClientProfile() {
             </div>
             {showPw && (
               <div className="cp-pw-mini">
-                <input
-                  type="password"
-                  placeholder="Contraseña actual"
-                  value={pwForm.actual}
-                  onChange={e => setPwForm({ ...pwForm, actual: e.target.value })}
-                />
-                <input
-                  type="password"
-                  placeholder="Nueva contraseña"
-                  value={pwForm.nueva}
-                  onChange={e => setPwForm({ ...pwForm, nueva: e.target.value })}
-                />
-                <input
-                  type="password"
-                  placeholder="Confirmar nueva"
-                  value={pwForm.confirmar}
-                  onChange={e => setPwForm({ ...pwForm, confirmar: e.target.value })}
-                />
+                <input type="password" placeholder="Contraseña actual" value={pwForm.actual} onChange={e => setPwForm({ ...pwForm, actual: e.target.value })} />
+                <input type="password" placeholder="Nueva contraseña" value={pwForm.nueva} onChange={e => setPwForm({ ...pwForm, nueva: e.target.value })} />
+                <input type="password" placeholder="Confirmar nueva" value={pwForm.confirmar} onChange={e => setPwForm({ ...pwForm, confirmar: e.target.value })} />
                 <div className="cp-pw-actions">
-                  <button className="cp-btn cp-btn--primary" onClick={handlePasswordSave} disabled={pwSaving}>
-                    Guardar
-                  </button>
+                  <button className="cp-btn cp-btn--primary" onClick={handlePasswordSave} disabled={pwSaving}>Guardar</button>
                   <button className="cp-btn-link" onClick={() => setShowPw(false)}>Cancelar</button>
                 </div>
                 {pwMsg.text && <p className={`cp-inline-msg ${pwMsg.ok ? "cp-inline-msg--ok" : "cp-inline-msg--err"}`}>{pwMsg.text}</p>}
@@ -224,7 +193,6 @@ function ClientProfile() {
           </div>
         )}
 
-        {/* Tarjeta: Tu información */}
         <div className="cp-card cp-card--simple">
           <div className="cp-card__header-simple">
             <span>📋 Tu información</span>
@@ -239,7 +207,6 @@ function ClientProfile() {
           </div>
         </div>
 
-        {/* Tarjeta: Datos de tu cuenta */}
         <div className="cp-card cp-card--simple">
           <div className="cp-card__header-simple">
             <span>🏦 Datos de tu cuenta</span>
@@ -248,7 +215,6 @@ function ClientProfile() {
           <p className="cp-card-text">Datos que representan a la cuenta en NovaGraf.</p>
         </div>
 
-        {/* Tarjeta: Tarjetas guardadas */}
         <div className="cp-card cp-card--simple">
           <div className="cp-card__header-simple">
             <span>💳 Tarjetas</span>
@@ -257,7 +223,6 @@ function ClientProfile() {
           <p className="cp-card-text">Tarjetas guardadas en tu cuenta.</p>
         </div>
 
-        {/* Tarjeta: Direcciones */}
         <div className="cp-card cp-card--simple">
           <div className="cp-card__header-simple">
             <span>🏠 Direcciones</span>
@@ -280,7 +245,6 @@ function ClientProfile() {
     );
   };
 
-  /* ── Vista de edición detallada (formulario completo) ── */
   const renderEditProfile = () => {
     return (
       <div className="cp-card">
@@ -313,23 +277,15 @@ function ClientProfile() {
                 className="cp-field__input"
                 type={type}
                 name={name}
-                value={
-                  type === "date" && form[name]
-                    ? form[name].split("T")[0]
-                    : form[name] || ""
-                }
+                value={type === "date" && form[name] ? form[name].split("T")[0] : form[name] || ""}
                 onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
                 required={required}
               />
             </div>
           ))}
-
           <div className="cp-field">
             <label className="cp-field__label">Correo electrónico</label>
-            <p className="cp-field__value">
-              {profile.correo_electronico}
-              <span className="cp-tag cp-tag--gray">no editable</span>
-            </p>
+            <p className="cp-field__value">{profile.correo_electronico} <span className="cp-tag cp-tag--gray">no editable</span></p>
           </div>
         </div>
       </div>
@@ -338,60 +294,42 @@ function ClientProfile() {
 
   return (
     <div className="cp-layout">
-      {/* SIDEBAR */}
       <aside className="cp-sidebar">
         <div className="cp-sidebar__user">
-          <div className="cp-sidebar__avatar">
-            {profile.nombre?.charAt(0).toUpperCase()}
-          </div>
+          <div className="cp-sidebar__avatar">{profile.nombre?.charAt(0).toUpperCase()}</div>
           <div className="cp-sidebar__info">
-            <p className="cp-sidebar__name">
-              {profile.nombre} {profile.apellido_paterno}
-            </p>
+            <p className="cp-sidebar__name">{profile.nombre} {profile.apellido_paterno}</p>
             <p className="cp-sidebar__email">{profile.correo_electronico}</p>
             <span className={`cp-sidebar__tag ${esGoogle ? "cp-sidebar__tag--google" : "cp-sidebar__tag--local"}`}>
               {esGoogle ? "Google" : "Local"}
             </span>
           </div>
         </div>
-
         <nav className="cp-sidebar__nav">
           {MENU.map(({ id, icon, label }) => (
             <button
               key={id}
               className={`cp-sidebar__item ${selectedOption === id ? "cp-sidebar__item--active" : ""}`}
-              onClick={() => {
-                setSelectedOption(id);
-                setEditing(false); // salir del modo edición si se cambia de sección
-              }}
+              onClick={() => { setSelectedOption(id); setEditing(false); }}
             >
               <span className="cp-sidebar__icon">{icon}</span>
               {label}
             </button>
           ))}
         </nav>
-
-        <button className="cp-sidebar__logout" onClick={handleLogout}>
-          🚪 Cerrar sesión
-        </button>
+        <button className="cp-sidebar__logout" onClick={handleLogout}>🚪 Cerrar sesión</button>
       </aside>
-
-      {/* CONTENIDO PRINCIPAL */}
-      <main className="cp-main">
-        {renderContent()}
-      </main>
+      <main className="cp-main">{renderContent()}</main>
     </div>
   );
 }
 
-/* ── Sub-componente pedido (reutilizable) ── */
 function PedidoRow({ pedido: p }) {
   const badge = {
     "En proceso": "cp-badge--yellow",
     "Enviado":    "cp-badge--blue",
     "Entregado":  "cp-badge--green",
   }[p.estado] || "cp-badge--gray";
-
   return (
     <div className="cp-order">
       <div>
@@ -402,6 +340,132 @@ function PedidoRow({ pedido: p }) {
         <p className="cp-order__total">{p.total}</p>
         <span className={`cp-badge ${badge}`}>{p.estado}</span>
       </div>
+    </div>
+  );
+}
+
+function MisDisenos() {
+  const [disenos, setDisenos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const fetchDisenos = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        setError('No has iniciado sesión');
+        setLoading(false);
+        return;
+      }
+      const res = await axios.get('http://localhost:5000/api/client/borradores', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDisenos(res.data);
+    } catch (err) {
+      console.error(err);
+      setError('No se pudieron cargar tus diseños');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDisenos();
+  }, []);
+
+  const handleEliminar = async (id) => {
+    if (!window.confirm('¿Eliminar este diseño?')) return;
+    const token = getToken();
+    try {
+      await axios.delete(`http://localhost:5000/api/client/borradores/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDisenos(prev => prev.filter(d => d.id !== id));
+    } catch (err) {
+      alert('Error al eliminar');
+    }
+  };
+
+  const handleEditar = (diseno) => {
+    navigate(`/cliente/producto/${diseno.producto_id}/personalizar`, {
+      state: {
+        imagenProducto: diseno.variante_imagen || '',
+        productoId: diseno.producto_id,
+        variante: { 
+          id: diseno.variante_id, 
+          imagen_url: diseno.variante_imagen, 
+          color: diseno.variante_color 
+        },
+        borradorId: diseno.id,
+        elementosGuardados: diseno.elementos,
+      }
+    });
+  };
+
+  const handleAgregarAlCarrito = async (diseno) => {
+  const token = getToken();
+  if (!token) {
+    navigate('/login');
+    return;
+  }
+  try {
+    // Similar a agregarAlCarrito del personalizador, pero usando los datos del diseño guardado
+    // 1. Crear producto personalizado con la imagen_preview y elementos
+    const payload = {
+      variante_id: diseno.variante_id,
+      imagen_personalizada_url: diseno.imagen_preview,
+      texto_personalizado: diseno.elementos?.filter(el => el.tipo === 'texto').map(t => t.contenido).join(' | ') || '',
+      precio_adicional: 50,
+      precio_unitario: 250, // Deberías calcularlo con los datos reales del producto
+      cantidad: 1
+    };
+    await axios.post('http://localhost:5000/api/client/carrito', payload, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    alert('Producto agregado al carrito');
+    navigate('/cliente/carrito');
+  } catch (err) {
+    console.error(err);
+    alert('Error al agregar al carrito');
+  }
+};
+
+  if (loading) return <div className="cp-card"><p>Cargando diseños...</p></div>;
+  if (error) return <div className="cp-card"><p className="error">{error}</p></div>;
+
+  return (
+    <div className="cp-card">
+      <h2 className="cp-card__title">🎨 Mis diseños guardados</h2>
+      {disenos.length === 0 ? (
+        <div className="cp-empty-section">
+          <span>🎨</span>
+          <p>Aún no tienes diseños guardados. ¡Personaliza un producto y guárdalo!</p>
+        </div>
+      ) : (
+        <div className="disenos-grid">
+          {disenos.map(d => (
+            <div key={d.id} className="diseno-card">
+              <div className="diseno-card__img">
+                <img src={d.imagen_preview || d.variante_imagen} alt={d.nombre || 'Diseño'} />
+              </div>
+              <div className="diseno-card__info">
+                <h3>{d.nombre || 'Sin nombre'}</h3>
+                <p>Producto: {d.producto_nombre}</p>
+                <p>Color: {d.variante_color || 'N/A'}</p>
+                <p className="diseno-card__date">
+                  {new Date(d.fecha_modificacion).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="diseno-card__actions">
+                <button className="cp-btn cp-btn--small" onClick={() => handleEditar(d)}>✏️ Editar</button>
+                <button className="cp-btn cp-btn--small" onClick={() => handleAgregarAlCarrito(d)}>🛒 Agregar</button>
+                <button className="cp-btn cp-btn--small cp-btn--danger" onClick={() => handleEliminar(d.id)}>🗑️ Eliminar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

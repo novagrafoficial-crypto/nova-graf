@@ -1,6 +1,9 @@
 const userModel = require('../../models/public/userModel');
 const { sendOTPEmail, sendRecoveryEmail } = require('../../config/sendgrid'); 
 const db = require('../../config/db');  // ← FALTABA
+const jwt = require('jsonwebtoken');      // ← NUEVO
+const bcrypt = require('bcrypt');          // ← por si no estaba importado
+
 // ─── REGISTRO ─────────────────────────────────────────────
 const registerUser = async (req, res) => {
   const { name, lastNameP, lastNameM, username, birthDate, address, phone, email, password, confirmPassword } = req.body;
@@ -61,7 +64,19 @@ const loginUserController = async (req, res) => {
     if (!result.success)
       return res.status(401).json({ message: result.message });
 
-    return res.status(200).json({ message: 'Login exitoso', user: result.user });
+    // ✅ Generar token JWT
+    const token = jwt.sign(
+      { id_usuario: result.user.id_usuario, rol: result.user.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // ✅ Devolver token junto con el usuario
+    return res.status(200).json({
+      message: 'Login exitoso',
+      user: result.user,
+      token: token
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al iniciar sesión' });
