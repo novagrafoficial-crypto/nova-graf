@@ -17,7 +17,9 @@ const obtenerBorradoresPorUsuario = async (usuarioId) => {
     SELECT 
       b.id, b.nombre, b.imagen_preview, b.fecha_creacion, b.fecha_modificacion,
       p.nombre AS producto_nombre,
+      p.precio_base,                          -- <-- AÑADIDO
       pv.imagen_url AS variante_imagen,
+      pv.precio_adicional,                    -- <-- AÑADIDO
       col.nombre AS variante_color,
       b.producto_id, b.variante_id,
       b.elementos

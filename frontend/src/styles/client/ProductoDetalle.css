@@ -15,7 +15,7 @@
 }
 
 .detalle-wrapper {
-  max-width: 1400px;          /* más ancho que antes (era 1200px) */
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
   background: #fafdf8;
@@ -116,7 +116,7 @@
 }
 
 .detalle-nombre {
-  font-size: 2.5rem;        /* más grande */
+  font-size: 2.5rem;
   font-weight: 800;
   color: var(--green-deep);
   letter-spacing: -0.02em;
@@ -191,7 +191,7 @@
 }
 
 .color-thumb {
-  width: 56px;              /* ligeramente más grande */
+  width: 56px;
   height: 56px;
   border-radius: 12px;
   overflow: hidden;
@@ -293,16 +293,29 @@
   border-color: var(--green-primary);
 }
 
+/* ── AVISO DE PERSONALIZACIÓN ── */
+.detalle-aviso-personalizacion {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 40px;
+  padding: 0.8rem 1.2rem;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+}
+
 /* ── BOTONES DE ACCIÓN ── */
 .detalle-acciones {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
-.btn-agregar-carrito,
-.btn-comprar-ahora {
+.btn-personalizar,
+.btn-solicitar {
   flex: 1;
   padding: 1rem 1.2rem;
   border-radius: 60px;
@@ -317,30 +330,30 @@
   gap: 0.5rem;
 }
 
-.btn-agregar-carrito {
+.btn-personalizar {
   background: white;
-  border: 2px solid var(--green-primary);
-  color: var(--green-primary);
+  border: 2px solid #ff9800;
+  color: #ff9800;
 }
-.btn-agregar-carrito:hover {
-  background: var(--green-soft);
+.btn-personalizar:hover {
+  background: #fff3e0;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(46,125,50,0.15);
+  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.15);
 }
 
-.btn-comprar-ahora {
-  background: linear-gradient(135deg, var(--green-primary), var(--green-light));
-  color: white;
-  box-shadow: 0 2px 6px rgba(46,125,50,0.2);
+.btn-solicitar {
+  background: white;
+  border: 2px solid #9c27b0;
+  color: #9c27b0;
 }
-.btn-comprar-ahora:hover {
-  background: linear-gradient(135deg, var(--green-deep), var(--green-primary));
+.btn-solicitar:hover {
+  background: #f3e5f5;
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(46,125,50,0.25);
+  box-shadow: 0 4px 8px rgba(156, 39, 176, 0.15);
 }
 
-.btn-agregar-carrito:active,
-.btn-comprar-ahora:active {
+.btn-personalizar:active,
+.btn-solicitar:active {
   transform: translateY(1px);
 }
 
@@ -349,53 +362,10 @@
   .detalle-acciones {
     flex-direction: column;
   }
-  .btn-agregar-carrito,
-  .btn-comprar-ahora {
+  .btn-personalizar,
+  .btn-solicitar {
     width: 100%;
   }
-}
-/* Botón personalizar */
-.btn-personalizar {
-  flex: 1;
-  padding: 1rem 1.2rem;
-  border-radius: 60px;
-  border: 2px solid #ff9800;
-  background: white;
-  color: #ff9800;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.btn-personalizar:hover {
-  background: #fff3e0;
-  transform: translateY(-2px);
-}
-
-/* Modal del personalizador */
-.personalizador-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-.personalizador-contenido {
-  width: 90%;
-  height: 90%;
-  background: white;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 /* Badge de diseño personalizado sobre la imagen */

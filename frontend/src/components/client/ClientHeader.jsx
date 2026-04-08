@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext"; // <-- Importar contexto
 import "../../styles/client/ClientHeader.css";
 
 function ClientHeader({ user }) {
@@ -8,6 +9,8 @@ function ClientHeader({ user }) {
   const [loadingEmpresa, setLoadingEmpresa] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  
+  const { cartCount } = useCart(); // <-- Obtener cantidad del carrito
 
   // Cargar logo y nombre de empresa desde la API
   useEffect(() => {
@@ -73,7 +76,7 @@ function ClientHeader({ user }) {
               <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
               <path d="M1 1h4l2.5 13h13l2-8H6"/>
             </svg>
-            <span className="ch-cart__badge">0</span>
+            {cartCount > 0 && <span className="ch-cart__badge">{cartCount}</span>}
           </Link>
 
           {/* Usuario */}

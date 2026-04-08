@@ -17,7 +17,7 @@ router.get('/categorias',    mostrarCategorias);
 router.get('/subcategorias', mostrarSubcategorias); // ✅ agregado
 router.get('/marcas',        mostrarMarcas);        // ✅ agregado
 router.post('/personalizados', verificarToken, crearProductoPersonalizado);
-
+router.get('/:id', mostrarDetalle);
 
 // Ruta dinámica al final
 router.get('/:id', mostrarDetalle);

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { CartProvider } from "./context/CartContext"; // <-- IMPORTANTE
 
 import PublicLayout from "./layouts/PublicLayout";
 import ClientLayout from "./layouts/ClientLayout";
@@ -73,7 +74,7 @@ function App() {
         </Route>
 
         {/* Rutas cliente */}
-        <Route element={<ClientLayout />}>
+        <Route element={<CartProvider><ClientLayout /></CartProvider>}>
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
           <Route path="/cliente/pedidos" element={<div>Mis Pedidos</div>} />

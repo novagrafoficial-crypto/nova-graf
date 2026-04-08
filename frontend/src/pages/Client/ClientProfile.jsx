@@ -410,24 +410,40 @@ function MisDisenos() {
     return;
   }
   try {
-    // Similar a agregarAlCarrito del personalizador, pero usando los datos del diseño guardado
-    // 1. Crear producto personalizado con la imagen_preview y elementos
+    const textoPersonalizado = diseno.elementos
+      ?.filter(el => el.tipo === 'texto')
+      .map(t => t.contenido)
+      .join(' | ') || '';
+    
+    const precioAdicionalPersonalizacion = 50; // Mismo costo que en el personalizador
+
+    // Ahora diseno ya incluye precio_base y precio_adicional (gracias a la mejora en borradoresModel)
+    const precioBase = parseFloat(diseno.precio_base || 0);
+    const precioAdicionalVariante = parseFloat(diseno.precio_adicional || 0);
+    const precioUnitario = precioBase + precioAdicionalVariante + precioAdicionalPersonalizacion;
+
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+
     const payload = {
       variante_id: diseno.variante_id,
+      texto_personalizado: textoPersonalizado,
       imagen_personalizada_url: diseno.imagen_preview,
-      texto_personalizado: diseno.elementos?.filter(el => el.tipo === 'texto').map(t => t.contenido).join(' | ') || '',
-      precio_adicional: 50,
-      precio_unitario: 250, // Deberías calcularlo con los datos reales del producto
-      cantidad: 1
+      precio_adicional: precioAdicionalPersonalizacion,
+      precio_unitario: precioUnitario,
+      cantidad: 1,
     };
-    await axios.post('http://localhost:5000/api/client/carrito', payload, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    alert('Producto agregado al carrito');
+
+    const response = await axios.post('http://localhost:5000/api/client/carrito', payload, config);
+
+    if (response.data.message?.includes('Cantidad actualizada')) {
+      alert('🛒 Este diseño ya estaba en tu carrito. Se ha aumentado la cantidad.');
+    } else {
+      alert('🛒 ¡Producto agregado a tu carrito!');
+    }
     navigate('/cliente/carrito');
   } catch (err) {
     console.error(err);
-    alert('Error al agregar al carrito');
+    alert('❌ No se pudo agregar al carrito. Intenta nuevamente.');
   }
 };
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
- import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import axios from 'axios';
 import { getToken } from '../../utils/auth';
 import '../../styles/client/ProductoPersonalizado.css';
@@ -52,6 +52,7 @@ const ProductoPersonalizador = () => {
   const [resizing, setResizing] = useState(null);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
+  // Cargar imagen de fondo
   useEffect(() => {
     if (!imagenProducto) {
       setImgError(true);
@@ -66,6 +67,7 @@ const ProductoPersonalizador = () => {
     img.src = imagenProducto;
   }, [imagenProducto]);
 
+  // Cargar elementos guardados al editar un borrador
   useEffect(() => {
     if (borradorId && elementosGuardados) {
       const maxId = elementosGuardados.reduce((max, el) => Math.max(max, parseInt(el.id) || 0), 0);
@@ -74,39 +76,51 @@ const ProductoPersonalizador = () => {
     }
   }, [borradorId, elementosGuardados]);
 
+  // Cargar propiedades del texto seleccionado (sin dependencia de 'elementos')
   useEffect(() => {
-    if (seleccionado) {
-      const elemento = elementos.find(el => el.id === seleccionado);
-      if (elemento && elemento.tipo === 'texto') {
-        setColor(elemento.color);
-        setFontSize(elemento.fontSize);
-        setFontFamily(elemento.fontFamily || 'Poppins');
-        setFontWeight(elemento.fontWeight || 'bold');
-        setFontStyle(elemento.fontStyle || 'normal');
-        setTextDecoration(elemento.textDecoration || 'none');
-        setTextAlign(elemento.textAlign || 'center');
-        setShadowBlur(elemento.shadowBlur || 4);
-      }
-    }
-  }, [seleccionado, elementos]);
+    if (!seleccionado) return;
+    const elemento = elementos.find(el => el.id === seleccionado);
+    if (!elemento || elemento.tipo !== 'texto') return;
+    
+    setColor(elemento.color);
+    setFontSize(elemento.fontSize);
+    setFontFamily(elemento.fontFamily || 'Poppins');
+    setFontWeight(elemento.fontWeight || 'bold');
+    setFontStyle(elemento.fontStyle || 'normal');
+    setTextDecoration(elemento.textDecoration || 'none');
+    setTextAlign(elemento.textAlign || 'center');
+    setShadowBlur(elemento.shadowBlur || 4);
+  }, [seleccionado]);
 
+  // Aplicar cambios de estilo al elemento seleccionado (evita bucles)
   useEffect(() => {
-    if (seleccionado) {
-      const elemento = elementos.find(el => el.id === seleccionado);
-      if (elemento && elemento.tipo === 'texto') {
-        actualizarEl(seleccionado, {
-          color: colorTexto,
-          fontSize: fontSize,
-          fontFamily: fontFamily,
-          fontWeight: fontWeight,
-          fontStyle: fontStyle,
-          textDecoration: textDecoration,
-          textAlign: textAlign,
-          shadowBlur: shadowBlur
-        });
-      }
+    if (!seleccionado) return;
+    const elemento = elementos.find(el => el.id === seleccionado);
+    if (!elemento || elemento.tipo !== 'texto') return;
+
+    const necesitaActualizar = 
+      elemento.color !== colorTexto ||
+      elemento.fontSize !== fontSize ||
+      elemento.fontFamily !== fontFamily ||
+      elemento.fontWeight !== fontWeight ||
+      elemento.fontStyle !== fontStyle ||
+      elemento.textDecoration !== textDecoration ||
+      elemento.textAlign !== textAlign ||
+      elemento.shadowBlur !== shadowBlur;
+
+    if (necesitaActualizar) {
+      actualizarEl(seleccionado, {
+        color: colorTexto,
+        fontSize,
+        fontFamily,
+        fontWeight,
+        fontStyle,
+        textDecoration,
+        textAlign,
+        shadowBlur,
+      });
     }
-  }, [colorTexto, fontSize, fontFamily, fontWeight, fontStyle, textDecoration, textAlign, shadowBlur, seleccionado]);
+  }, [colorTexto, fontSize, fontFamily, fontWeight, fontStyle, textDecoration, textAlign, shadowBlur, seleccionado, elementos]);
 
   const agregarTexto = useCallback(() => {
     if (!textoInput.trim()) return;
@@ -232,195 +246,182 @@ const ProductoPersonalizador = () => {
     return canvas.toDataURL('image/png');
   };
 
-const guardarEnLista = async () => {
-  setGuardando(true);
-  try {
-    const token = getToken();
-    if (!token) {
-      alert('Debes iniciar sesión para guardar diseños');
-      navigate('/login');
-      return;
-    }
-
-    // 1. Generar nueva imagen como blob
-    setSelec(null);
-    await new Promise(r => setTimeout(r, 50));
-    const html2canvas = (await import('html2canvas')).default;
-    const canvas = await html2canvas(escenaRef.current, {
-      useCORS: true,
-      scale: 1.5,
-      backgroundColor: '#ffffff',
-    });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-    // 2. Obtener ID de usuario
-    const user = JSON.parse(localStorage.getItem('user'));
-    const userId = user.id_usuario;
-
-    // 3. Subir nueva imagen a Supabase Storage
-    const fileName = `diseno-${Date.now()}.png`;
-    const filePath = `usuario_${userId}/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('borradores')
-      .upload(filePath, blob, {
-        contentType: 'image/png',
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error('Error al subir imagen:', uploadError);
-      alert('Error al subir la imagen. Intenta nuevamente.');
-      return;
-    }
-
-    // 4. Obtener URL pública de la nueva imagen
-    const { data: { publicUrl } } = supabase.storage
-      .from('borradores')
-      .getPublicUrl(filePath);
-
-    // 5. Si estamos editando, eliminar la imagen antigua (si existe)
-    if (editandoBorradorId) {
-  try {
-    // Obtener datos actuales del borrador
-    const { data: borradorActual } = await axios.get(
-      `http://localhost:5000/api/client/borradores/${editandoBorradorId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    const oldImageUrl = borradorActual?.imagen_preview;
-    if (oldImageUrl) {
-      // Extraer el path de la URL pública de Supabase
-      // URL ejemplo: https://dobgpjhgmenqysikaete.supabase.co/storage/v1/object/public/borradores/usuario_4/diseno-123.png
-      const urlParts = oldImageUrl.split('/public/borradores/');
-      if (urlParts.length === 2) {
-        const oldFilePath = urlParts[1]; // "usuario_4/diseno-123.png"
-        console.log('🗑️ Intentando eliminar:', oldFilePath);
-
-        const { error: deleteError } = await supabase.storage
-          .from('borradores')
-          .remove([oldFilePath]);
-
-        if (deleteError) {
-          console.error('❌ Error al eliminar imagen antigua:', deleteError);
-        } else {
-          console.log('✅ Imagen antigua eliminada');
-        }
-      } else {
-        console.warn('⚠️ Formato de URL no reconocido:', oldImageUrl);
+  const guardarEnLista = async () => {
+    setGuardando(true);
+    try {
+      const token = getToken();
+      if (!token) {
+        alert('🔐 Debes iniciar sesión para guardar diseños');
+        navigate('/login');
+        return;
       }
+
+      setSelec(null);
+      await new Promise(r => setTimeout(r, 50));
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(escenaRef.current, {
+        useCORS: true,
+        scale: 1.5,
+        backgroundColor: '#ffffff',
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = user.id_usuario;
+
+      const fileName = `diseno-${Date.now()}.png`;
+      const filePath = `usuario_${userId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('borradores')
+        .upload(filePath, blob, {
+          contentType: 'image/png',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw new Error('Error al subir la imagen');
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('borradores')
+        .getPublicUrl(filePath);
+
+      if (editandoBorradorId) {
+        try {
+          const { data: borradorActual } = await axios.get(
+            `http://localhost:5000/api/client/borradores/${editandoBorradorId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          const oldImageUrl = borradorActual?.imagen_preview;
+          if (oldImageUrl) {
+            const urlParts = oldImageUrl.split('/public/borradores/');
+            if (urlParts.length === 2) {
+              const oldFilePath = urlParts[1];
+              await supabase.storage.from('borradores').remove([oldFilePath]);
+            }
+          }
+        } catch (err) {
+          console.warn('No se pudo eliminar la imagen anterior');
+        }
+      }
+
+      const varianteId = variante?.variante_id || variante?.id;
+      const borradorData = {
+        producto_id: productoId,
+        variante_id: varianteId,
+        nombre: `Diseño ${new Date().toLocaleString()}`,
+        imagen_preview: publicUrl,
+        elementos: elementos,
+      };
+
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      if (editandoBorradorId) {
+        await axios.put(`http://localhost:5000/api/client/borradores/${editandoBorradorId}`, borradorData, config);
+        alert('✅ ¡Tu diseño ha sido actualizado con éxito!');
+      } else {
+        await axios.post('http://localhost:5000/api/client/borradores', borradorData, config);
+        alert('🎉 ¡Diseño guardado en tu lista! Puedes verlo en "Mis diseños".');
+      }
+
+      navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
+    } catch (err) {
+      console.error(err);
+      alert('❌ No se pudo guardar el diseño. Por favor, inténtalo de nuevo.');
+    } finally {
+      setGuardando(false);
     }
-  } catch (err) {
-    console.warn('⚠️ No se pudo eliminar la imagen anterior:', err);
-  }
-}
-
-    // 6. Preparar datos para el backend
-    const varianteId = variante?.variante_id || variante?.id;
-    const borradorData = {
-      producto_id: productoId,
-      variante_id: varianteId,
-      nombre: `Diseño ${new Date().toLocaleString()}`,
-      imagen_preview: publicUrl,
-      elementos: elementos,
-    };
-
-    const config = {
-      headers: { Authorization: `Bearer ${token}` }
-    };
-
-    // 7. Guardar o actualizar en la BD
-    if (editandoBorradorId) {
-      await axios.put(`http://localhost:5000/api/client/borradores/${editandoBorradorId}`, borradorData, config);
-      alert('✅ Diseño actualizado correctamente.');
-    } else {
-      await axios.post('http://localhost:5000/api/client/borradores', borradorData, config);
-      alert('✅ Diseño guardado en tu lista.');
-    }
-
-    navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
-  } catch (err) {
-    console.error(err);
-    alert('Error al guardar el diseño. Intenta nuevamente.');
-  } finally {
-    setGuardando(false);
-  }
-};
+  };
 
   const agregarAlCarrito = async () => {
-  setGuardando(true);
-  try {
-    const token = getToken();
-    if (!token) {
-      alert('Debes iniciar sesión');
-      navigate('/login');
-      return;
+    setGuardando(true);
+    try {
+      const token = getToken();
+      if (!token) {
+        alert('🔐 Debes iniciar sesión');
+        navigate('/login');
+        return;
+      }
+
+      // 1. Generar imagen del diseño
+      const imagenUrl = await generarImagenDiseno();
+      const blob = await (await fetch(imagenUrl)).blob();
+
+      // 2. Subir imagen a Supabase Storage
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = user.id_usuario;
+      const fileName = `carrito-${Date.now()}.png`;
+      const filePath = `usuario_${userId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('borradores')
+        .upload(filePath, blob, {
+          contentType: 'image/png',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw new Error('Error al subir la imagen');
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('borradores')
+        .getPublicUrl(filePath);
+
+      // 3. Preparar datos del producto personalizado
+      const varianteId = variante?.variante_id || variante?.id;
+      const textoPersonalizado = elementos
+        .filter(el => el.tipo === 'texto')
+        .map(t => t.contenido)
+        .join(' | ');
+      const precioAdicionalPersonalizacion = 50; // Ajusta según tu lógica de negocio
+
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      // 4. Crear producto personalizado en la BD
+      const { data: productoPersonalizado } = await axios.post(
+        'http://localhost:5000/api/client/productos/personalizados',
+        {
+          variante_id: varianteId,
+          texto_personalizado: textoPersonalizado,
+          imagen_personalizada_url: publicUrl,
+          precio_adicional: precioAdicionalPersonalizacion,
+        },
+        config
+      );
+
+      // 5. Calcular precio unitario
+      const precioBase = parseFloat(variante?.precio_base || 0);
+      const precioAdicionalVariante = parseFloat(variante?.precio_adicional || 0);
+      const precioUnitario = precioBase + precioAdicionalVariante + precioAdicionalPersonalizacion;
+
+      // 6. Agregar al carrito (el backend ya maneja incremento si ya existe)
+      const response = await axios.post(
+        'http://localhost:5000/api/client/carrito',
+        {
+          producto_personalizado_id: productoPersonalizado.id,
+          cantidad: 1,
+          precio_unitario: precioUnitario,
+        },
+        config
+      );
+
+      // 7. Mensaje según respuesta del backend
+      if (response.data.message?.includes('Cantidad actualizada')) {
+        alert('🛒 Este diseño ya estaba en tu carrito. Se ha aumentado la cantidad.');
+      } else {
+        alert('🛒 ¡Producto agregado a tu carrito!');
+      }
+      navigate('/cliente/carrito');
+    } catch (err) {
+      console.error(err);
+      alert('❌ No se pudo agregar al carrito. Intenta nuevamente.');
+    } finally {
+      setGuardando(false);
     }
-
-    // Generar imagen del diseño
-    const imagenUrl = await generarImagenDiseno();
-    
-    // Convertir base64 a blob para subir a Supabase
-    const blob = await (await fetch(imagenUrl)).blob();
-    
-    // Subir imagen a Supabase Storage (carpeta "carrito" o reusar la misma lógica)
-    const user = JSON.parse(localStorage.getItem('user'));
-    const userId = user.id_usuario;
-    const fileName = `carrito-${Date.now()}.png`;
-    const filePath = `usuario_${userId}/${fileName}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from('borradores')
-      .upload(filePath, blob, {
-        contentType: 'image/png',
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error('Error al subir imagen:', uploadError);
-      alert('Error al procesar la imagen');
-      return;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('borradores')
-      .getPublicUrl(filePath);
-
-    // Obtener precio (precio base + adicional de variante + adicional por personalización)
-    // Asumimos que el precio base y adicional vienen en `variante` o los calculamos
-    const precioBase = variante?.precio_base || producto?.precio_base || 0;
-    const precioAdicionalVariante = variante?.precio_adicional || 0;
-    const precioAdicionalPersonalizacion = 50; // Ejemplo: costo fijo por personalizar
-
-    const precioUnitario = precioBase + precioAdicionalVariante + precioAdicionalPersonalizacion;
-
-    // Datos para el backend
-    const payload = {
-      variante_id: variante?.variante_id || variante?.id,
-      imagen_personalizada_url: publicUrl,
-      texto_personalizado: elementos.filter(el => el.tipo === 'texto').map(t => t.contenido).join(' | '),
-      precio_adicional: precioAdicionalPersonalizacion,
-      precio_unitario: precioUnitario,
-      cantidad: 1
-    };
-
-    const config = {
-      headers: { Authorization: `Bearer ${token}` }
-    };
-
-    await axios.post('http://localhost:5000/api/client/carrito', payload, config);
-    
-    alert('🛒 Producto personalizado agregado al carrito');
-    navigate('/cliente/carrito');
-  } catch (err) {
-    console.error(err);
-    alert('Error al agregar al carrito');
-  } finally {
-    setGuardando(false);
-  }
-};
+  };
 
   const cancelar = () => {
     if (editandoBorradorId) {
@@ -559,7 +560,11 @@ const guardarEnLista = async () => {
             <button className="btn-lista" onClick={guardarEnLista} disabled={guardando}>
               {editandoBorradorId ? '💾 Actualizar borrador' : '📋 Guardar en lista'}
             </button>
-            <button className="btn-carrito" onClick={agregarAlCarrito} disabled={guardando}>🛒 Agregar al carrito</button>
+            {!editandoBorradorId && (
+              <button className="btn-carrito" onClick={agregarAlCarrito} disabled={guardando}>
+                🛒 Agregar al carrito
+              </button>
+            )}
             <button className="btn-cancelar" onClick={cancelar}>Cancelar</button>
           </div>
         </div>

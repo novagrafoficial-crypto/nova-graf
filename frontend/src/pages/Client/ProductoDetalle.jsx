@@ -74,28 +74,22 @@ const ProductoDetalle = () => {
 
   const precioFinal = Number(producto.precio_base) + Number(varianteActiva?.precio_adicional || 0);
 
-  const agregarAlCarrito = () => {
-    const item = {
-      producto_id: producto.producto_id,
-      nombre: producto.producto_nombre,
-      variante: varianteActiva,
-      cantidad,
-      precio: precioFinal,
-      personalizado: disenoPersonalizadoUrl ? {
-        imagenUrl: disenoPersonalizadoUrl,
-        json: disenoJson
-      } : null
-    };
-    console.log('Agregar al carrito:', item);
-    alert(`✅ ${cantidad} unidad(es) de "${producto.producto_nombre}" agregadas al carrito`);
-  };
-
   const abrirPersonalizador = () => {
     navigate(`/cliente/producto/${id}/personalizar`, {
       state: {
         imagenProducto: varianteActiva?.imagen_url || producto?.imagen_url || '',
         productoId: id,
         variante: varianteActiva,
+      }
+    });
+  };
+
+  const solicitarDiseno = () => {
+    navigate(`/cliente/producto/${id}/solicitar`, {
+      state: {
+        variante: varianteActiva,
+        productoId: id,
+        productoNombre: producto.producto_nombre
       }
     });
   };
@@ -169,9 +163,14 @@ const ProductoDetalle = () => {
             <input type="number" id="cantidad" min="1" value={cantidad} onChange={(e) => setCantidad(Math.max(1, parseInt(e.target.value) || 1))} className="cantidad-input" />
           </div>
 
+          {/* Mensaje de aviso */}
+          <p className="detalle-aviso-personalizacion">
+            ⚠️ Este producto requiere ser personalizado antes de agregar al carrito.
+          </p>
+
           <div className="detalle-acciones">
             <button className="btn-personalizar" onClick={abrirPersonalizador}>🎨 Personalizar</button>
-            <button className="btn-agregar-carrito" onClick={agregarAlCarrito}>🛒 Agregar al carrito</button>
+            <button className="btn-solicitar" onClick={solicitarDiseno}>📎 Solicitar diseño</button>
           </div>
 
           {disenoPersonalizadoUrl && (

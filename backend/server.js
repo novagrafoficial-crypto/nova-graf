@@ -13,27 +13,38 @@ const verificarToken = require('./src/middlewares/auth');
 const app = express();
 app.disable('x-powered-by');
 
+// Helmet con configuración relajada para CORS en desarrollo
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false,
+}));
+
 // Configurar límites de payload para JSON y URL encoded
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Helmet para seguridad de cabeceras
-app.use(helmet());
-
 /* ================================
-   CORS (solo una vez)
+   CORS (configuración correcta)
 ================================ */
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: FRONTEND_URL,
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-/* ================================
-   MIDDLEWARES GENERALES
-================================ */
-app.use(express.json());
+// 🔥 Middleware explícito para OPTIONS (soluciona preflight)
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.sendStatus(200);
+});
 
-// Sesiones
+/* ================================
+   SESIONES Y PASSPORT
+================================ */
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secreto_temporal',
   resave: false,
@@ -65,6 +76,7 @@ const antecedentesRoutes   = require('./routes/public/antecedentesRoutes');
 // Rutas Cliente
 const productosClientRoutes = require('./routes/client/productosRoutes');
 const borradoresClienteRoutes = require('./routes/client/borradores');
+const carritoRoutes = require('./routes/client/carritoRoutes');
 
 app.use('/api/users',                  userRoutes);
 app.use('/api/auth',                   authRoutes);
@@ -77,10 +89,10 @@ app.use('/api/ubicacion',              ubicacionRoutes);
 app.use('/api/contactos',              contactoRoutes);
 app.use('/api/public/antecedentes',    antecedentesRoutes);
 
-
 // Rutas Cliente
 app.use('/api/client/productos',       productosClientRoutes);
 app.use('/api/client/borradores',      borradoresClienteRoutes);
+app.use('/api/client/carrito',         carritoRoutes);
 
 /* ================================
    RUTAS ADMIN
@@ -104,10 +116,8 @@ const adminVisionRoutes       = require('./routes/admin/empresa/adminVisionRoute
 const monitoreoRoutes         = require('./routes/admin/monitoreoRoutes');
 const proveedorRoutes         = require('./routes/admin/proveedorRoutes');
 const publicacionRoutes       = require('./routes/admin/publicacionRoutes');
-const reabastecimientoRoutes = require('./routes/admin/reabastecimientoRoutes');
+const reabastecimientoRoutes  = require('./routes/admin/reabastecimientoRoutes');
 
-
-// Empresa
 app.use('/api/admin/antecedentes',   adminAntecedentesRoutes);
 app.use('/api/admin/vision',         adminVisionRoutes);
 app.use('/api/admin/contactos',      adminContactosRoutes);
@@ -119,20 +129,15 @@ app.use('/api/admin/mision',         adminMisionRoutes);
 app.use('/api/admin/inventario',     inventarioRoutes);
 app.use('/api/admin/monitoreo',      monitoreoRoutes); 
 app.use('/api/admin/proveedores',    proveedorRoutes);
-
-
-
-// Catálogos y módulos
 app.use('/api/admin/marcas',         marcasRoutes);
 app.use('/api/admin/categorias',     categoriasRoutes);
 app.use('/api/admin/subcategorias',  subcategoriasRoutes);
 app.use('/api/admin/productos',      productosRoutes);
 app.use('/api/admin/usuarios',       usuariosRoutes);
 app.use('/api/admin/modulo',         moduloAdminRoutes);
-app.use('/api/public',                 publicacionRoutes);
+app.use('/api/public',               publicacionRoutes);
 app.use('/api/admin/reabastecimiento', reabastecimientoRoutes);
-
-app.use('/api', publicacionRoutes);
+app.use('/api',                      publicacionRoutes);
 
 /* ================================
    INICIAR SERVIDOR
