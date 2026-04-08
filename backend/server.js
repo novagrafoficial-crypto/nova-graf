@@ -7,24 +7,21 @@ const passport = require('./config/passport');
 const path = require('node:path');
 const helmet = require('helmet');
 
-// 🔒 Middleware de autenticación
-const verificarToken = require('./src/middlewares/auth');
-
 const app = express();
 app.disable('x-powered-by');
 
-// Helmet con configuración relajada para CORS en desarrollo
+// Helmet con configuración permisiva para CORS en desarrollo
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: false,
 }));
 
-// Configurar límites de payload para JSON y URL encoded
+// Límites de payload
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 /* ================================
-   CORS (configuración correcta)
+   CORS y manejo explícito de OPTIONS
 ================================ */
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
@@ -33,7 +30,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// 🔥 Middleware explícito para OPTIONS (soluciona preflight)
+// 🔥 Middleware para OPTIONS - DEBE IR ANTES DE CUALQUIER RUTA O MIDDLEWARE DE AUTENTICACIÓN
 app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', FRONTEND_URL);
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -50,7 +47,6 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -73,11 +69,6 @@ const ubicacionRoutes      = require('./routes/public/ubicacionRoutes');
 const contactoRoutes       = require('./routes/public/contactoRoutes');
 const antecedentesRoutes   = require('./routes/public/antecedentesRoutes');
 
-// Rutas Cliente
-const productosClientRoutes = require('./routes/client/productosRoutes');
-const borradoresClienteRoutes = require('./routes/client/borradores');
-const carritoRoutes = require('./routes/client/carritoRoutes');
-
 app.use('/api/users',                  userRoutes);
 app.use('/api/auth',                   authRoutes);
 app.use('/api/public',                 misionRoutes);
@@ -89,7 +80,15 @@ app.use('/api/ubicacion',              ubicacionRoutes);
 app.use('/api/contactos',              contactoRoutes);
 app.use('/api/public/antecedentes',    antecedentesRoutes);
 
-// Rutas Cliente
+
+/* ================================
+   RUTAS CLIENTE
+================================ */
+const productosClientRoutes = require('./routes/client/productosRoutes');
+const borradoresClienteRoutes = require('./routes/client/borradores');
+const carritoRoutes = require('./routes/client/carritoRoutes');
+
+
 app.use('/api/client/productos',       productosClientRoutes);
 app.use('/api/client/borradores',      borradoresClienteRoutes);
 app.use('/api/client/carrito',         carritoRoutes);
@@ -103,7 +102,6 @@ const subcategoriasRoutes  = require('./routes/admin/subcategoriasRoutes');
 const productosRoutes      = require('./routes/admin/productosRoutes');
 const usuariosRoutes       = require('./routes/admin/usuariosRoutes');
 const moduloAdminRoutes    = require('./routes/admin/moduloAdminRoutes');
-
 const adminMisionRoutes       = require('./routes/admin/empresa/adminMisionRoutes');
 const adminAntecedentesRoutes = require('./routes/admin/empresa/adminAntecedentesRoutes');
 const adminContactosRoutes    = require('./routes/admin/empresa/adminContactosRoutes');
@@ -114,7 +112,9 @@ const adminValoresRoutes      = require('./routes/admin/empresa/adminValoresRout
 const inventarioRoutes        = require('./routes/admin/inventarioRoutes');
 const adminVisionRoutes       = require('./routes/admin/empresa/adminVisionRoutes');
 const monitoreoRoutes         = require('./routes/admin/monitoreoRoutes');
-const proveedorRoutes         = require('./routes/admin/proveedorRoutes');
+const proveedorRoutes         = require('./routes/admin/proveedoresRoutes');
+
+//Admin Rutas del modulo de abastecimiento y publicacion
 const publicacionRoutes       = require('./routes/admin/publicacionRoutes');
 const reabastecimientoRoutes  = require('./routes/admin/reabastecimientoRoutes');
 
@@ -135,9 +135,12 @@ app.use('/api/admin/subcategorias',  subcategoriasRoutes);
 app.use('/api/admin/productos',      productosRoutes);
 app.use('/api/admin/usuarios',       usuariosRoutes);
 app.use('/api/admin/modulo',         moduloAdminRoutes);
+
+//Rutaas Admin Publicaciones y Reabastecimiento
+app.use('/api',                      publicacionRoutes);
 app.use('/api/public',               publicacionRoutes);
 app.use('/api/admin/reabastecimiento', reabastecimientoRoutes);
-app.use('/api',                      publicacionRoutes);
+
 
 /* ================================
    INICIAR SERVIDOR

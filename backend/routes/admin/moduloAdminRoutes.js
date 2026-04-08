@@ -5,17 +5,25 @@ const {
   generarRespaldo,
   generarRespaldoTabla,
   obtenerHistorialRespaldos,
-  obtenerTablas
+  obtenerTablas,
+  exportarCSV,
+  importarCSV,
+  upload
 } = require("../../controllers/admin/moduloAdminController");
 
+// ─── HISTORIAL Y TABLAS ───────────────────────────────────────────────────────
 router.get("/historial", obtenerHistorialRespaldos);
-
 router.get("/tablas", obtenerTablas);
 
-// ✅ FIX: (*) permite capturar puntos en el parámetro, ej: usuarios.usuarios
+// ─── RESPALDOS .DUMP ──────────────────────────────────────────────────────────
+// (*) permite capturar puntos en el parámetro, ej: usuarios.usuarios
 router.get("/tabla/:tabla(*)", generarRespaldoTabla);
 
-// La ruta raíz va al final para no interceptar las demás
+// ─── CSV ──────────────────────────────────────────────────────────────────────
+router.get("/csv/:tabla(*)", exportarCSV);
+router.post("/csv/:tabla(*)", upload.single("archivo"), importarCSV);
+
+// ─── RESPALDO COMPLETO (va al final para no interceptar las demás) ────────────
 router.get("/", generarRespaldo);
 
 module.exports = router;

@@ -41,6 +41,9 @@ import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminInventario from './pages/Admin/AdminInventario';
+import AdminProveedores from './pages/Admin/AdminProveedores';
+
+//admin modulo de prediccion
 import Reabastecimiento from './pages/Admin/Reabastecimiento';
 import Ventasproducto from "./pages/Admin/Ventasproducto";
 import Variantesmodal from "./pages/Admin/Variantesmodal";
@@ -98,6 +101,7 @@ function App() {
           <Route path="mision" element={<AdminMision />} />
           <Route path="empresa" element={<AdminEmpresaCom />} />
           <Route path="inventario" element={<AdminInventario />} />
+          <Route path="proveedores" element={<AdminProveedores />} />
           <Route path="stock" element={<Reabastecimiento />} />
           <Route path="stock/:id/ventas" element={<Ventasproducto/>} />
           <Route path="stock/:id/variantes" element={<Variantesmodal/>} />
