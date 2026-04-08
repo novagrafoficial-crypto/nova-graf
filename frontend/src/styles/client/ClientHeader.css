@@ -1,135 +1,438 @@
-/* Variables de color en tonos verdes */
+/* ============================================================
+   ClientHeader.css — Diseño moderno con animaciones y tonos verdes
+   ============================================================ */
+
 :root {
-  --verde-oscuro: #1b5e20;
-  --verde-medio: #2e7d32;
-  --verde-claro: #2a8b2d;
-  --verde-hoja: #81c784;
-  --verde-lima: #a5d6a7;
-  --fondo-claro: #f1f8e9;
-  --texto-claro: #ffffff;
-  --texto-oscuro: #1b5e20;
-  --gris-oscuro: #2d3748;
-  --gris-claro: #e2e8f0;
+  /* Paleta verde refinada */
+  --ch-green-deep:   #1e4a2f;
+  --ch-green:        #2e7d32;
+  --ch-green-light:  #4caf50;
+  --ch-green-soft:   #e8f5e9;
+  --ch-green-mist:   #f1f8f1;
+  --ch-text:         #1e293b;
+  --ch-text-light:   #475569;
+  --ch-border:       #e2e8f0;
+  --ch-bg:           #ffffff;
+  --ch-shadow-sm:    0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --ch-shadow-md:    0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --transition:      0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Header */
-.header {
-  background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-medio));
-  color: var(--texto-claro);
-  padding: 0 40px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Barra superior animada (gradiente sutil) */
+.ch-header::before {
+  content: "";
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ch-green-deep), var(--ch-green-light), var(--ch-green-deep));
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Header fijo con sombra suave */
+.ch-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  background: var(--ch-bg);
+  border-bottom: 1px solid var(--ch-border);
+  backdrop-filter: blur(0px);
+  box-shadow: var(--ch-shadow-sm);
+  transition: box-shadow var(--transition);
 }
 
-/* Logo */
-.logo {
-  color: var(--texto-claro);
+.ch-header:hover {
+  box-shadow: var(--ch-shadow-md);
+}
+
+.ch-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ── Logo con efecto hover ── */
+.ch-logo {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
   text-decoration: none;
-  font-size: 1.4rem;
-  font-weight: bold;
-  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  transition: transform var(--transition);
 }
 
-.logo:hover {
-  transform: scale(1.05);
-}
-
-/* Navegación */
-.nav {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
-
-.nav-link {
-  color: var(--verde-lima);
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.2s ease, border-bottom 0.2s ease;
-  padding-bottom: 4px;
-  border-bottom: 2px solid transparent;
-}
-
-.nav-link:hover {
-  color: var(--texto-claro);
-  border-bottom-color: var(--verde-claro);
-}
-
-/* Sección de usuario */
-.user-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.user-info {
-  color: var(--texto-claro);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--verde-lima);
-  color: var(--verde-oscuro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  border: 2px solid var(--texto-claro);
-  transition: transform 0.2s ease;
-}
-
-.user-info:hover .avatar {
-  transform: scale(1.1);
-}
-
-.user-name {
-  font-size: 0.9rem;
-}
-
-/* Botón de cerrar sesión */
-.logout-button {
-  background: #0b5e3a; /* Se mantiene rojo para acción destructiva, pero puedes cambiarlo a un tono verde oscuro si prefieres */
-  color: white;
-  border: none;
-  padding: 6px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.logout-button:hover {
-  background: #32dc26;
+.ch-logo:hover {
   transform: scale(1.02);
 }
 
-/* Responsive básico */
+.ch-logo__img {
+  height: 60px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  transition: filter var(--transition);
+}
+
+.ch-logo:hover .ch-logo__img {
+  filter: brightness(1.05);
+}
+
+.ch-logo__icon {
+  font-size: 1.7rem;
+  line-height: 1;
+  transition: transform var(--transition);
+}
+
+.ch-logo:hover .ch-logo__icon {
+  transform: rotate(-5deg);
+}
+
+.ch-logo__name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--ch-green-deep), var(--ch-green-light));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.ch-logo__skeleton {
+  width: 150px;
+  height: 60px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #eef2f6 25%, #f8fafc 50%, #eef2f6 75%);
+  background-size: 200% 100%;
+  animation: ch-shimmer 1.6s infinite;
+}
+
+@keyframes ch-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Navegación escritorio (con subrayado animado) ── */
+.ch-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 auto;
+}
+
+.ch-nav__link {
+  position: relative;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ch-text);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: color var(--transition), background var(--transition);
+}
+
+.ch-nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--ch-green);
+  transition: width 0.25s ease, left 0.25s ease;
+}
+
+.ch-nav__link:hover {
+  color: var(--ch-green);
+  background: var(--ch-green-mist);
+}
+
+.ch-nav__link:hover::after {
+  width: 70%;
+  left: 15%;
+}
+
+.ch-nav__link:active {
+  transform: scale(0.97);
+}
+
+/* ── Acciones ── */
+.ch-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* Carrito con badge animado */
+.ch-cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ch-text-light);
+  text-decoration: none;
+  padding: 0.45rem;
+  border-radius: 40px;
+  transition: all var(--transition);
+}
+
+.ch-cart:hover {
+  color: var(--ch-green);
+  background: var(--ch-green-mist);
+  transform: translateY(-1px);
+}
+
+.ch-cart__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--ch-green);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  animation: badgePop 0.2s ease-out;
+}
+
+@keyframes badgePop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Usuario */
+.ch-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: 1.5px solid var(--ch-border);
+  border-radius: 40px;
+  padding: 0.2rem 0.8rem 0.2rem 0.2rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ch-text);
+  transition: all var(--transition);
+}
+
+.ch-user:hover {
+  border-color: var(--ch-green);
+  background: var(--ch-green-mist);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(46,125,50,0.1);
+}
+
+.ch-user__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ch-green), var(--ch-green-light));
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.ch-user:hover .ch-user__avatar {
+  transform: scale(1.05);
+}
+
+.ch-user__name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ch-user__chevron {
+  color: var(--ch-text-light);
+  transition: transform var(--transition);
+}
+
+.ch-user:hover .ch-user__chevron {
+  transform: translateY(2px);
+  color: var(--ch-green);
+}
+
+/* Login */
+.ch-login {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ch-green);
+  text-decoration: none;
+  padding: 0.4rem 1rem;
+  border: 1.5px solid var(--ch-green);
+  border-radius: 40px;
+  transition: all var(--transition);
+}
+
+.ch-login:hover {
+  background: var(--ch-green);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(46,125,50,0.2);
+}
+
+/* ── Hamburguesa animada ── */
+.ch-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background var(--transition);
+}
+
+.ch-hamburger:hover {
+  background: var(--ch-green-mist);
+}
+
+.ch-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--ch-text);
+  border-radius: 2px;
+  transition: all 0.25s;
+  transform-origin: center;
+}
+
+.ch-hamburger--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.ch-hamburger--open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.ch-hamburger--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Menú móvil con animación de deslizamiento ── */
+.ch-mobile {
+  display: none;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--ch-bg);
+  border-top: 1px solid var(--ch-border);
+}
+
+.ch-mobile--open {
+  max-height: 400px;
+}
+
+.ch-mobile__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1.2rem;
+}
+
+.ch-mobile__link {
+  padding: 0.8rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ch-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ch-border);
+  transition: all var(--transition);
+  position: relative;
+}
+
+.ch-mobile__link:hover {
+  color: var(--ch-green);
+  transform: translateX(6px);
+  background: var(--ch-green-mist);
+  border-radius: 8px;
+  padding-left: 1rem;
+}
+
+.ch-mobile__profile {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  background: var(--ch-green-soft);
+  border: none;
+  border-top: 1px solid var(--ch-border);
+  padding: 0.9rem 1.5rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ch-green);
+  transition: background var(--transition);
+}
+
+.ch-mobile__profile:hover {
+  background: var(--ch-green-mist);
+}
+
+/* ── Responsive ── */
 @media (max-width: 768px) {
-  .header {
-    padding: 0 20px;
+  .ch-inner {
+    padding: 0 1rem;
+    height: 64px;
+    gap: 1rem;
   }
-
-  .nav {
-    gap: 12px;
+  .ch-nav {
+    display: none;
   }
-
-  .nav-link {
-    font-size: 0.85rem;
+  .ch-hamburger {
+    display: flex;
   }
+  .ch-mobile {
+    display: block;
+  }
+  .ch-user__name,
+  .ch-user__chevron {
+    display: none;
+  }
+  .ch-user {
+    padding: 0.2rem;
+    border-radius: 50%;
+  }
+  .ch-user__avatar {
+    width: 34px;
+    height: 34px;
+  }
+}
 
-  .user-name {
-    display: none; /* Ocultar nombre en móvil para ahorrar espacio */
+@media (max-width: 480px) {
+  .ch-logo__name {
+    display: none;
+  }
+  .ch-logo__img {
+    max-width: 100px;
+    height: 34px;
+  }
+  .ch-cart {
+    margin-left: 0.2rem;
   }
 }

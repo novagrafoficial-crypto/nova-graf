@@ -8,9 +8,9 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);       // ← nuevo
-  const [resendMessage, setResendMessage] = useState("");   // ← nuevo
-  const [cuentaInactiva, setCuentaInactiva] = useState(false); // ← nuevo
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const [cuentaInactiva, setCuentaInactiva] = useState(false);
 
   const errorMessages = {
     email_local: 'Este correo ya está registrado manualmente. Usa tu contraseña para iniciar sesión.',
@@ -29,7 +29,7 @@ function Login() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
-    setCuentaInactiva(false); // ← resetear
+    setCuentaInactiva(false);
     setResendMessage("");
 
     try {
@@ -42,7 +42,10 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        // ✅ GUARDAR TOKEN Y USUARIO
+        localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        
         if (data.user.rol === "administrador") {
           navigate("/admin");
         } else {
@@ -51,7 +54,6 @@ function Login() {
       } else {
         setMessage(data.message || "Error al iniciar sesión");
 
-        // ← Si la cuenta no está activada, mostrar botón de reenvío
         if (data.message?.includes("no activada")) {
           setCuentaInactiva(true);
         }
@@ -64,43 +66,41 @@ function Login() {
   };
 
   const handleResendActivation = async () => {
-  setResending(true);
-  setResendMessage("");
+    setResending(true);
+    setResendMessage("");
 
-  try {
-    // ← Usar la nueva ruta en vez de forgot-password
-    const res = await fetch("http://localhost:5000/api/users/get-user-id", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("http://localhost:5000/api/users/get-user-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
 
-    if (!res.ok || !data.id_usuario) {
-      setResendMessage("❌ No se encontró el usuario");
-      return;
+      if (!res.ok || !data.id_usuario) {
+        setResendMessage("❌ No se encontró el usuario");
+        return;
+      }
+
+      const resend = await fetch("http://localhost:5000/api/users/resend-activation-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: data.id_usuario }),
+      });
+      const resendData = await resend.json();
+
+      if (resend.ok) {
+        setResendMessage("✅ Código enviado. Revisa tu correo.");
+        setTimeout(() => navigate(`/verify-account/${data.id_usuario}`), 2000);
+      } else {
+        setResendMessage("❌ " + (resendData.message || "Error al reenviar"));
+      }
+    } catch {
+      setResendMessage("❌ Error de conexión");
+    } finally {
+      setResending(false);
     }
-
-    // Reenviar OTP de activación
-    const resend = await fetch("http://localhost:5000/api/users/resend-activation-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_usuario: data.id_usuario }),
-    });
-    const resendData = await resend.json();
-
-    if (resend.ok) {
-      setResendMessage("✅ Código enviado. Revisa tu correo.");
-      setTimeout(() => navigate(`/verify-account/${data.id_usuario}`), 2000);
-    } else {
-      setResendMessage("❌ " + (resendData.message || "Error al reenviar"));
-    }
-  } catch {
-    setResendMessage("❌ Error de conexión");
-  } finally {
-    setResending(false);
-  }
-};
+  };
 
   const handleGoogleLogin = () => window.location.href = "http://localhost:5000/api/auth/google";
 
@@ -142,7 +142,6 @@ function Login() {
             </p>
           )}
 
-          {/* ← Aparece solo cuando la cuenta no está activada */}
           {cuentaInactiva && (
             <div style={{ textAlign: "center", marginTop: "8px" }}>
               <button

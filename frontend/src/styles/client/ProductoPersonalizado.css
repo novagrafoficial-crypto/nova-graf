@@ -1,0 +1,672 @@
+/* frontend/src/styles/client/ProductoPersonalizado.css */
+
+/* ===== CONTENEDOR PRINCIPAL (PÁGINA COMPLETA) ===== */
+.personalizador-page {
+  min-height: 100vh;
+  background: #ffffff; /* Fondo blanco puro */
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== HEADER DE LA PÁGINA ===== */
+.personalizador-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: #ffffff;
+  border-bottom: 1px solid #eef2f6;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.personalizador-back {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 40px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.personalizador-back:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.personalizador-header h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* ===== CONTENIDO PRINCIPAL (DOS COLUMNAS) CENTRADO ===== */
+.personalizador-contenido {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  flex-wrap: wrap;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== COLUMNA IZQUIERDA: ESCENA (LIENZO) ===== */
+.pers-scene-wrap {
+  flex: 2;
+  min-width: 480px;
+  background: #f9fafb;
+  border-radius: 32px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.pers-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 600px;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  cursor: default;
+  margin: 0 auto;
+}
+
+/* Imagen de fondo del producto */
+.pers-producto-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pers-fallback-bg {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(45deg, #e5e7eb 0px, #e5e7eb 20px, #d1d5db 20px, #d1d5db 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Texto de ayuda */
+.pers-hint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+  background: #ffffffcc;
+  padding: 0.3rem 1rem;
+  border-radius: 40px;
+  backdrop-filter: blur(2px);
+}
+
+/* ===== ELEMENTOS ARRASTRABLES DENTRO DE LA ESCENA ===== */
+.pers-elem {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: box-shadow 0.1s;
+}
+
+.pers-elem:active {
+  cursor: grabbing;
+}
+
+.pers-elem.selected {
+  outline: 2px dashed #8b5cf6;
+  outline-offset: 3px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+}
+
+/* Botón eliminar (aparece solo en elemento seleccionado) */
+.pers-del-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: 2px solid white;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 120;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s, background 0.2s;
+}
+
+.pers-del-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+/* Handle de redimensionamiento (esquina inferior derecha) */
+.pers-resize-handle {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background-color: #8b5cf6;
+  border-radius: 50%;
+  cursor: se-resize;
+  border: 2px solid white;
+  z-index: 120;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.1s, background 0.2s;
+}
+
+.pers-resize-handle:hover {
+  transform: scale(1.2);
+  background-color: #7c3aed;
+}
+
+/* ===== COLUMNA DERECHA: PANEL DE HERRAMIENTAS (DISEÑO LLAMATIVO) ===== */
+.pers-tools {
+  width: 340px;
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 1.8rem;
+  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(139, 92, 246, 0.05);
+  border: 1px solid #f3e8ff;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-self: center;
+  transition: transform 0.2s;
+}
+
+.pers-tools:hover {
+  transform: translateY(-2px);
+}
+
+/* Tabs llamativos */
+.pers-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 60px;
+  padding: 0.25rem;
+}
+
+.pers-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.6rem 0;
+  border-radius: 60px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pers-tab.active {
+  background: #8b5cf6;
+  color: white;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+}
+
+/* Secciones de herramientas */
+.tool-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0e6ff;
+}
+
+.tool-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tool-section.acciones {
+  margin-top: 0.5rem;
+  gap: 1rem;
+}
+
+.tool-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8b5cf6;
+}
+
+.tool-input {
+  border: 1px solid #e9e9f0;
+  border-radius: 20px;
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s;
+  background: #fefefe;
+}
+
+.tool-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Selector de color (puntos) - más llamativo */
+.color-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.color-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.color-dot:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-dot.active {
+  border-color: #ffffff;
+  outline: 2px solid #8b5cf6;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.4);
+}
+
+/* Slider de tamaño */
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+.size-row input[type="range"] {
+  flex: 1;
+  height: 5px;
+  border-radius: 5px;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+/* Botón agregar (estilo gradiente llamativo) */
+.btn-agregar {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 0.8rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-agregar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+}
+
+/* Lista de capas con diseño moderno */
+.capa-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #faf9fe;
+  padding: 0.7rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid #ede9fe;
+}
+
+.capa-item:hover {
+  background: #f3e8ff;
+  border-color: #c4b5fd;
+}
+
+.capa-item.active {
+  background: #ede9fe;
+  color: #6d28d9;
+  font-weight: 600;
+  border-left: 4px solid #8b5cf6;
+}
+
+.capa-del {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0 6px;
+  border-radius: 20px;
+  transition: all 0.1s;
+}
+
+.capa-del:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* Botones de acción final (guardar y cancelar) */
+.btn-guardar {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  padding: 0.9rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-guardar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-cancelar {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 60px;
+  padding: 0.8rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .personalizador-contenido {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .pers-scene-wrap {
+    min-width: auto;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .pers-tools {
+    width: 100%;
+  }
+
+  .personalizador-header {
+    padding: 0.8rem 1rem;
+  }
+
+  .personalizador-header h1 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 550px) {
+  .pers-scene {
+    max-width: 100%;
+  }
+
+  .color-dot {
+    width: 28px;
+    height: 28px;
+  }
+}
+/* Añadir al final de ProductoPersonalizado.css */
+
+/* Botones de estilo (B, I, U, alineación) */
+.style-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.style-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 12px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #374151;
+  min-width: 40px;
+}
+
+.style-btn.active {
+  background: #8b5cf6;
+  color: white;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.style-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* Botones de acción principales */
+.btn-lista {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  padding: 0.9rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.btn-lista:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.btn-carrito {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  padding: 0.9rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-carrito:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.btn-lista:disabled, .btn-carrito:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+/* Selector de fuentes */
+.tool-select {
+  border: 1px solid #e9e9f0;
+  border-radius: 20px;
+  padding: 0.7rem 1rem;
+  font-size: 0.85rem;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+.tool-select:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Fila de formato (negrita, cursiva, tamaño) */
+.format-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 60px;
+}
+.format-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #e2e8f0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.format-btn.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+.size-control {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.size-control input {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: #cbd5e1;
+}
+
+/* Botones de acción mejorados */
+.btn-guardar-borrador {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  padding: 0.8rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.btn-guardar-borrador:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.4);
+}
+.btn-agregar-carrito {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  padding: 0.8rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+.btn-agregar-carrito:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(59, 130, 246, 0.4);
+}
+.btn-aplicar {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  padding: 0.8rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+.btn-aplicar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(139, 92, 246, 0.4);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ajuste del hint */
+.tool-hint {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: -0.3rem;
+}

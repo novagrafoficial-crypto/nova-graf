@@ -14,7 +14,6 @@ function AdminSubcategorias() {
   const API = "http://localhost:5000/api/admin/subcategorias";
   const API_CATS = "http://localhost:5000/api/admin/categorias";
 
-  // Cargar subcategorías
   const obtenerSubcategorias = async () => {
     setLoading(true);
     setError(null);
@@ -31,7 +30,6 @@ function AdminSubcategorias() {
     }
   };
 
-  // Cargar categorías para dropdown
   const obtenerCategorias = async () => {
     try {
       const res = await fetch(API_CATS);
@@ -51,6 +49,7 @@ function AdminSubcategorias() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!nombre.trim() || !categoriaId) {
       setError("El nombre y la categoría son requeridos");
       return;
@@ -58,20 +57,15 @@ function AdminSubcategorias() {
 
     setError(null);
     try {
-      let res;
-      if (editando) {
-        res = await fetch(`${API}/${idEditar}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre, categoria_id: categoriaId }),
-        });
-      } else {
-        res = await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre, categoria_id: categoriaId }),
-        });
-      }
+      const url = editando ? `${API}/${idEditar}` : API;
+      const method = editando ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, categoria_id: categoriaId }),
+      });
+
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || "Error al guardar");
@@ -106,7 +100,7 @@ function AdminSubcategorias() {
     setNombre(sub.nombre);
     setCategoriaId(sub.categoria_id);
     setEditando(true);
-    setIdEditar(sub.id);  // En el mapeo del model, 'id' es _id
+    setIdEditar(sub.id);
     setError(null);
   };
 
@@ -131,21 +125,16 @@ function AdminSubcategorias() {
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
         />
-
         <select
           value={categoriaId}
-          onChange={(e) => setCategoriaId(e.target.value)}
+          onChange={(e) => setCategoriaId(Number(e.target.value))}
         >
           <option value="">Selecciona una categoría</option>
           {categorias.map((cat) => (
-            <option key={cat._id} value={cat._id}>  {/* Asumiendo categorias usa _id */}
-              {cat.nombre}
-            </option>
+            <option key={cat.id} value={cat.id}>{cat.nombre}</option>
           ))}
         </select>
-
         <button type="submit">{editando ? "Actualizar" : "Agregar"}</button>
-
         {editando && (
           <button type="button" className="btn-cancelar" onClick={handleCancelar}>
             Cancelar
@@ -167,14 +156,11 @@ function AdminSubcategorias() {
           </thead>
           <tbody>
             {subcategorias.map((sub) => (
-              <tr key={sub.id}>  {/* 'id' es _id mapeado */}
+              <tr key={sub.id}>
                 <td>{sub.id}</td>
                 <td>{sub.nombre}</td>
                 <td>{sub.categoria_nombre}</td>
-                <td>
-                  <button type="button" className="btn-editar" onClick={() => handleEditar(sub)}>Editar</button>
-                  <button type="button" className="btn-eliminar" onClick={() => handleEliminar(sub.id)}>Eliminar</button>
-                </td>
+                <td><button type="button" className="btn-editar" onClick={() => handleEditar(sub)}>Editar</button><button type="button" className="btn-eliminar" onClick={() => handleEliminar(sub.id)}>Eliminar</button></td>
               </tr>
             ))}
           </tbody>

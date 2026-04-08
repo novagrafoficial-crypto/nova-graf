@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import "../../styles/Admin/AdminProductos.css";
+
 
 const API = "http://localhost:5000/api/admin/productos";
 const API_BASE = "http://localhost:5000/api/admin";

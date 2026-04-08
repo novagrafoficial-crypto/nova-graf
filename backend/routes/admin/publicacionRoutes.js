@@ -1,12 +1,14 @@
-const express = require('express');
-const router = express.Router();
+const express    = require('express');
+const router     = express.Router();
 const controller = require('../../controllers/admin/publicacionController');
 
-// Ruta pública (para el frontend de clientes)
-router.get('/public/productos', controller.getProductosPublicos);
+// ── Rutas públicas ─────────────────────────────────────────────
+router.get('/public/catalogo',   controller.getCatalogoPublico);   // con variantes + imágenes
+router.get('/public/productos',  controller.getProductosPublicos); // simple sin variantes
+router.get('/public/portafolio', controller.getPortafolioPublico);
 
-// Rutas privadas (deberías protegerlas con middleware de autenticación)
-router.put('/admin/publicar/:tabla/:id', controller.actualizarEstado);
-router.get('/admin/listado/:tabla', controller.getListadoAdmin);
+// ── Rutas admin ────────────────────────────────────────────────
+router.get('/admin/listado/:tabla',          controller.getListadoAdmin);
+router.put('/admin/publicar/:tabla/:id',     controller.actualizarEstado);
 
 module.exports = router;

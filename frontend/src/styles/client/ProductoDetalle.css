@@ -1,0 +1,410 @@
+/* frontend/src/styles/client/ProductoDetalle.css */
+:root {
+  --green-deep:    #1e4a2f;
+  --green-primary: #2e7d32;
+  --green-light:   #4caf50;
+  --green-soft:    #e8f5e9;
+  --green-mist:    #f1f8f1;
+  --gray-text:     #2c3e2f;
+  --gray-muted:    #5f6c5f;
+  --border-light:  #e0f0e0;
+  --shadow-sm:     0 2px 8px rgba(0, 20, 0, 0.04);
+  --shadow-md:     0 8px 24px rgba(46, 125, 50, 0.08);
+  --transition:    0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-main:     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.detalle-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fafdf8;
+  min-height: 100vh;
+  font-family: var(--font-main);
+}
+
+/* Estados de carga / error */
+.detalle-loading,
+.detalle-error {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.2rem;
+  border-radius: 24px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+.detalle-loading {
+  color: var(--green-primary);
+}
+.detalle-error {
+  color: #e67e22;
+}
+
+/* Botón volver */
+.btn-volver {
+  background: none;
+  border: none;
+  color: var(--gray-muted);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1.8rem;
+  transition: color var(--transition), transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.btn-volver:hover {
+  color: var(--green-primary);
+  transform: translateX(-4px);
+}
+
+/* ── LAYOUT DOS COLUMNAS ── */
+.detalle-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+  background: white;
+  border-radius: 32px;
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: box-shadow var(--transition);
+}
+.detalle-layout:hover {
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .detalle-wrapper {
+    padding: 1rem;
+  }
+  .detalle-layout {
+    grid-template-columns: 1fr;
+    gap: 1.8rem;
+    padding: 1.5rem;
+  }
+}
+
+/* ── IMAGEN GRANDE ── */
+.detalle-imagen {
+  position: relative;
+  background: var(--green-mist);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: transform var(--transition);
+}
+.detalle-imagen img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.detalle-imagen:hover img {
+  transform: scale(1.02);
+}
+
+/* ── INFO ── */
+.detalle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.detalle-nombre {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--green-deep);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Badges */
+.detalle-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0.5rem;
+}
+.badge {
+  padding: 0.3rem 1rem;
+  border-radius: 40px;
+  background: var(--green-soft);
+  color: var(--green-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge--marca {
+  background: #fef5e7;
+  color: #b86f2c;
+}
+
+.detalle-desc {
+  font-size: 1rem;
+  color: var(--gray-muted);
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+.detalle-precio {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--green-primary);
+  margin: 0.5rem 0;
+}
+.detalle-precio small {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #7d8c7d;
+  margin-left: 0.5rem;
+}
+
+.detalle-material {
+  font-size: 0.95rem;
+  color: var(--gray-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+  border-top: 1px dashed var(--border-light);
+  border-bottom: 1px dashed var(--border-light);
+}
+
+/* ── SELECTOR DE COLOR CON MINIATURAS ── */
+.detalle-colores {
+  margin: 0.5rem 0;
+}
+.detalle-colores__label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gray-text);
+  margin-bottom: 0.6rem;
+}
+.detalle-colores__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.color-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.color-thumb:hover {
+  transform: scale(1.05);
+  border-color: var(--green-light);
+}
+.color-thumb--activo {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 2px rgba(46,125,50,0.3);
+}
+.color-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.color-thumb__text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-text);
+  text-align: center;
+}
+
+/* ── ATRIBUTOS (Capacidad, Tamaño, etc.) ── */
+.detalle-atributo-grupo {
+  margin: 0.8rem 0;
+}
+.detalle-atributo-grupo__label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gray-text);
+  margin-bottom: 0.6rem;
+}
+.detalle-atributo-grupo__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.atributo-chip {
+  padding: 0.4rem 1.2rem;
+  border-radius: 40px;
+  border: 1.5px solid var(--border-light);
+  background: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gray-text);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.atributo-chip:hover {
+  border-color: var(--green-light);
+  background: var(--green-mist);
+  transform: translateY(-1px);
+}
+.atributo-chip--activo {
+  border-color: var(--green-primary);
+  background: var(--green-primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(46,125,50,0.2);
+}
+
+/* ── CANTIDAD ── */
+.detalle-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.detalle-cantidad label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-text);
+}
+.cantidad-input {
+  width: 90px;
+  padding: 0.6rem;
+  border: 1.5px solid var(--border-light);
+  border-radius: 40px;
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 500;
+  color: var(--green-deep);
+  background: white;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.cantidad-input:focus {
+  border-color: var(--green-primary);
+}
+
+/* ── AVISO DE PERSONALIZACIÓN ── */
+.detalle-aviso-personalizacion {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 40px;
+  padding: 0.8rem 1.2rem;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ── BOTONES DE ACCIÓN ── */
+.detalle-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.btn-personalizar,
+.btn-solicitar {
+  flex: 1;
+  padding: 1rem 1.2rem;
+  border-radius: 60px;
+  border: none;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-personalizar {
+  background: white;
+  border: 2px solid #ff9800;
+  color: #ff9800;
+}
+.btn-personalizar:hover {
+  background: #fff3e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.15);
+}
+
+.btn-solicitar {
+  background: white;
+  border: 2px solid #9c27b0;
+  color: #9c27b0;
+}
+.btn-solicitar:hover {
+  background: #f3e5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(156, 39, 176, 0.15);
+}
+
+.btn-personalizar:active,
+.btn-solicitar:active {
+  transform: translateY(1px);
+}
+
+/* Responsive para botones en móvil */
+@media (max-width: 480px) {
+  .detalle-acciones {
+    flex-direction: column;
+  }
+  .btn-personalizar,
+  .btn-solicitar {
+    width: 100%;
+  }
+}
+
+/* Badge de diseño personalizado sobre la imagen */
+.diseno-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #ff9800;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 40px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 5;
+}
+
+/* Información de diseño aplicado */
+.diseno-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e8f5e9;
+  padding: 0.6rem 1rem;
+  border-radius: 40px;
+  margin-top: 0.5rem;
+}
+.diseno-info span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2e7d32;
+}
+.btn-quitar-diseno {
+  background: none;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.btn-quitar-diseno:hover {
+  text-decoration: underline;
+}

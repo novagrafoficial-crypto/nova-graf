@@ -11,7 +11,6 @@ function AdminMarcas() {
 
   const API = "http://localhost:5000/api/admin/marcas";
 
-  // Obtener marcas
   const obtenerMarcas = async () => {
     setLoading(true);
     setError(null);
@@ -32,7 +31,6 @@ function AdminMarcas() {
     obtenerMarcas();
   }, []);
 
-  // Agregar o actualizar
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!nombre.trim()) {
@@ -42,22 +40,15 @@ function AdminMarcas() {
 
     setError(null);
     try {
-      let res;
-      if (editando) {
-        // UPDATE
-        res = await fetch(`${API}/${idEditar}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre }),
-        });
-      } else {
-        // CREATE
-        res = await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre }),
-        });
-      }
+      const url = editando ? `${API}/${idEditar}` : API;
+      const method = editando ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre }),
+      });
+
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || "Error al guardar");
@@ -73,15 +64,12 @@ function AdminMarcas() {
     }
   };
 
-  // Eliminar
   const handleEliminar = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar esta marca?")) return;
 
     setError(null);
     try {
-      const res = await fetch(`${API}/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Error al eliminar");
       obtenerMarcas();
     } catch (error) {
@@ -90,15 +78,13 @@ function AdminMarcas() {
     }
   };
 
-  // Editar
   const handleEditar = (marca) => {
     setNombre(marca.nombre);
     setEditando(true);
-    setIdEditar(marca._id);  // Corregido: _id
+    setIdEditar(marca.id); // ✅ PostgreSQL usa "id"
     setError(null);
   };
 
-  // Cancelar edición
   const handleCancelar = () => {
     setNombre("");
     setEditando(false);
@@ -119,17 +105,9 @@ function AdminMarcas() {
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
         />
-
-        <button type="submit">
-          {editando ? "Actualizar" : "Agregar"}
-        </button>
-
+        <button type="submit">{editando ? "Actualizar" : "Agregar"}</button>
         {editando && (
-          <button
-            type="button"
-            className="btn-cancelar"
-            onClick={handleCancelar}
-          >
+          <button type="button" className="btn-cancelar" onClick={handleCancelar}>
             Cancelar
           </button>
         )}
@@ -148,26 +126,10 @@ function AdminMarcas() {
           </thead>
           <tbody>
             {marcas.map((marca) => (
-              <tr key={marca._id}>  {/* Corregido: _id */}
-                <td>{marca._id}</td>  {/* Corregido: _id (se muestra como string) */}
+              <tr key={marca.id}>
+                <td>{marca.id}</td>
                 <td>{marca.nombre}</td>
-                <td>
-                  <button
-                    type="button"
-                    className="btn-editar"
-                    onClick={() => handleEditar(marca)}
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn-eliminar"
-                    onClick={() => handleEliminar(marca._id)} 
-                  >
-                    Eliminar
-                  </button>
-                </td>
+                <td><button type="button" className="btn-editar" onClick={() => handleEditar(marca)}>Editar</button><button type="button" className="btn-eliminar" onClick={() => handleEliminar(marca.id)}>Eliminar</button></td>
               </tr>
             ))}
           </tbody>

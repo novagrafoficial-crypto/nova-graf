@@ -1,200 +1,153 @@
-/* Login.css - Versión con footer fijo abajo y hover mejorado */
+/* ══════════════════════════════════════════════════════════
+   LOGIN CSS - REFINADO (NOVA GRAF)
+   ══════════════════════════════════════════════════════════ */
 
-/* Contenedor principal: flex columna para que el footer quede al fondo */
 .login-page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;          /* ocupa toda la altura de la ventana */
-  padding-top: 72px;           /* espacio para el header fijo (ajusta si es necesario) */
+  min-height: 100vh;
+  padding-top: 80px;
   box-sizing: border-box;
-  background: linear-gradient(145deg, var(--green-50) 0%, var(--white) 100%);
+  /* Fondo sólido usando el Gris de la marca para coherencia con el header */
+  background-color: #DBDBD3 !important; 
   position: relative;
   overflow: hidden;
 }
 
-/* Elemento decorativo de fondo */
+/* Decoración sutil de fondo para quitar la "simplicidad" */
 .login-page::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 30% 40%, rgba(76, 175, 80, 0.03) 0%, transparent 50%);
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(26, 97, 99, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(53, 186, 153, 0.05) 0px, transparent 50%);
   z-index: 0;
 }
 
-/* El contenedor del formulario ocupa el espacio flexible */
 .login-container {
-  flex: 1;                     /* ocupa el espacio disponible entre header y footer */
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 1.5rem;
+  padding: 2rem;
   position: relative;
   z-index: 1;
-  box-sizing: border-box;
 }
 
-/* Tarjeta de login */
+/* Tarjeta de login: Más chica y estilizada */
 .login-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border-radius: 32px;
-  padding: 2.5rem 2rem;
-  max-width: 440px;            /* ancho máximo de la tarjeta */
+  background: #FFFFFF !important; 
+  border-radius: 24px; /* Un poco menos redondeado para elegancia */
+  padding: 2.2rem 2rem;
+  max-width: 380px; /* Tamaño reducido para un look más premium */
   width: 100%;
-  box-shadow: 0 20px 40px -12px rgba(13, 43, 16, 0.25),
-              0 8px 24px -6px rgba(0, 0, 0, 0.1),
-              inset 0 1px 1px rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(26, 97, 99, 0.05);
+  transition: transform 0.3s ease;
 }
 
 .login-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 28px 48px -16px rgba(13, 43, 16, 0.3);
+  transform: translateY(-5px);
 }
 
-/* Títulos */
 .login-card h2 {
-  font-family: var(--font-display);
-  font-size: 2.2rem;
-  font-weight: 600;
-  color: var(--green-800);
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; /* Tamaño más balanceado */
+  font-weight: 700;
+  color: #1A6163 !important; 
+  margin-bottom: 0.4rem;
   text-align: center;
 }
 
 .login-subtitle {
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--gray-500);
+  color: #666666;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.8rem;
+  font-size: 0.85rem;
 }
 
-/* Campos de entrada */
+/* Inputs más compactos */
 .input-group {
-  margin-bottom: 1.5rem;
-  position: relative;
+  margin-bottom: 1rem;
 }
 
 .input-group input {
   width: 100%;
-  font-family: var(--font-body);
-  font-size: 1rem;
-  padding: 0.9rem 1.2rem;
-  background: var(--white);
-  border: 2px solid var(--gray-200);
-  border-radius: 60px;
+  padding: 0.8rem 1.2rem;
+  background: #F8F8F6; 
+  border: 1.5px solid #DBDBD3; 
+  border-radius: 12px; /* Coherente con diseño moderno */
   outline: none;
-  transition: all 0.25s ease-out;
-  color: var(--black);
+  transition: all 0.2s ease;
+  color: #1A6163;
+  font-size: 0.95rem;
   box-sizing: border-box;
 }
 
 .input-group input:focus {
-  border-color: var(--green-400);
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+  border-color: #35BA99; 
+  background: #FFFFFF;
 }
 
-.input-group input::placeholder {
-  color: var(--gray-500);
-  opacity: 0.7;
-}
-
-/* Botón de ingresar - corregido para que el texto siempre sea visible */
-.login-btn {
+/* Botones con los colores de la paleta */
+.login-btn, .google-btn {
   width: 100%;
-  font-family: var(--font-body);
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
-  font-size: 1rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  padding: 0.9rem 1.5rem;
-  background: linear-gradient(135deg, var(--green-600), var(--green-800));
-  border: none;
-  border-radius: 60px;
-  color: white;                /* texto blanco fijo */
-  cursor: pointer;
-  transition: all 0.3s ease-out;
-  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3);
-  margin-top: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Eliminamos el pseudo-elemento que podía causar el efecto blanco */
-.login-btn::after {
-  display: none;
-}
-
-/* Hover más contrastante */
-.login-btn:hover {
-  background: linear-gradient(135deg, var(--green-800), var(--green-900));
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(26, 74, 30, 0.5);
-  color: white;                /* aseguramos que el texto siga siendo blanco */
-}
-
-/* Active (cuando se hace clic) */
-.login-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(26, 74, 30, 0.4);
-}
-
-/* Mensaje de feedback */
-.login-message {
-  font-family: var(--font-body);
   font-size: 0.9rem;
-  text-align: center;
-  margin-top: 1.5rem;
-  padding: 0.75rem;
-  border-radius: 60px;
-  background: var(--green-50);
-  color: var(--green-800);
-  border: 1px solid var(--green-200);
-  opacity: 0.9;
+  padding: 0.85rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-/* Enlaces del footer dentro de la tarjeta */
+/* Botón Ingresar: Verde Bosque */
+.login-btn {
+  background: #1A6163 !important; 
+  color: #FFFFFF !important;
+  margin-top: 0.8rem;
+}
+
+.login-btn:hover {
+  background: #35BA99 !important; /* Cambio a verde acento */
+  box-shadow: 0 8px 15px rgba(53, 186, 153, 0.2);
+}
+
+/* Botón Google: Ahora con color de la marca */
+.google-btn {
+  background: #FFFFFF;
+  border: 1.5px solid #1A6163; /* Borde con el verde principal */
+  color: #1A6163;
+  margin-top: 1rem;
+}
+
+.google-btn:hover {
+  background: rgba(26, 97, 99, 0.05);
+  border-color: #35BA99;
+  color: #35BA99;
+}
+
 .login-footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 1.8rem;
-  font-size: 0.9rem;
-  font-family: var(--font-body);
+  margin-top: 1.5rem;
 }
 
 .login-footer a {
-  color: var(--green-600);
+  color: #35BA99 !important;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .login-footer a:hover {
-  color: var(--green-800);
+  color: #1A6163 !important;
   text-decoration: underline;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .login-card {
-    padding: 2rem 1.5rem;
-  }
-
-  .login-card h2 {
-    font-size: 1.8rem;
-  }
-
-  .login-footer {
-    flex-direction: column;
-    gap: 0.8rem;
-    align-items: center;
-  }
 }

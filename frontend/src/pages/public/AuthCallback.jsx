@@ -7,6 +7,7 @@ function AuthCallback() {
 
   useEffect(() => {
     const userParam = searchParams.get("user");
+    const token = searchParams.get("token");        // ← NUEVO
     const error = searchParams.get("error");
 
     if (error) {
@@ -14,9 +15,11 @@ function AuthCallback() {
       return;
     }
 
-    if (userParam) {
+    if (userParam && token) {
       try {
         const user = JSON.parse(decodeURIComponent(userParam));
+        // ✅ GUARDAR TOKEN Y USUARIO
+        localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
 
         if (user.rol === "administrador") {
