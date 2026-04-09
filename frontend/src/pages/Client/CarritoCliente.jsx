@@ -5,15 +5,16 @@ import { getToken } from '../../utils/auth';
 import { useCart } from '../../context/CartContext';
 import '../../styles/client/Carrito.css';
 
+// ✅ URL dinámica con fallback para desarrollo local
+const API_BASE = import.meta.env.VITE_API_URL;
+
+
 const CarritoCliente = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { refreshCart } = useCart();
-
-  // ✅ 1. Definimos la URL base desde las variables de entorno
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchCarrito = async () => {
     const token = getToken();
@@ -22,8 +23,8 @@ const CarritoCliente = () => {
       return;
     }
     try {
-      // ✅ 2. Actualizamos la URL para obtener el carrito
-      const res = await axios.get(`${API_URL}/api/client/carrito`, {
+      // ✅ Usar API_BASE
+      const res = await axios.get(`${API_BASE}/api/client/carrito`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setItems(res.data);
@@ -43,8 +44,8 @@ const CarritoCliente = () => {
     if (cantidad < 1) return;
     const token = getToken();
     try {
-      // ✅ 3. Actualizamos la URL para el PUT
-      await axios.put(`${API_URL}/api/client/carrito/${carritoId}`, 
+      // ✅ Usar API_BASE
+      await axios.put(`${API_BASE}/api/client/carrito/${carritoId}`, 
         { cantidad }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -59,8 +60,8 @@ const CarritoCliente = () => {
     if (!window.confirm('¿Eliminar este producto del carrito?')) return;
     const token = getToken();
     try {
-      // ✅ 4. Actualizamos la URL para el DELETE
-      await axios.delete(`${API_URL}/api/client/carrito/${carritoId}`, {
+      // ✅ Usar API_BASE
+      await axios.delete(`${API_BASE}/api/client/carrito/${carritoId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       await fetchCarrito();

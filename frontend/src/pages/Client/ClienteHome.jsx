@@ -1,360 +1,124 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useOutletContext } from "react-router-dom";
-import "../../styles/client/ClientHome.css"; 
+import { useState, useEffect } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import "../../styles/client/ClientHome.css";
 
-// ✅ 1. Definimos la URL base usando la variable de entorno
 const API_BASE = import.meta.env.VITE_API_URL;
-const API_CATALOGO = `${API_BASE}/api/catalogo`;
 
 function ClienteHome() {
   const context = useOutletContext();
-  const [busqueda, setBusqueda] = useState("");
-  const [productos, setProductos] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [pagina, setPagina] = useState(1);
-  const [totalPags, setTotalPags] = useState(1);
+  const navigate = useNavigate();
+  const [destacados, setDestacados] = useState([]);
+  const [misDisenos, setMisDisenos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null);
-  const [categorias, setCategorias] = useState([]);
-  const [catActiva, setCatActiva] = useState("");
-  const inputRef = useRef(null);
 
-  if (!context) return null;
-  const { user } = context;
+  const { user } = context || {};
 
-  // Categorías
+  // Cargar productos personalizados destacados (ejemplos)
   useEffect(() => {
-    // ✅ 2. Usamos la ruta dinámica para categorías
-    fetch(`${API_CATALOGO}/categorias`)
+    fetch(`${API_BASE}/api/personalizados/destacados`)
       .then(r => r.json())
-      .then(d => setCategorias(Array.isArray(d) ? d : []))
-      .catch(() => {});
+      .then(data => setDestacados(Array.isArray(data) ? data : []))
+      .catch(() => setDestacados([]))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Productos
-  const cargar = useCallback(async (b, cat, pag) => {
-    setLoading(true);
-    try {
-      const p = new URLSearchParams({ pagina: pag, por_pagina: 12, orden: "reciente" });
-      if (b) p.set("busqueda", b);
-      if (cat) p.set("categoria_id", cat);
-      
-      // ✅ 3. Usamos la ruta dinámica para productos
-      const r = await fetch(`${API_CATALOGO}/productos?${p}`);
-      const d = await r.json();
-      setProductos(d.productos || []);
-      setTotal(d.total || 0);
-      setTotalPags(d.total_paginas || 1);
-    } catch {
-      setProductos([]);
-    }
-    setLoading(false);
-  }, []);
-
+  // Si el usuario está logueado, cargar sus propios diseños
   useEffect(() => {
-    cargar(busqueda, catActiva, pagina);
-  }, [busqueda, catActiva, pagina, cargar]);
+    if (user) {
+      fetch(`${API_BASE}/api/usuario/mis-personalizaciones`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } // ajusta según tu auth
+      })
+        .then(r => r.json())
+        .then(data => setMisDisenos(Array.isArray(data) ? data : []))
+        .catch(() => setMisDisenos([]));
+    }
+  }, [user]);
 
-  const handleBusqueda = (e) => {
-    setBusqueda(e.target.value);
-    setPagina(1);
-  };
-
-  const abrirModal = async (id) => {
-    try {
-      // ✅ 4. Ruta dinámica para el detalle del producto
-      const p = await fetch(`${API_CATALOGO}/productos/${id}`).then(r => r.json());
-      setModal(p);
-    } catch {}
-  };
+  const irACatalogo = () => navigate('/cliente/catalogo');
 
   return (
-    <div className="ch-bg">
-      {/* HERO */}
-      <div className="ch-hero">
-        <p className="ch-hero__greeting">Bienvenido, {user?.nombre} 👋</p>
-        <h1 className="ch-hero__title">¿Qué deseas personalizar hoy?</h1>
-        <p className="ch-hero__subtitle">
-          {total > 0 && !loading ? `${total} productos disponibles` : "Explora nuestro catálogo"}
-        </p>
-
-        {/* Barra de búsqueda */}
-        <div className="ch-search">
-          <span className="ch-search__icon">🔍</span>
-          <input
-            ref={inputRef}
-            value={busqueda}
-            onChange={handleBusqueda}
-            placeholder="Buscar productos..."
-            className="ch-search__input"
-          />
-          {busqueda && (
-            <button
-              onClick={() => { setBusqueda(""); inputRef.current?.focus(); }}
-              className="ch-search__clear"
-            >
-              ✕
-            </button>
-          )}
-          <button
-            onClick={() => cargar(busqueda, catActiva, 1)}
-            className="ch-search__button"
-          >
-            Buscar
+    <div className="ch-home">
+      {/* Hero principal */}
+      <section className="ch-hero">
+        <div className="ch-hero__content">
+          <h1 className="ch-hero__title">Crea productos únicos con tu estilo</h1>
+          <p className="ch-hero__subtitle">
+            Elige entre nuestra amplia variedad de productos base y personalízalos a tu gusto.
+            Camisetas, tazas, gorras, y mucho más.
+          </p>
+          <button className="ch-hero__button" onClick={irACatalogo}>
+            Comenzar a personalizar →
           </button>
         </div>
-      </div>
+        <div className="ch-hero__image">
+          {/* Puedes poner una imagen ilustrativa */}
+          <img src="/hero-personalizacion.jpg" alt="Personalización" />
+        </div>
+      </section>
 
-      {/* Tabs de categorías */}
-      <div className="ch-tabs">
-        {[{ id: "", nombre: "✨ Todos" }, ...categorias].map(c => {
-          const activo = String(catActiva) === String(c.id);
-          return (
-            <button
-              key={c.id}
-              onClick={() => { setCatActiva(String(c.id)); setPagina(1); }}
-              className={`ch-tab ${activo ? "ch-tab--active" : ""}`}
-            >
-              {c.nombre}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Grid de productos */}
-      <div className="ch-grid">
-        {loading ? (
-          <div className="ch-grid__container">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="ch-skeleton" />
+      {/* Sección: Productos personalizados destacados (inspiración) */}
+      {!loading && destacados.length > 0 && (
+        <section className="ch-section">
+          <div className="ch-section__header">
+            <h2>✨ Ideas que inspiran</h2>
+            <p>Mira cómo otros han personalizado sus productos</p>
+          </div>
+          <div className="ch-scroll-horizontal">
+            {destacados.map(item => (
+              <div key={item.id} className="ch-card-inspiracion" onClick={() => navigate(`/personalizado/${item.id}`)}>
+                <img src={item.imagen_url} alt={item.nombre} />
+                <div className="ch-card-inspiracion__info">
+                  <h4>{item.nombre}</h4>
+                  {item.usuario_nombre && <span>por {item.usuario_nombre}</span>}
+                </div>
+              </div>
             ))}
           </div>
-        ) : productos.length === 0 ? (
-          <div className="ch-empty">
-            <div className="ch-empty__icon">🔍</div>
-            <h3 className="ch-empty__title">Sin resultados</h3>
-            <p className="ch-empty__text">Intenta con otra búsqueda o categoría.</p>
-            <button
-              onClick={() => { setBusqueda(""); setCatActiva(""); }}
-              className="ch-empty__button"
-            >
-              Ver todos
+        </section>
+      )}
+
+      {/* Sección: Tus últimos diseños (solo si el usuario tiene) */}
+      {user && misDisenos.length > 0 && (
+        <section className="ch-section">
+          <div className="ch-section__header">
+            <h2>🔄 Tus creaciones</h2>
+            <button className="ch-section__link" onClick={() => navigate('/cliente/mis-disenos')}>
+              Ver todos →
             </button>
           </div>
-        ) : (
-          <>
-            <div className="ch-grid__container">
-              {productos.map((p, i) => (
-                <TarjetaCliente
-                  key={p.id}
-                  producto={p}
-                  idx={i}
-                  onClick={() => abrirModal(p.id)}
-                />
-              ))}
-            </div>
-
-            {/* Paginación */}
-            {totalPags > 1 && (
-              <div className="ch-pagination">
-                <button
-                  className="ch-pagination__button"
-                  disabled={pagina === 1}
-                  onClick={() => setPagina(p => p - 1)}
-                >
-                  ← Ant
-                </button>
-                {[...Array(totalPags)].map((_, i) => (
-                  <button
-                    key={i}
-                    className={`ch-pagination__button ${pagina === i + 1 ? "ch-pagination__button--active" : ""}`}
-                    onClick={() => setPagina(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  className="ch-pagination__button"
-                  disabled={pagina === totalPags}
-                  onClick={() => setPagina(p => p + 1)}
-                >
-                  Sig →
-                </button>
+          <div className="ch-scroll-horizontal">
+            {misDisenos.slice(0, 6).map(d => (
+              <div key={d.id} className="ch-card-mini" onClick={() => navigate(`/personalizado/${d.id}`)}>
+                <img src={d.imagen_url} alt={d.nombre} />
+                <p>{d.nombre}</p>
+                <small>{new Date(d.fecha_creacion).toLocaleDateString()}</small>
               </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Modal */}
-      {modal && <ModalCliente producto={modal} onClose={() => setModal(null)} />}
-    </div>
-  );
-}
-
-/* Tarjeta de producto */
-function TarjetaCliente({ producto: p, idx, onClick }) {
-  const API_BASE = import.meta.env.VITE_API_URL;
-  const [hover, setHover] = useState(false);
-  
-  // ✅ 5. Ajuste de URL de imagen para Render
-  const img = p.imagen_url?.startsWith("http") 
-    ? p.imagen_url 
-    : p.imagen_url ? `${API_BASE}${p.imagen_url}` : null;
-    
-  const precio = parseFloat(p.precio_min || p.precio_base || 0);
-
-  const cardStyle = {
-    animationDelay: `${idx * 0.05}s`,
-  };
-
-  return (
-    <div
-      className="ch-card"
-      style={cardStyle}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={onClick}
-    >
-      <div className="ch-card__image">
-        {img ? (
-          <img src={img} alt={p.nombre} />
-        ) : (
-          <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem", opacity: 0.15 }}>
-            🛍️
-          </div>
-        )}
-        {p.categoria_nombre && (
-          <span className="ch-card__badge">{p.categoria_nombre}</span>
-        )}
-      </div>
-
-      <div className="ch-card__content">
-        <h3 className="ch-card__title">{p.nombre}</h3>
-
-        {p.colores?.length > 0 && (
-          <div className="ch-card__colors">
-            {p.colores.slice(0, 4).map(c => (
-              <span key={c.id} className="ch-card__color">{c.nombre}</span>
             ))}
-            {p.colores.length > 4 && (
-              <span className="ch-card__color-more">+{p.colores.length - 4}</span>
-            )}
           </div>
-        )}
+        </section>
+      )}
 
-        <div className="ch-card__footer">
-          <div>
-            <span className="ch-card__price-label">Desde</span>
-            <div className="ch-card__price">${precio.toFixed(2)}</div>
-          </div>
-          <span className="ch-card__action">Ver más →</span>
+      {/* Sección: Categorías populares (enlaces rápidos al catálogo con filtro) */}
+      <section className="ch-categorias-populares">
+        <h2>Explora por categoría</h2>
+        <div className="ch-categorias-grid">
+          <button onClick={() => navigate('/cliente/catalogo?categoria=1')}>👕 Camisetas</button>
+          <button onClick={() => navigate('/cliente/catalogo?categoria=2')}>☕ Tazas</button>
+          <button onClick={() => navigate('/cliente/catalogo?categoria=3')}>🧢 Gorras</button>
+          <button onClick={() => navigate('/cliente/catalogo?categoria=4')}>📱 Fundas</button>
         </div>
-      </div>
-    </div>
-  );
-}
+      </section>
 
-/* Modal de producto */
-function ModalCliente({ producto: p, onClose }) {
-  const API_BASE = import.meta.env.VITE_API_URL;
-  const [varSel, setVarSel] = useState(p.variantes?.find(v => v.stock > 0) || p.variantes?.[0] || null);
-  
-  const img = (varSel?.imagen_url || p.imagen_url || "");
-  // ✅ 6. Ajuste de URL de imagen en Modal para Render
-  const imgSrc = img.startsWith("http") ? img : img ? `${API_BASE}${img}` : null;
-  
-  const precio = parseFloat(p.precio_base || 0) + parseFloat(varSel?.precio_adicional || 0);
-  const WA = "521XXXXXXXXXX"; // Recuerda cambiar esto por tu número real
-  const msg = `Hola NovaGraf 👋 Me interesa: *${p.nombre}*${varSel ? ` — ${varSel.sku || ""}` : ""} ¿Me pueden cotizar?`;
-
-  return (
-    <div className="ch-modal-overlay" onClick={onClose}>
-      <div className="ch-modal" onClick={e => e.stopPropagation()}>
-        <div className="ch-modal__image">
-          {imgSrc ? (
-            <img src={imgSrc} alt={p.nombre} />
-          ) : (
-            <span style={{ fontSize: "5rem", opacity: 0.15 }}>🛍️</span>
-          )}
+      {/* Llamada a la acción final */}
+      <section className="ch-cta">
+        <div className="ch-cta__content">
+          <h2>¿Listo para crear algo único?</h2>
+          <p>Selecciona el producto base y dale tu toque personal.</p>
+          <button onClick={irACatalogo} className="ch-cta__button">
+            Ir al catálogo
+          </button>
         </div>
-
-        <div className="ch-modal__content">
-          <div className="ch-modal__header">
-            <span className="ch-modal__category">{p.categoria_nombre}</span>
-            <button className="ch-modal__close" onClick={onClose}>✕</button>
-          </div>
-
-          <h2 className="ch-modal__title">{p.nombre}</h2>
-          {p.descripcion && <p className="ch-modal__description">{p.descripcion}</p>}
-
-          {p.colores?.length > 0 && (
-            <div>
-              <p className="ch-modal__section-title">Color</p>
-              <div className="ch-modal__colors">
-                {p.colores.map(c => {
-                  const sel = varSel?.color_id === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      onClick={() => {
-                        const v = p.variantes?.find(v => v.color_id === c.id && v.stock > 0) || p.variantes?.find(v => v.color_id === c.id);
-                        if (v) setVarSel(v);
-                      }}
-                      className={`ch-modal__color-btn ${sel ? "ch-modal__color-btn--selected" : ""}`}
-                    >
-                      {c.nombre}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {p.variantes?.length > 0 && (
-            <div>
-              <p className="ch-modal__section-title">Variante</p>
-              <div className="ch-modal__variants">
-                {p.variantes.map(v => {
-                  const sel = varSel?.id === v.id;
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => v.stock > 0 && setVarSel(v)}
-                      className={`ch-modal__variant-btn ${sel ? "ch-modal__variant-btn--selected" : ""} ${v.stock === 0 ? "ch-modal__variant-btn--disabled" : ""}`}
-                      disabled={v.stock === 0}
-                    >
-                      {v.sku}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="ch-modal__footer">
-            <div className="ch-modal__price-row">
-              <div>
-                <div className="ch-modal__price-label">Precio</div>
-                <div className="ch-modal__price">${precio.toFixed(2)}</div>
-              </div>
-              {varSel && (
-                <span className={`ch-modal__stock ${varSel.stock > 0 ? "ch-modal__stock--available" : "ch-modal__stock--unavailable"}`}>
-                  {varSel.stock > 0 ? `✓ ${varSel.stock} disponibles` : "✕ Sin stock"}
-                </span>
-              )}
-            </div>
-            <a
-              href={`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="ch-modal__whatsapp"
-            >
-              💬 Cotizar por WhatsApp
-            </a>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
