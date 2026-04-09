@@ -27,7 +27,6 @@ import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
 import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
-import CarritoCliente from "./pages/Client/CarritoCliente";
 
 
 
@@ -82,7 +81,7 @@ function App() {
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
           <Route path="/cliente/pedidos" element={<div>Mis Pedidos</div>} />
-          <Route path="/cliente/carrito" element={<CarritoCliente />} />
+          <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
           <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
           <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
