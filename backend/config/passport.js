@@ -5,10 +5,12 @@ const db = require('./db');
 
 // ─── GOOGLE ───────────────────────────────────────────────
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: '/api/auth/google/callback'
-}, async (accessToken, refreshToken, profile, done) => {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    // Usa la variable de entorno si existe, si no, usa la ruta relativa
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+    proxy: true // CRÍTICO: Para que Render maneje correctamente el HTTPS
+  }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails[0].value;
     const nombre = profile.name.givenName || 'Usuario';
