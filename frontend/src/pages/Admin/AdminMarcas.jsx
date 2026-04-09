@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/Admin/AdminMarcas.css";
+import "../../styles/admin/AdminMarcas.css";
 
 function AdminMarcas() {
   const [marcas, setMarcas] = useState([]);
@@ -9,7 +9,9 @@ function AdminMarcas() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = "http://localhost:5000/api/admin/marcas";
+  // ✅ URL dinámica con fallback para desarrollo local
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API = `${API_BASE}/api/admin/marcas`;
 
   const obtenerMarcas = async () => {
     setLoading(true);
@@ -129,7 +131,14 @@ function AdminMarcas() {
               <tr key={marca.id}>
                 <td>{marca.id}</td>
                 <td>{marca.nombre}</td>
-                <td><button type="button" className="btn-editar" onClick={() => handleEditar(marca)}>Editar</button><button type="button" className="btn-eliminar" onClick={() => handleEliminar(marca.id)}>Eliminar</button></td>
+                <td>
+                  <button type="button" className="btn-editar" onClick={() => handleEditar(marca)}>
+                    Editar
+                  </button>
+                  <button type="button" className="btn-eliminar" onClick={() => handleEliminar(marca.id)}>
+                    Eliminar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

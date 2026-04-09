@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Eye, EyeOff, Package, Briefcase, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
-const API = 'http://localhost:5000';
+// ✅ URL dinámica con fallback para desarrollo local
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // ─── MODAL DE CONFIRMACIÓN ───────────────────────────────────────────────────
 const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) => {

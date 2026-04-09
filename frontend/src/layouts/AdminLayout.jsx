@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import "../styles/Admin/AdminLayout.css";
+import "../styles/admin/AdminLayout.css";
 
 const SEARCH_OPTIONS = [
   { label: "Gestión de Marcas", path: "marcas", keywords: ["marca", "marcas", "brand"] },

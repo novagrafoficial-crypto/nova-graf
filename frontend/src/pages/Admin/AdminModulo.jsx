@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import "../../styles/Admin/AdminModulo.css";
+import "../../styles/admin/AdminModulo.css";
 
-const API_MODULO    = "http://localhost:5000/api/admin/modulo";
-const API_MONITOREO = "http://localhost:5000/api/admin/monitoreo";
+// ✅ URL dinámica con fallback para desarrollo local
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_MODULO    = `${API_BASE}/api/admin/modulo`;
+const API_MONITOREO = `${API_BASE}/api/admin/monitoreo`;
 
 const fetchJSON = async (url) => {
   const res = await fetch(url);

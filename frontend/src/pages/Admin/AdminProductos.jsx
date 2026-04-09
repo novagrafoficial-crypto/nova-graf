@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import "../../styles/Admin/AdminProductos.css";
+import "../../styles/admin/AdminProductos.css";
 
-
-const API = "http://localhost:5000/api/admin/productos";
-const API_BASE = "http://localhost:5000/api/admin";
+// ✅ URLs dinámicas con fallback para desarrollo local
+const API_BASE_FULL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = `${API_BASE_FULL}/api/admin/productos`;
+const API_BASE = `${API_BASE_FULL}/api/admin`;
 
 const S = {
   page: { fontFamily: "'Segoe UI', sans-serif", background: "#f1f5f9", minHeight: "100vh", padding: "2rem" },
@@ -530,7 +531,7 @@ function DetalleProducto({ producto, catalogos, onActualizar, onVolver }) {
 
       <div style={{...S.card,display:"grid",gridTemplateColumns:"auto 1fr",gap:"1.5rem",alignItems:"start"}}>
         {producto.imagen_url
-          ? <img src={`http://localhost:5000${producto.imagen_url}`} alt={producto.nombre} style={{width:"130px",height:"130px",objectFit:"cover",borderRadius:"12px",border:"1px solid #e2e8f0"}} />
+          ? <img src={`${API_BASE_FULL}${producto.imagen_url}`} alt={producto.nombre} style={{width:"130px",height:"130px",objectFit:"cover",borderRadius:"12px",border:"1px solid #e2e8f0"}} />
           : <div style={{width:"130px",height:"130px",background:"#f1f5f9",borderRadius:"12px",display:"flex",alignItems:"center",justifyContent:"center",color:"#94a3b8",fontSize:"2.5rem"}}>📷</div>
         }
         <div>

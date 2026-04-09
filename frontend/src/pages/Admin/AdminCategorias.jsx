@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/Admin/AdminCategorias.css";
+import "../../styles/admin/adminCategorias.css";
 
 function AdminCategorias() {
   const [categorias, setCategorias] = useState([]);
@@ -7,7 +7,9 @@ function AdminCategorias() {
   const [editando, setEditando] = useState(false);
   const [idEditar, setIdEditar] = useState(null);
 
-  const API = "http://localhost:5000/api/admin/categorias";
+  // ✅ URL dinámica con fallback para desarrollo local
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API = `${API_BASE}/api/admin/categorias`;
 
   const obtenerCategorias = async () => {
     try {
@@ -70,7 +72,7 @@ function AdminCategorias() {
   const handleEditar = (cat) => {
     setNombre(cat.nombre);
     setEditando(true);
-    setIdEditar(cat.id); // ✅ PostgreSQL usa "id", no "_id"
+    setIdEditar(cat.id);
   };
 
   const handleCancelar = () => {
@@ -107,7 +109,7 @@ function AdminCategorias() {
         </thead>
         <tbody>
           {categorias.map((cat) => (
-            <tr key={cat.id}> {/* ✅ */}
+            <tr key={cat.id}>
               <td>{cat.nombre}</td>
               <td>
                 <button
@@ -120,7 +122,7 @@ function AdminCategorias() {
                 <button
                   type="button"
                   className="btn-eliminar"
-                  onClick={() => handleEliminar(cat.id)} // ✅
+                  onClick={() => handleEliminar(cat.id)}
                 >
                   Eliminar
                 </button>

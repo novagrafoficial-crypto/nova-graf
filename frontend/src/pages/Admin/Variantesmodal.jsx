@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import "../../styles/Admin/Variantesmodal.css";
+import "../../styles/admin/Variantesmodal.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const POR_PAGINA = 10;

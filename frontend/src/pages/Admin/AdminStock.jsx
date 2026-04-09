@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import '../../styles/Admin/AdminStock.css'; // Opcional: puedes usar el mismo CSS de la versión HTML o modularizado
+import React, { useState, useEffect } from 'react';
+import '../../styles/admin/AdminStock.css';
 
-// --- Datos Mock (simulan la respuesta de tu API) ---
-const AdminStock = [
+// ✅ URL dinámica con fallback para desarrollo local
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// --- Datos Mock (fallback si la API no responde) ---
+const ventasMock = [
   { id: 1001, fecha: "2025-02-18", producto: "Laptop Gamer XT", cantidad: 2, total: 2799.98 },
   { id: 1002, fecha: "2025-02-19", producto: "Mouse Inalámbrico", cantidad: 5, total: 149.95 },
   { id: 1003, fecha: "2025-02-20", producto: "Monitor 24'' 4K", cantidad: 1, total: 389.99 },
@@ -12,7 +15,7 @@ const AdminStock = [
   { id: 1007, fecha: "2025-02-24", producto: "Tableta Gráfica", cantidad: 1, total: 159.99 }
 ];
 
-const comprasData = [
+const comprasMock = [
   { id: 2001, fecha: "2025-02-10", proveedor: "TecnoDist S.A.", producto: "Procesadores Ryzen 7", cantidad: 15, total: 3749.85 },
   { id: 2002, fecha: "2025-02-12", proveedor: "Componentes Global", producto: "Memorias RAM 16GB", cantidad: 30, total: 1799.70 },
   { id: 2003, fecha: "2025-02-14", proveedor: "LogiTech Supplies", producto: "Mouse Oficina", cantidad: 50, total: 499.50 },
@@ -22,7 +25,7 @@ const comprasData = [
   { id: 2007, fecha: "2025-02-22", proveedor: "OfficeTech", producto: "Sillas Ergonómicas", cantidad: 5, total: 1249.95 }
 ];
 
-const inventarioData = [
+const inventarioMock = [
   { id: 3001, producto: "Laptop Gamer XT", categoria: "Computadoras", stock: 12, precio: 1399.99 },
   { id: 3002, producto: "Mouse Inalámbrico", categoria: "Periféricos", stock: 84, precio: 29.99 },
   { id: 3003, producto: "Monitor 24'' 4K", categoria: "Monitores", stock: 7, precio: 389.99 },
@@ -61,20 +64,39 @@ const columnDefinitions = {
   ]
 };
 
-const AdminPanel = () => {
+const AdminStock = () => {
   const [currentSection, setCurrentSection] = useState('ventas');
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Obtener datos según sección
-  const getData = () => {
-    switch (currentSection) {
-      case 'ventas': return ventasData;
-      case 'compras': return comprasData;
-      case 'inventario': return inventarioData;
-      default: return [];
+  const fetchData = async (section) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const endpoint = `${API_BASE}/api/admin/stock/${section}`;
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      console.error(`Error al cargar ${section}:`, err);
+      // Usar datos mock como fallback
+      if (section === 'ventas') setData(ventasMock);
+      else if (section === 'compras') setData(comprasMock);
+      else if (section === 'inventario') setData(inventarioMock);
+      setError('Usando datos de ejemplo. No se pudo conectar con el servidor.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const data = getData();
+  useEffect(() => {
+    fetchData(currentSection);
+  }, [currentSection]);
+
   const columns = columnDefinitions[currentSection];
   const sectionTitle = {
     ventas: '💰 Ventas realizadas',
@@ -83,6 +105,9 @@ const AdminPanel = () => {
   }[currentSection];
 
   const renderTable = () => {
+    if (loading) {
+      return <div className="empty-message">🔄 Cargando datos...</div>;
+    }
     if (!data.length) {
       return <div className="empty-message">📭 No hay registros para mostrar.</div>;
     }
@@ -151,11 +176,12 @@ const AdminPanel = () => {
             <span className="badge-count">{data.length} registros</span>
           </h2>
         </div>
+        {error && <div className="error-message">⚠️ {error}</div>}
         {renderTable()}
       </div>
 
       <div className="footer-note">
-        ⚡ Datos de ejemplo — Integra con tus endpoints reales.
+        ⚡ Conectado a API {API_BASE}
       </div>
     </div>
   );

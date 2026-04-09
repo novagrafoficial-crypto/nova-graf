@@ -1,7 +1,7 @@
 // src/pages/Admin/PrediccionProducto.jsx
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import "../../styles/Admin/Prediccionpage.css";
+import "../../styles/admin/Prediccionpage.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 

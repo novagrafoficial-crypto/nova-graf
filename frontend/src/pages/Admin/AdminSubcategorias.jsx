@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/Admin/AdminSubcategorias.css";
+import "../../styles/admin/AdminSubcategorias.css";
 
 function AdminSubcategorias() {
   const [subcategorias, setSubcategorias] = useState([]);
@@ -11,8 +11,10 @@ function AdminSubcategorias() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = "http://localhost:5000/api/admin/subcategorias";
-  const API_CATS = "http://localhost:5000/api/admin/categorias";
+  // ✅ URLs dinámicas con fallback para desarrollo local
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API = `${API_BASE}/api/admin/subcategorias`;
+  const API_CATS = `${API_BASE}/api/admin/categorias`;
 
   const obtenerSubcategorias = async () => {
     setLoading(true);
@@ -160,7 +162,14 @@ function AdminSubcategorias() {
                 <td>{sub.id}</td>
                 <td>{sub.nombre}</td>
                 <td>{sub.categoria_nombre}</td>
-                <td><button type="button" className="btn-editar" onClick={() => handleEditar(sub)}>Editar</button><button type="button" className="btn-eliminar" onClick={() => handleEliminar(sub.id)}>Eliminar</button></td>
+                <td>
+                  <button type="button" className="btn-editar" onClick={() => handleEditar(sub)}>
+                    Editar
+                  </button>
+                  <button type="button" className="btn-eliminar" onClick={() => handleEliminar(sub.id)}>
+                    Eliminar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

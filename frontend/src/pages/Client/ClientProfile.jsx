@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "../../utils/auth";
-import "../../styles/client/ClientProfile.css";
+import "../../styles/client/Clientprofile.css";
 
 // ✅ 1. Definimos la URL base dinámica
 const API_BASE = import.meta.env.VITE_API_URL;

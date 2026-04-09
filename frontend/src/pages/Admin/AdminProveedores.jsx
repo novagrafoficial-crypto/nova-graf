@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+
+// ✅ URL dinámica con fallback para desarrollo local
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const AdminProveedor = () => {
     const [formData, setFormData] = useState({
@@ -15,7 +18,7 @@ const AdminProveedor = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:5000/api/admin/proveedores/registrar', {
+            const response = await fetch(`${API_BASE}/api/admin/proveedores/registrar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

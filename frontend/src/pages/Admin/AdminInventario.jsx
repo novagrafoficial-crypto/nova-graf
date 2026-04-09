@@ -1,9 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import "../../styles/Admin/AdminInventario.css";
+import "../../styles/admin/AdminInventario.css";
+
+// ✅ URL dinámica con fallback para desarrollo local
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-const API      = "http://localhost:5000/api/admin/inventario";
-const API_PROD = "http://localhost:5000/api/admin/productos";
+const API      = `${API_BASE}/api/admin/inventario`;
+const API_PROD = `${API_BASE}/api/admin/productos`;
 
 // ─── Fórmulas (internas, el usuario nunca las ve directamente) ────────────────
 const calcEOQ = (D, S, H) =>

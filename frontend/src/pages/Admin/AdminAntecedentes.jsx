@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-const API = "http://localhost:5000/api/admin/antecedentes";
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = `${API_BASE}/api/admin/antecedentes`;
 
 export default function AdminAntecedentes() {
   const [antecedentes, setAntecedentes] = useState([]);
