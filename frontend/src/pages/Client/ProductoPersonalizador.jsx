@@ -5,6 +5,12 @@ import axios from 'axios';
 import { getToken } from '../../utils/auth';
 import '../../styles/client/ProductoPersonalizado.css';
 
+// ✅ 1. Definimos la URL base usando la variable de entorno
+const API_BASE = import.meta.env.VITE_API_URL;
+const API_BORRADORES = `${API_BASE}/api/client/borradores`;
+const API_CARRITO = `${API_BASE}/api/client/carrito`;
+const API_PRODUCTOS_PERS = `${API_BASE}/api/client/productos/personalizados`;
+
 const FONTS = [
   'Arial', 'Verdana', 'Georgia', 'Times New Roman',
   'Poppins', 'Montserrat', 'Pacifico', 'Lobster',
@@ -52,20 +58,29 @@ const ProductoPersonalizador = () => {
   const [resizing, setResizing] = useState(null);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
+  // ✅ 2. Helper para normalizar URLs de imágenes
+  const getFullImageUrl = useCallback((url) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return `${API_BASE}${url}`;
+  }, []);
+
   // Cargar imagen de fondo
   useEffect(() => {
     if (!imagenProducto) {
       setImgError(true);
       return;
     }
+    const fullUrl = getFullImageUrl(imagenProducto);
     const img = new Image();
-    img.onload = () => setImgSrc(imagenProducto);
+    img.crossOrigin = "anonymous"; // Importante para html2canvas y CORS
+    img.onload = () => setImgSrc(fullUrl);
     img.onerror = () => {
-      console.warn('Error cargando imagen:', imagenProducto);
+      console.warn('Error cargando imagen:', fullUrl);
       setImgError(true);
     };
-    img.src = imagenProducto;
-  }, [imagenProducto]);
+    img.src = fullUrl;
+  }, [imagenProducto, getFullImageUrl]);
 
   // Cargar elementos guardados al editar un borrador
   useEffect(() => {
@@ -76,7 +91,7 @@ const ProductoPersonalizador = () => {
     }
   }, [borradorId, elementosGuardados]);
 
-  // Cargar propiedades del texto seleccionado (sin dependencia de 'elementos')
+  // Cargar propiedades del texto seleccionado
   useEffect(() => {
     if (!seleccionado) return;
     const elemento = elementos.find(el => el.id === seleccionado);
@@ -92,7 +107,7 @@ const ProductoPersonalizador = () => {
     setShadowBlur(elemento.shadowBlur || 4);
   }, [seleccionado]);
 
-  // Aplicar cambios de estilo al elemento seleccionado (evita bucles)
+  // Aplicar cambios de estilo al elemento seleccionado
   useEffect(() => {
     if (!seleccionado) return;
     const elemento = elementos.find(el => el.id === seleccionado);
@@ -120,7 +135,7 @@ const ProductoPersonalizador = () => {
         shadowBlur,
       });
     }
-  }, [colorTexto, fontSize, fontFamily, fontWeight, fontStyle, textDecoration, textAlign, shadowBlur, seleccionado, elementos]);
+  }, [colorTexto, fontSize, fontFamily, fontWeight, fontStyle, textDecoration, textAlign, shadowBlur, seleccionado]);
 
   const agregarTexto = useCallback(() => {
     if (!textoInput.trim()) return;
@@ -236,12 +251,13 @@ const ProductoPersonalizador = () => {
   const generarImagenDiseno = async () => {
     if (!escenaRef.current) return null;
     setSelec(null);
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 100));
     const html2canvas = (await import('html2canvas')).default;
     const canvas = await html2canvas(escenaRef.current, {
       useCORS: true,
       scale: 2,
       backgroundColor: '#ffffff',
+      logging: false
     });
     return canvas.toDataURL('image/png');
   };
@@ -256,15 +272,8 @@ const ProductoPersonalizador = () => {
         return;
       }
 
-      setSelec(null);
-      await new Promise(r => setTimeout(r, 50));
-      const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(escenaRef.current, {
-        useCORS: true,
-        scale: 1.5,
-        backgroundColor: '#ffffff',
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const imageData = await generarImagenDiseno();
+      const blob = await (await fetch(imageData)).blob();
 
       const user = JSON.parse(localStorage.getItem('user'));
       const userId = user.id_usuario;
@@ -274,38 +283,26 @@ const ProductoPersonalizador = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('borradores')
-        .upload(filePath, blob, {
-          contentType: 'image/png',
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(filePath, blob, { contentType: 'image/png' });
 
-      if (uploadError) {
-        throw new Error('Error al subir la imagen');
-      }
+      if (uploadError) throw new Error('Error al subir la imagen');
 
       const { data: { publicUrl } } = supabase.storage
         .from('borradores')
         .getPublicUrl(filePath);
 
+      // Si editamos, intentar borrar la vieja (opcional)
       if (editandoBorradorId) {
-        try {
-          const { data: borradorActual } = await axios.get(
-            `http://localhost:5000/api/client/borradores/${editandoBorradorId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          const oldImageUrl = borradorActual?.imagen_preview;
-          if (oldImageUrl) {
-            const urlParts = oldImageUrl.split('/public/borradores/');
-            if (urlParts.length === 2) {
-              const oldFilePath = urlParts[1];
-              await supabase.storage.from('borradores').remove([oldFilePath]);
-            }
-          }
-        } catch (err) {
-          console.warn('No se pudo eliminar la imagen anterior');
-        }
+         try {
+           const { data: borradorActual } = await axios.get(`${API_BORRADORES}/${editandoBorradorId}`, {
+             headers: { Authorization: `Bearer ${token}` }
+           });
+           const oldUrl = borradorActual?.imagen_preview;
+           if (oldUrl && oldUrl.includes('borradores/')) {
+             const oldPath = oldUrl.split('borradores/')[1];
+             await supabase.storage.from('borradores').remove([oldPath]);
+           }
+         } catch(e) { console.warn("No se pudo limpiar imagen previa"); }
       }
 
       const varianteId = variante?.variante_id || variante?.id;
@@ -320,17 +317,17 @@ const ProductoPersonalizador = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       if (editandoBorradorId) {
-        await axios.put(`http://localhost:5000/api/client/borradores/${editandoBorradorId}`, borradorData, config);
-        alert('✅ ¡Tu diseño ha sido actualizado con éxito!');
+        await axios.put(`${API_BORRADORES}/${editandoBorradorId}`, borradorData, config);
+        alert('✅ ¡Tu diseño ha sido actualizado!');
       } else {
-        await axios.post('http://localhost:5000/api/client/borradores', borradorData, config);
-        alert('🎉 ¡Diseño guardado en tu lista! Puedes verlo en "Mis diseños".');
+        await axios.post(API_BORRADORES, borradorData, config);
+        alert('🎉 ¡Diseño guardado en "Mis diseños"!');
       }
 
       navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
     } catch (err) {
       console.error(err);
-      alert('❌ No se pudo guardar el diseño. Por favor, inténtalo de nuevo.');
+      alert('❌ Error al guardar.');
     } finally {
       setGuardando(false);
     }
@@ -346,11 +343,9 @@ const ProductoPersonalizador = () => {
         return;
       }
 
-      // 1. Generar imagen del diseño
       const imagenUrl = await generarImagenDiseno();
       const blob = await (await fetch(imagenUrl)).blob();
 
-      // 2. Subir imagen a Supabase Storage
       const user = JSON.parse(localStorage.getItem('user'));
       const userId = user.id_usuario;
       const fileName = `carrito-${Date.now()}.png`;
@@ -358,31 +353,25 @@ const ProductoPersonalizador = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('borradores')
-        .upload(filePath, blob, {
-          contentType: 'image/png',
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(filePath, blob, { contentType: 'image/png' });
 
-      if (uploadError) throw new Error('Error al subir la imagen');
+      if (uploadError) throw new Error('Error al subir imagen');
 
       const { data: { publicUrl } } = supabase.storage
         .from('borradores')
         .getPublicUrl(filePath);
 
-      // 3. Preparar datos del producto personalizado
       const varianteId = variante?.variante_id || variante?.id;
       const textoPersonalizado = elementos
         .filter(el => el.tipo === 'texto')
         .map(t => t.contenido)
         .join(' | ');
-      const precioAdicionalPersonalizacion = 50; // Ajusta según tu lógica de negocio
-
+      
+      const precioAdicionalPersonalizacion = 50; 
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      // 4. Crear producto personalizado en la BD
       const { data: productoPersonalizado } = await axios.post(
-        'http://localhost:5000/api/client/productos/personalizados',
+        API_PRODUCTOS_PERS,
         {
           variante_id: varianteId,
           texto_personalizado: textoPersonalizado,
@@ -392,14 +381,12 @@ const ProductoPersonalizador = () => {
         config
       );
 
-      // 5. Calcular precio unitario
       const precioBase = parseFloat(variante?.precio_base || 0);
       const precioAdicionalVariante = parseFloat(variante?.precio_adicional || 0);
       const precioUnitario = precioBase + precioAdicionalVariante + precioAdicionalPersonalizacion;
 
-      // 6. Agregar al carrito (el backend ya maneja incremento si ya existe)
       const response = await axios.post(
-        'http://localhost:5000/api/client/carrito',
+        API_CARRITO,
         {
           producto_personalizado_id: productoPersonalizado.id,
           cantidad: 1,
@@ -408,16 +395,11 @@ const ProductoPersonalizador = () => {
         config
       );
 
-      // 7. Mensaje según respuesta del backend
-      if (response.data.message?.includes('Cantidad actualizada')) {
-        alert('🛒 Este diseño ya estaba en tu carrito. Se ha aumentado la cantidad.');
-      } else {
-        alert('🛒 ¡Producto agregado a tu carrito!');
-      }
+      alert(response.data.message?.includes('Cantidad actualizada') ? '🛒 Cantidad actualizada' : '🛒 ¡Agregado al carrito!');
       navigate('/cliente/carrito');
     } catch (err) {
       console.error(err);
-      alert('❌ No se pudo agregar al carrito. Intenta nuevamente.');
+      alert('❌ Error al agregar al carrito.');
     } finally {
       setGuardando(false);
     }
@@ -442,7 +424,7 @@ const ProductoPersonalizador = () => {
         <div className="pers-scene-wrap">
           <div className="pers-scene" ref={escenaRef} onClick={() => setSelec(null)}>
             {!imgError && imgSrc ? (
-              <img src={imgSrc} alt="producto" className="pers-producto-img" draggable={false} />
+              <img src={imgSrc} alt="producto" className="pers-producto-img" draggable={false} crossOrigin="anonymous" />
             ) : (
               <div className="pers-fallback-bg">🖼️ Vista previa no disponible</div>
             )}

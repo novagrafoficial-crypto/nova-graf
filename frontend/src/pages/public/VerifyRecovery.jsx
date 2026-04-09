@@ -11,13 +11,17 @@ function VerifyRecovery() {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
+  // ✅ 1. Definimos la URL usando la variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/verify-recovery-otp", {
+      // ✅ 2. Reemplazamos localhost por la variable dinámica
+      const res = await fetch(`${API_URL}/api/users/verify-recovery-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario, otp }),
@@ -42,7 +46,8 @@ function VerifyRecovery() {
     setResendLoading(true);
     setMessage("");
     try {
-      const res = await fetch("http://localhost:5000/api/users/resend-recovery-otp", {
+      // ✅ 3. Reemplazamos localhost en el reenvío de OTP de recuperación
+      const res = await fetch(`${API_URL}/api/users/resend-recovery-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario }),

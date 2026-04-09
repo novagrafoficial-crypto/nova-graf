@@ -8,13 +8,17 @@ function ForgotPassword() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ✅ 1. Definimos la URL usando la variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/forgot-password", {
+      // ✅ 2. Reemplazamos localhost por la variable con backticks (`)
+      const res = await fetch(`${API_URL}/api/users/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -34,14 +38,14 @@ function ForgotPassword() {
     }
   };
 
-  // Estilos verdes
+  // --- Estilos verdes (sin cambios) ---
   const styles = {
     container: {
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
       background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
-      paddingTop: "80px", // Ajusta según la altura de tu header
+      paddingTop: "80px",
     },
     main: {
       flex: 1,
@@ -60,11 +64,11 @@ function ForgotPassword() {
       border: "1px solid #e2e8f0",
     },
     title: {
-      fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+      fontFamily: "system-ui, sans-serif",
       fontSize: "1.75rem",
       fontWeight: "600",
       marginBottom: "8px",
-      color: "#065f46", // verde oscuro
+      color: "#065f46",
     },
     description: {
       color: "#4b5563",

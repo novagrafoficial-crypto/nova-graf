@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
-import "../../styles/client/ClientHome.css"; // Importamos los estilos
+import "../../styles/client/ClientHome.css"; 
 
-const API = "http://localhost:5000/api/catalogo";
+// ✅ 1. Definimos la URL base usando la variable de entorno
+const API_BASE = import.meta.env.VITE_API_URL;
+const API_CATALOGO = `${API_BASE}/api/catalogo`;
 
 function ClienteHome() {
   const context = useOutletContext();
@@ -22,7 +24,8 @@ function ClienteHome() {
 
   // Categorías
   useEffect(() => {
-    fetch(`${API}/categorias`)
+    // ✅ 2. Usamos la ruta dinámica para categorías
+    fetch(`${API_CATALOGO}/categorias`)
       .then(r => r.json())
       .then(d => setCategorias(Array.isArray(d) ? d : []))
       .catch(() => {});
@@ -35,7 +38,9 @@ function ClienteHome() {
       const p = new URLSearchParams({ pagina: pag, por_pagina: 12, orden: "reciente" });
       if (b) p.set("busqueda", b);
       if (cat) p.set("categoria_id", cat);
-      const r = await fetch(`${API}/productos?${p}`);
+      
+      // ✅ 3. Usamos la ruta dinámica para productos
+      const r = await fetch(`${API_CATALOGO}/productos?${p}`);
       const d = await r.json();
       setProductos(d.productos || []);
       setTotal(d.total || 0);
@@ -57,7 +62,8 @@ function ClienteHome() {
 
   const abrirModal = async (id) => {
     try {
-      const p = await fetch(`${API}/productos/${id}`).then(r => r.json());
+      // ✅ 4. Ruta dinámica para el detalle del producto
+      const p = await fetch(`${API_CATALOGO}/productos/${id}`).then(r => r.json());
       setModal(p);
     } catch {}
   };
@@ -188,11 +194,16 @@ function ClienteHome() {
 
 /* Tarjeta de producto */
 function TarjetaCliente({ producto: p, idx, onClick }) {
+  const API_BASE = import.meta.env.VITE_API_URL;
   const [hover, setHover] = useState(false);
-  const img = p.imagen_url?.startsWith("http") ? p.imagen_url : p.imagen_url ? `http://localhost:5000${p.imagen_url}` : null;
+  
+  // ✅ 5. Ajuste de URL de imagen para Render
+  const img = p.imagen_url?.startsWith("http") 
+    ? p.imagen_url 
+    : p.imagen_url ? `${API_BASE}${p.imagen_url}` : null;
+    
   const precio = parseFloat(p.precio_min || p.precio_base || 0);
 
-  // Estilo de animación de entrada
   const cardStyle = {
     animationDelay: `${idx * 0.05}s`,
   };
@@ -246,11 +257,15 @@ function TarjetaCliente({ producto: p, idx, onClick }) {
 
 /* Modal de producto */
 function ModalCliente({ producto: p, onClose }) {
+  const API_BASE = import.meta.env.VITE_API_URL;
   const [varSel, setVarSel] = useState(p.variantes?.find(v => v.stock > 0) || p.variantes?.[0] || null);
+  
   const img = (varSel?.imagen_url || p.imagen_url || "");
-  const imgSrc = img.startsWith("http") ? img : img ? `http://localhost:5000${img}` : null;
+  // ✅ 6. Ajuste de URL de imagen en Modal para Render
+  const imgSrc = img.startsWith("http") ? img : img ? `${API_BASE}${img}` : null;
+  
   const precio = parseFloat(p.precio_base || 0) + parseFloat(varSel?.precio_adicional || 0);
-  const WA = "521XXXXXXXXXX";
+  const WA = "521XXXXXXXXXX"; // Recuerda cambiar esto por tu número real
   const msg = `Hola NovaGraf 👋 Me interesa: *${p.nombre}*${varSel ? ` — ${varSel.sku || ""}` : ""} ¿Me pueden cotizar?`;
 
   return (
@@ -273,7 +288,6 @@ function ModalCliente({ producto: p, onClose }) {
           <h2 className="ch-modal__title">{p.nombre}</h2>
           {p.descripcion && <p className="ch-modal__description">{p.descripcion}</p>}
 
-          {/* Colores */}
           {p.colores?.length > 0 && (
             <div>
               <p className="ch-modal__section-title">Color</p>
@@ -297,7 +311,6 @@ function ModalCliente({ producto: p, onClose }) {
             </div>
           )}
 
-          {/* Variantes (si existen) */}
           {p.variantes?.length > 0 && (
             <div>
               <p className="ch-modal__section-title">Variante</p>

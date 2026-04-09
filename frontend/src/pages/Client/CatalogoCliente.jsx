@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/client/CatalogoCliente.css';
 
-const API = 'http://localhost:5000/api/client/productos';
+// ✅ 1. Definimos la URL base usando la variable de entorno
+const API_BASE = import.meta.env.VITE_API_URL;
+const API_ENDPOINT = `${API_BASE}/api/client/productos`;
 
 const ORDEN_OPCIONES = [
   { value: 'reciente',    label: 'Más reciente' },
@@ -36,21 +38,23 @@ const CatalogoCliente = () => {
 
   // ── FETCH INICIAL ────────────────────────────────
   useEffect(() => {
+    // ✅ 2. Usamos API_ENDPOINT para las peticiones
     Promise.allSettled([
-      axios.get(`${API}/catalogo`),
-      axios.get(`${API}/categorias`),
-      axios.get(`${API}/subcategorias`),
+      axios.get(`${API_ENDPOINT}/catalogo`),
+      axios.get(`${API_ENDPOINT}/categorias`),
+      axios.get(`${API_ENDPOINT}/subcategorias`),
     ]).then(([pRes, cRes, sRes]) => {
       if (pRes.status === 'fulfilled') setProductos(pRes.value.data);
       if (cRes.status === 'fulfilled') setCategorias(cRes.value.data);
       if (sRes.status === 'fulfilled') setSubcategorias(sRes.value.data);
+    }).catch(err => {
+      console.error("Error cargando el catálogo:", err);
     }).finally(() => setLoading(false));
   }, []);
 
   // ── CARGAR SUBCATEGORÍAS DEPENDIENTES ────────────
   const subcategoriasFiltradas = useMemo(() => {
     if (!categoriaId) return [];
-    // Obtener nombres de subcategorías reales de los productos bajo esa categoría
     const catNombre = categorias.find(c => c.id == categoriaId)?.nombre;
     if (!catNombre) return [];
     const nombresSet = new Set(
@@ -68,12 +72,14 @@ const CatalogoCliente = () => {
 
   // ── PRECIO MÁXIMO DEL CATÁLOGO ───────────────────
   const precioMaxCatalogo = useMemo(() =>
-    Math.ceil(Math.max(...productos.map(p => Number(p.precio_base)), 0)),
+    productos.length > 0 
+      ? Math.ceil(Math.max(...productos.map(p => Number(p.precio_base)), 0)) 
+      : 0,
   [productos]);
 
   // ── FILTRADO Y ORDENADO ──────────────────────────
   const productosFiltrados = useMemo(() => {
-    let lista = productos.filter(p => {
+    let lista = [...productos].filter(p => {
       const texto = busqueda.toLowerCase();
       const matchTexto = !busqueda ||
         p.producto_nombre.toLowerCase().includes(texto) ||
@@ -132,15 +138,12 @@ const CatalogoCliente = () => {
 
   return (
     <div className="catalogo-wrapper">
-      {/* Título y contador */}
       <div className="catalogo-header">
         <h2 className="catalogo-titulo">Elige tu producto base</h2>
         <span className="catalogo-conteo-header">{productosFiltrados.length} productos</span>
       </div>
 
-      {/* Barra de filtros estilo Reabastecimiento */}
       <div className="catalogo-filtros">
-        {/* Búsqueda */}
         <div className="catalogo-busqueda">
           <span className="catalogo-busqueda__icon">🔍</span>
           <input
@@ -151,7 +154,6 @@ const CatalogoCliente = () => {
           />
         </div>
 
-        {/* Select de categoría */}
         <select
           value={categoriaId}
           onChange={e => setCategoriaId(e.target.value)}
@@ -163,7 +165,6 @@ const CatalogoCliente = () => {
           ))}
         </select>
 
-        {/* Select de subcategoría (dependiente) */}
         <select
           value={subcategoriaId}
           onChange={e => setSubcategoriaId(e.target.value)}
@@ -176,7 +177,6 @@ const CatalogoCliente = () => {
           ))}
         </select>
 
-        {/* Select de orden */}
         <select
           value={orden}
           onChange={e => setOrden(e.target.value)}
@@ -187,7 +187,6 @@ const CatalogoCliente = () => {
           ))}
         </select>
 
-        {/* Popover de precio */}
         <div className="precio-wrapper" ref={precioRef}>
           <button
             className={`btn-precio ${(precioMin || precioMax) ? 'activo' : ''}`}
@@ -217,7 +216,6 @@ const CatalogoCliente = () => {
           )}
         </div>
 
-        {/* Botón limpiar filtros */}
         {hayFiltrosActivos && (
           <button className="btn-limpiar" onClick={limpiarFiltros}>
             ✕ Limpiar
@@ -225,7 +223,6 @@ const CatalogoCliente = () => {
         )}
       </div>
 
-      {/* Grid de productos */}
       {productosFiltrados.length === 0 ? (
         <div className="catalogo-sin-resultados">No se encontraron productos.</div>
       ) : (
@@ -250,7 +247,7 @@ const CatalogoCliente = () => {
                   <h3>{prod.producto_nombre}</h3>
                   <p className="desc">{prod.descripcion}</p>
                   <p className="precio">${Number(prod.precio_base).toFixed(2)}</p>
-                 {colores.length > 0 && (
+                  {colores.length > 0 && (
                     <div className="colores">
                       <span className="colores-label">Colores:</span>
                       <div className="colores-lista">

@@ -3,7 +3,9 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/client/ProductoDetalle.css';
 
-const API = 'http://localhost:5000/api/client/productos';
+// ✅ 1. Definimos la URL base usando la variable de entorno
+const API_BASE = import.meta.env.VITE_API_URL;
+const API_PRODUCTOS = `${API_BASE}/api/client/productos`;
 
 const ProductoDetalle = () => {
   const { id } = useParams();
@@ -20,6 +22,13 @@ const ProductoDetalle = () => {
   const [disenoPersonalizadoUrl, setDisenoPersonalizadoUrl] = useState(null);
   const [disenoJson, setDisenoJson] = useState(null);
 
+  // Helper para normalizar URLs de imágenes (Render vs Local)
+  const getFullImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `${API_BASE}${url}`;
+  };
+
   useEffect(() => {
     if (state?.disenoPersonalizadoUrl) {
       setDisenoPersonalizadoUrl(state.disenoPersonalizadoUrl);
@@ -33,8 +42,10 @@ const ProductoDetalle = () => {
   useEffect(() => {
     const fetchDetalle = async () => {
       try {
-        const res = await axios.get(`${API}/${id}`);
+        // ✅ 2. Uso de la ruta dinámica
+        const res = await axios.get(`${API_PRODUCTOS}/${id}`);
         setProducto(res.data);
+        
         const colorInicial = state?.colorSeleccionado;
         if (colorInicial) {
           const variante = res.data.variantes.find(v => v.color === colorInicial);
@@ -60,6 +71,7 @@ const ProductoDetalle = () => {
 
   const coloresUnicos = [...new Map(producto.variantes.map(v => [v.color, v])).values()];
   const variantesDelColor = producto.variantes.filter(v => v.color === varianteActiva?.color);
+  
   const atributosAgrupados = variantesDelColor.reduce((acc, v) => {
     (v.atributos || []).forEach(({ tipo, valor }) => {
       if (!acc[tipo]) acc[tipo] = new Set();
@@ -77,7 +89,8 @@ const ProductoDetalle = () => {
   const abrirPersonalizador = () => {
     navigate(`/cliente/producto/${id}/personalizar`, {
       state: {
-        imagenProducto: varianteActiva?.imagen_url || producto?.imagen_url || '',
+        // ✅ 3. Normalización de URL al navegar
+        imagenProducto: getFullImageUrl(varianteActiva?.imagen_url || producto?.imagen_url),
         productoId: id,
         variante: varianteActiva,
       }
@@ -104,12 +117,14 @@ const ProductoDetalle = () => {
       <button className="btn-volver" onClick={() => navigate(-1)}>← Volver al catálogo</button>
       <div className="detalle-layout">
         <div className="detalle-imagen">
+          {/* ✅ 4. Aplicación de getFullImageUrl para la imagen principal */}
           <img
-            src={disenoPersonalizadoUrl || varianteActiva?.imagen_url || 'https://via.placeholder.com/500x400?text=Sin+imagen'}
+            src={disenoPersonalizadoUrl || getFullImageUrl(varianteActiva?.imagen_url) || 'https://via.placeholder.com/500x400?text=Sin+imagen'}
             alt={producto.producto_nombre}
           />
           {disenoPersonalizadoUrl && <div className="diseno-badge">✨ Personalizado</div>}
         </div>
+        
         <div className="detalle-info">
           <h1 className="detalle-nombre">{producto.producto_nombre}</h1>
           <div className="detalle-badges">
@@ -139,7 +154,12 @@ const ProductoDetalle = () => {
                   }}
                   title={v.color}
                 >
-                  {v.imagen_url ? <img src={v.imagen_url} alt={v.color} className="color-thumb__img" /> : <span className="color-thumb__text">{v.color}</span>}
+                  {/* ✅ 5. Aplicación de getFullImageUrl para las miniaturas */}
+                  {v.imagen_url ? (
+                    <img src={getFullImageUrl(v.imagen_url)} alt={v.color} className="color-thumb__img" />
+                  ) : (
+                    <span className="color-thumb__text">{v.color}</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -163,7 +183,6 @@ const ProductoDetalle = () => {
             <input type="number" id="cantidad" min="1" value={cantidad} onChange={(e) => setCantidad(Math.max(1, parseInt(e.target.value) || 1))} className="cantidad-input" />
           </div>
 
-          {/* Mensaje de aviso */}
           <p className="detalle-aviso-personalizacion">
             ⚠️ Este producto requiere ser personalizado antes de agregar al carrito.
           </p>
