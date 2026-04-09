@@ -11,6 +11,9 @@ function ResetPassword() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // ✅ 1. Definimos la URL usando la variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -22,7 +25,8 @@ function ResetPassword() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/users/reset-password", {
+      // ✅ 2. Reemplazamos localhost por la variable dinámica
+      const res = await fetch(`${API_URL}/api/users/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario, newPassword, confirmPassword }),

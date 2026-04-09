@@ -11,17 +11,21 @@ function VerificarRegistro() {
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
 
+  // ✅ 1. Definimos la URL usando la variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/verify-otp", {
+      // ✅ 2. Reemplazamos localhost por la variable dinámica en la verificación
+      const res = await fetch(`${API_URL}/api/users/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id_usuario: id_usuario, // ← string, sin Number()
+          id_usuario: id_usuario,
           otp: String(otp)
         }),
       });
@@ -41,14 +45,14 @@ function VerificarRegistro() {
     }
   };
 
-  // ← Nuevo: reenviar código
-const handleResend = async () => {
+  const handleResend = async () => {
     setResending(true);
     setResendMessage("");
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/resend-activation-otp", { // ← solo cambia esto
+      // ✅ 3. Reemplazamos localhost en el reenvío de código
+      const res = await fetch(`${API_URL}/api/users/resend-activation-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario }),
@@ -119,7 +123,6 @@ const handleResend = async () => {
           </p>
         )}
 
-        {/* ← Botón reenviar código */}
         {!success && (
           <div style={{ marginTop: "20px", borderTop: "1px solid #f1f5f9", paddingTop: "16px" }}>
             <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginBottom: "8px" }}>

@@ -13,6 +13,9 @@ function Register() {
 
   const navigate = useNavigate();
 
+  // ✅ 1. Definimos la URL usando la variable de entorno
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleNext = () => {
@@ -38,7 +41,8 @@ function Register() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/users/register", {
+      // ✅ 2. Reemplazamos localhost por la variable dinámica
+      const res = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -55,8 +59,9 @@ function Register() {
     }
   };
 
-  const handleGoogleLogin = () => window.location.href = "http://localhost:5000/api/auth/google";
-  const handleFacebookLogin = () => window.location.href = "http://localhost:5000/api/auth/facebook";
+  // ✅ 3. Actualizamos los botones de redes sociales para que apunten a Render
+  const handleGoogleLogin = () => window.location.href = `${API_URL}/api/auth/google`;
+  const handleFacebookLogin = () => window.location.href = `${API_URL}/api/auth/facebook`;
 
   return (
     <div className="register-page">
@@ -195,6 +200,7 @@ function Register() {
           <p className="required-note">Todos los campos son obligatorios</p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
