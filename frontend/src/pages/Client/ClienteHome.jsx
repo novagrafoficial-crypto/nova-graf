@@ -1,349 +1,403 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useOutletContext } from "react-router-dom";
-import "../../styles/client/ClientHome.css"; // Importamos los estilos
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import '../../styles/client/ClientHome.css';
 
-const API = "http://localhost:5000/api/catalogo";
+const API_URL = import.meta.env.VITE_API_URL;
+const HOME_API = `${API_URL}/api/client/home`;
 
-function ClienteHome() {
-  const context = useOutletContext();
-  const [busqueda, setBusqueda] = useState("");
+export default function ClienteHome() {
+  const { user } = useOutletContext() || {};
+  const navigate = useNavigate();
+  const [portafolio, setPortafolio] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [pagina, setPagina] = useState(1);
-  const [totalPags, setTotalPags] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null);
   const [categorias, setCategorias] = useState([]);
-  const [catActiva, setCatActiva] = useState("");
-  const inputRef = useRef(null);
+  const [stats, setStats] = useState({ total_portafolio: 0, total_productos: 0, total_categorias: 0 });
+  const [loading, setLoading] = useState(true);
+  const [catActiva, setCatActiva] = useState('todas');
+  const [visible, setVisible] = useState(false);
+  const heroRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  if (!context) return null;
-  const { user } = context;
-
-  // Categorías
   useEffect(() => {
-    fetch(`${API}/categorias`)
+    fetch(HOME_API)
       .then(r => r.json())
-      .then(d => setCategorias(Array.isArray(d) ? d : []))
-      .catch(() => {});
+      .then(data => {
+        setPortafolio(data.portafolio || []);
+        setProductos(data.productos || []);
+        setCategorias(data.categorias || []);
+        setStats(data.stats || {});
+      })
+      .catch(err => console.error('Error:', err))
+      .finally(() => {
+        setLoading(false);
+        setTimeout(() => setVisible(true), 60);
+      });
   }, []);
 
-  // Productos
-  const cargar = useCallback(async (b, cat, pag) => {
-    setLoading(true);
-    try {
-      const p = new URLSearchParams({ pagina: pag, por_pagina: 12, orden: "reciente" });
-      if (b) p.set("busqueda", b);
-      if (cat) p.set("categoria_id", cat);
-      const r = await fetch(`${API}/productos?${p}`);
-      const d = await r.json();
-      setProductos(d.productos || []);
-      setTotal(d.total || 0);
-      setTotalPags(d.total_paginas || 1);
-    } catch {
-      setProductos([]);
-    }
-    setLoading(false);
-  }, []);
-
+  // Partículas animadas en canvas
   useEffect(() => {
-    cargar(busqueda, catActiva, pagina);
-  }, [busqueda, catActiva, pagina, cargar]);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let raf;
+    const resize = () => {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
 
-  const handleBusqueda = (e) => {
-    setBusqueda(e.target.value);
-    setPagina(1);
-  };
+    const particles = Array.from({ length: 28 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 3 + 1,
+      dx: (Math.random() - 0.5) * 0.4,
+      dy: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.5 + 0.15,
+    }));
 
-  const abrirModal = async (id) => {
-    try {
-      const p = await fetch(`${API}/productos/${id}`).then(r => r.json());
-      setModal(p);
-    } catch {}
-  };
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width)  p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height)  p.dy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(120, 255, 160, ${p.alpha})`;
+        ctx.fill();
+      });
+      // Líneas entre partículas cercanas
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(100, 220, 140, ${0.12 * (1 - dist / 110)})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, [loading]);
+
+  // Parallax
+  useEffect(() => {
+    const onScroll = () => {
+      if (heroRef.current)
+        heroRef.current.style.transform = `translateY(${window.scrollY * 0.2}px)`;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const productosFiltrados = catActiva === 'todas'
+    ? productos
+    : productos.filter(p => p.categoria_nombre?.toLowerCase() === catActiva.toLowerCase());
+
+  if (loading) return <LoadingHome />;
 
   return (
-    <div className="ch-bg">
-      {/* HERO */}
-      <div className="ch-hero">
-        <p className="ch-hero__greeting">Bienvenido, {user?.nombre} 👋</p>
-        <h1 className="ch-hero__title">¿Qué deseas personalizar hoy?</h1>
-        <p className="ch-hero__subtitle">
-          {total > 0 && !loading ? `${total} productos disponibles` : "Explora nuestro catálogo"}
-        </p>
+    <div className={`home-page ${visible ? 'home-page--in' : ''}`}>
 
-        {/* Barra de búsqueda */}
-        <div className="ch-search">
-          <span className="ch-search__icon">🔍</span>
-          <input
-            ref={inputRef}
-            value={busqueda}
-            onChange={handleBusqueda}
-            placeholder="Buscar productos..."
-            className="ch-search__input"
-          />
-          {busqueda && (
-            <button
-              onClick={() => { setBusqueda(""); inputRef.current?.focus(); }}
-              className="ch-search__clear"
-            >
-              ✕
+      {/* ══ HERO ══════════════════════════════════════════════ */}
+      <section className="home-hero">
+        <div className="home-hero__bg" ref={heroRef} />
+        <canvas ref={canvasRef} className="home-hero__canvas" />
+
+        {/* Formas decorativas */}
+        <div className="home-hero__blob home-hero__blob--1" />
+        <div className="home-hero__blob home-hero__blob--2" />
+        <div className="home-hero__ring home-hero__ring--1" />
+        <div className="home-hero__ring home-hero__ring--2" />
+
+        <div className="home-hero__content">
+          <span className="home-hero__chip">
+            <span className="home-hero__chip-dot" />
+            Nova Graf
+          </span>
+
+          <h1 className="home-hero__title">
+            Hola,{' '}
+            <span className="home-hero__name">
+              {user?.nombre || 'Cliente'}
+            </span>
+            <br />
+            <span className="home-hero__sub">¿Qué creamos hoy?</span>
+          </h1>
+
+          <p className="home-hero__desc">
+            Diseña, personaliza y lleva tu marca al siguiente nivel.<br />
+            Cada producto es único, igual que tu visión.
+          </p>
+
+          <div className="home-hero__ctas">
+            <button className="home-cta home-cta--primary"
+              onClick={() => navigate('/cliente/catalogo')}>
+              <span>Explorar catálogo</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
-          )}
-          <button
-            onClick={() => cargar(busqueda, catActiva, 1)}
-            className="ch-search__button"
-          >
-            Buscar
-          </button>
+            <button className="home-cta home-cta--ghost"
+              onClick={() => document.getElementById('portafolio')?.scrollIntoView({ behavior: 'smooth' })}>
+              Ver trabajos
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Tabs de categorías */}
-      <div className="ch-tabs">
-        {[{ id: "", nombre: "✨ Todos" }, ...categorias].map(c => {
-          const activo = String(catActiva) === String(c.id);
-          return (
-            <button
-              key={c.id}
-              onClick={() => { setCatActiva(String(c.id)); setPagina(1); }}
-              className={`ch-tab ${activo ? "ch-tab--active" : ""}`}
-            >
-              {c.nombre}
-            </button>
-          );
-        })}
-      </div>
+        {/* Tarjeta flotante decorativa */}
+        <div className="home-hero__float-card">
+          <div className="home-hero__float-icon">🎨</div>
+          <div>
+            <strong>Personalización</strong>
+            <span>Sin límites creativos</span>
+          </div>
+        </div>
 
-      {/* Grid de productos */}
-      <div className="ch-grid">
-        {loading ? (
-          <div className="ch-grid__container">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="ch-skeleton" />
-            ))}
-          </div>
-        ) : productos.length === 0 ? (
-          <div className="ch-empty">
-            <div className="ch-empty__icon">🔍</div>
-            <h3 className="ch-empty__title">Sin resultados</h3>
-            <p className="ch-empty__text">Intenta con otra búsqueda o categoría.</p>
-            <button
-              onClick={() => { setBusqueda(""); setCatActiva(""); }}
-              className="ch-empty__button"
-            >
-              Ver todos
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="ch-grid__container">
-              {productos.map((p, i) => (
-                <TarjetaCliente
-                  key={p.id}
-                  producto={p}
-                  idx={i}
-                  onClick={() => abrirModal(p.id)}
-                />
+        <div className="home-hero__scroll-hint">
+          <span>scroll</span>
+          <div className="home-hero__scroll-line" />
+        </div>
+      </section>
+
+      {/* ══ CATEGORÍAS ════════════════════════════════════════ */}
+      {categorias.length > 0 && (
+        <section className="home-section home-section--cats">
+          <div className="home-cats-wrap">
+            <div className="home-section__eyebrow">Colecciones</div>
+            <h2 className="home-section__title">Navega por categoría</h2>
+            <div className="home-cats">
+              <button
+                className={`home-cat ${catActiva === 'todas' ? 'home-cat--on' : ''}`}
+                onClick={() => setCatActiva('todas')}
+              >
+                <span className="home-cat__emoji">✦</span>
+                Todos
+                <span className="home-cat__count">{productos.length}</span>
+              </button>
+              {categorias.map(c => (
+                <button
+                  key={c.id}
+                  className={`home-cat ${catActiva === c.nombre.toLowerCase() ? 'home-cat--on' : ''}`}
+                  onClick={() => setCatActiva(c.nombre.toLowerCase())}
+                >
+                  <span className="home-cat__emoji">◈</span>
+                  {c.nombre}
+                  <span className="home-cat__count">{c.total_productos}</span>
+                </button>
               ))}
             </div>
+          </div>
+        </section>
+      )}
 
-            {/* Paginación */}
-            {totalPags > 1 && (
-              <div className="ch-pagination">
-                <button
-                  className="ch-pagination__button"
-                  disabled={pagina === 1}
-                  onClick={() => setPagina(p => p - 1)}
-                >
-                  ← Ant
-                </button>
-                {[...Array(totalPags)].map((_, i) => (
-                  <button
-                    key={i}
-                    className={`ch-pagination__button ${pagina === i + 1 ? "ch-pagination__button--active" : ""}`}
-                    onClick={() => setPagina(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  className="ch-pagination__button"
-                  disabled={pagina === totalPags}
-                  onClick={() => setPagina(p => p + 1)}
-                >
-                  Sig →
-                </button>
-              </div>
-            )}
-          </>
+      {/* ══ PRODUCTOS DESTACADOS ══════════════════════════════ */}
+      {productos.length > 0 && (
+        <section className="home-section">
+          <div className="home-section__head">
+            <div>
+              <div className="home-section__eyebrow">Destacados</div>
+              <h2 className="home-section__title">Productos para personalizar</h2>
+            </div>
+            <button className="home-link" onClick={() => navigate('/cliente/catalogo')}>
+              Ver todos →
+            </button>
+          </div>
+
+          <div className="home-grid home-grid--products">
+            {productosFiltrados.length === 0
+              ? <p className="home-empty">Sin productos en esta categoría.</p>
+              : productosFiltrados.map((p, i) => (
+                  <ProductCard
+                    key={p.id}
+                    producto={p}
+                    idx={i}
+                    onClick={() => navigate(`/cliente/producto/${p.id}`)}
+                  />
+                ))
+            }
+          </div>
+        </section>
+      )}
+
+      {/* ══ BANNER ════════════════════════════════════════════ */}
+      <section className="home-banner">
+        <div className="home-banner__bg" />
+        <div className="home-banner__orbs">
+          <div className="home-banner__orb home-banner__orb--1" />
+          <div className="home-banner__orb home-banner__orb--2" />
+        </div>
+        <div className="home-banner__body">
+          <div className="home-banner__left">
+            <span className="home-banner__label">🖨️ Personalización</span>
+            <h2>¿Tienes una idea<br />en mente?</h2>
+            <p>Elige un producto, sube tu diseño o pídenos uno desde cero. Nuestro equipo lo hace realidad.</p>
+            <button className="home-cta home-cta--white"
+              onClick={() => navigate('/cliente/catalogo')}>
+              <span>Comenzar proyecto</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <div className="home-banner__icons">
+            <div className="home-banner__icon-card home-banner__icon-card--1">
+              <span>🎨</span><small>Diseño</small>
+            </div>
+            <div className="home-banner__icon-card home-banner__icon-card--2">
+              <span>✂️</span><small>Corte</small>
+            </div>
+            <div className="home-banner__icon-card home-banner__icon-card--3">
+              <span>🖨️</span><small>Impresión</small>
+            </div>
+            <div className="home-banner__icon-card home-banner__icon-card--4">
+              <span>📦</span><small>Entrega</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ PORTAFOLIO ════════════════════════════════════════ */}
+      <section className="home-section" id="portafolio">
+        <div className="home-section__head">
+          <div>
+            <div className="home-section__eyebrow">Portafolio</div>
+            <h2 className="home-section__title">Trabajos realizados</h2>
+          </div>
+        </div>
+
+        {portafolio.length === 0 ? (
+          <div className="home-empty-state">
+            <span>🖼️</span>
+            <p>Aún no hay trabajos publicados.</p>
+          </div>
+        ) : (
+          <div className="home-grid home-grid--portfolio">
+            {portafolio.map((item, i) => (
+              <PortfolioCard key={item.id} item={item} idx={i} />
+            ))}
+          </div>
         )}
-      </div>
+      </section>
 
-      {/* Modal */}
-      {modal && <ModalCliente producto={modal} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
-/* Tarjeta de producto */
-function TarjetaCliente({ producto: p, idx, onClick }) {
-  const [hover, setHover] = useState(false);
-  const img = p.imagen_url?.startsWith("http") ? p.imagen_url : p.imagen_url ? `http://localhost:5000${p.imagen_url}` : null;
+/* ══ STAT BUBBLE ══════════════════════════════════════════════ */
+function StatBubble({ value, label, icon, delay }) {
+  return (
+    <div className="home-stat" style={{ animationDelay: delay }}>
+      <span className="home-stat__icon">{icon}</span>
+      <strong className="home-stat__value">{value}</strong>
+      <span className="home-stat__label">{label}</span>
+    </div>
+  );
+}
+
+/* ══ PRODUCT CARD ═════════════════════════════════════════════ */
+function ProductCard({ producto: p, idx, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  const img = p.imagen_url?.startsWith('http')
+    ? p.imagen_url
+    : p.imagen_url ? `http://localhost:5000${p.imagen_url}` : null;
   const precio = parseFloat(p.precio_min || p.precio_base || 0);
 
-  // Estilo de animación de entrada
-  const cardStyle = {
-    animationDelay: `${idx * 0.05}s`,
-  };
-
   return (
-    <div
-      className="ch-card"
-      style={cardStyle}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+    <article
+      className={`pcard ${hovered ? 'pcard--hovered' : ''}`}
+      style={{ '--delay': `${idx * 0.08}s` }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={onClick}
     >
-      <div className="ch-card__image">
-        {img ? (
-          <img src={img} alt={p.nombre} />
-        ) : (
-          <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem", opacity: 0.15 }}>
-            🛍️
-          </div>
-        )}
+      <div className="pcard__media">
+        {img
+          ? <img src={img} alt={p.nombre} loading="lazy" />
+          : <div className="pcard__no-img">🛍️</div>
+        }
         {p.categoria_nombre && (
-          <span className="ch-card__badge">{p.categoria_nombre}</span>
+          <span className="pcard__cat">{p.categoria_nombre}</span>
         )}
-      </div>
-
-      <div className="ch-card__content">
-        <h3 className="ch-card__title">{p.nombre}</h3>
-
-        {p.colores?.length > 0 && (
-          <div className="ch-card__colors">
-            {p.colores.slice(0, 4).map(c => (
-              <span key={c.id} className="ch-card__color">{c.nombre}</span>
-            ))}
-            {p.colores.length > 4 && (
-              <span className="ch-card__color-more">+{p.colores.length - 4}</span>
-            )}
-          </div>
-        )}
-
-        <div className="ch-card__footer">
-          <div>
-            <span className="ch-card__price-label">Desde</span>
-            <div className="ch-card__price">${precio.toFixed(2)}</div>
-          </div>
-          <span className="ch-card__action">Ver más →</span>
+        <div className="pcard__shine" />
+        <div className="pcard__hover-cta">
+          <span>✦ Personalizar</span>
         </div>
       </div>
-    </div>
+
+      <div className="pcard__body">
+        <h3 className="pcard__name">{p.nombre}</h3>
+        {p.descripcion && (
+          <p className="pcard__desc">{p.descripcion}</p>
+        )}
+        <div className="pcard__foot">
+          <div className="pcard__price-wrap">
+            <span className="pcard__desde">desde</span>
+            <strong className="pcard__price">${precio.toFixed(2)}</strong>
+          </div>
+          <span className="pcard__vars">
+            {p.total_variantes} var.
+          </span>
+        </div>
+      </div>
+
+      <div className="pcard__glow" />
+    </article>
   );
 }
 
-/* Modal de producto */
-function ModalCliente({ producto: p, onClose }) {
-  const [varSel, setVarSel] = useState(p.variantes?.find(v => v.stock > 0) || p.variantes?.[0] || null);
-  const img = (varSel?.imagen_url || p.imagen_url || "");
-  const imgSrc = img.startsWith("http") ? img : img ? `http://localhost:5000${img}` : null;
-  const precio = parseFloat(p.precio_base || 0) + parseFloat(varSel?.precio_adicional || 0);
-  const WA = "521XXXXXXXXXX";
-  const msg = `Hola NovaGraf 👋 Me interesa: *${p.nombre}*${varSel ? ` — ${varSel.sku || ""}` : ""} ¿Me pueden cotizar?`;
+/* ══ PORTFOLIO CARD ═══════════════════════════════════════════ */
+function PortfolioCard({ item, idx }) {
+  const [hovered, setHovered] = useState(false);
+  const img = item.imagen_url?.startsWith('http')
+    ? item.imagen_url
+    : item.imagen_url ? `http://localhost:5000${item.imagen_url}` : null;
 
   return (
-    <div className="ch-modal-overlay" onClick={onClose}>
-      <div className="ch-modal" onClick={e => e.stopPropagation()}>
-        <div className="ch-modal__image">
-          {imgSrc ? (
-            <img src={imgSrc} alt={p.nombre} />
-          ) : (
-            <span style={{ fontSize: "5rem", opacity: 0.15 }}>🛍️</span>
+    <article
+      className={`pfcard ${hovered ? 'pfcard--hovered' : ''}`}
+      style={{ '--delay': `${idx * 0.1}s` }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="pfcard__media">
+        {img
+          ? <img src={img} alt={item.descripcion || 'Trabajo'} loading="lazy" />
+          : <div className="pfcard__no-img">🖼️</div>
+        }
+        <div className="pfcard__overlay">
+          {item.producto_nombre && (
+            <span className="pfcard__product">{item.producto_nombre}</span>
           )}
         </div>
+      </div>
+      {item.descripcion && (
+        <div className="pfcard__body">
+          <p>{item.descripcion}</p>
+        </div>
+      )}
+    </article>
+  );
+}
 
-        <div className="ch-modal__content">
-          <div className="ch-modal__header">
-            <span className="ch-modal__category">{p.categoria_nombre}</span>
-            <button className="ch-modal__close" onClick={onClose}>✕</button>
-          </div>
-
-          <h2 className="ch-modal__title">{p.nombre}</h2>
-          {p.descripcion && <p className="ch-modal__description">{p.descripcion}</p>}
-
-          {/* Colores */}
-          {p.colores?.length > 0 && (
-            <div>
-              <p className="ch-modal__section-title">Color</p>
-              <div className="ch-modal__colors">
-                {p.colores.map(c => {
-                  const sel = varSel?.color_id === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      onClick={() => {
-                        const v = p.variantes?.find(v => v.color_id === c.id && v.stock > 0) || p.variantes?.find(v => v.color_id === c.id);
-                        if (v) setVarSel(v);
-                      }}
-                      className={`ch-modal__color-btn ${sel ? "ch-modal__color-btn--selected" : ""}`}
-                    >
-                      {c.nombre}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Variantes (si existen) */}
-          {p.variantes?.length > 0 && (
-            <div>
-              <p className="ch-modal__section-title">Variante</p>
-              <div className="ch-modal__variants">
-                {p.variantes.map(v => {
-                  const sel = varSel?.id === v.id;
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => v.stock > 0 && setVarSel(v)}
-                      className={`ch-modal__variant-btn ${sel ? "ch-modal__variant-btn--selected" : ""} ${v.stock === 0 ? "ch-modal__variant-btn--disabled" : ""}`}
-                      disabled={v.stock === 0}
-                    >
-                      {v.sku}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="ch-modal__footer">
-            <div className="ch-modal__price-row">
-              <div>
-                <div className="ch-modal__price-label">Precio</div>
-                <div className="ch-modal__price">${precio.toFixed(2)}</div>
-              </div>
-              {varSel && (
-                <span className={`ch-modal__stock ${varSel.stock > 0 ? "ch-modal__stock--available" : "ch-modal__stock--unavailable"}`}>
-                  {varSel.stock > 0 ? `✓ ${varSel.stock} disponibles` : "✕ Sin stock"}
-                </span>
-              )}
-            </div>
-            <a
-              href={`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="ch-modal__whatsapp"
-            >
-              💬 Cotizar por WhatsApp
-            </a>
-          </div>
+/* ══ LOADING ══════════════════════════════════════════════════ */
+function LoadingHome() {
+  return (
+    <div className="home-page">
+      <div className="home-skeleton-hero" />
+      <div className="home-section">
+        <div className="home-grid home-grid--products">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="home-skeleton-card" style={{ '--delay': `${i * 0.07}s` }} />
+          ))}
         </div>
       </div>
     </div>
   );
 }
-
-export default ClienteHome;

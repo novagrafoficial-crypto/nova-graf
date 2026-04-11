@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ResetPassword() {
   const { id_usuario } = useParams();
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ function ResetPassword() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/users/reset-password", {
+      const res = await fetch(`${API_URL}/api/users/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario, newPassword, confirmPassword }),

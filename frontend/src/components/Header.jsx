@@ -121,7 +121,7 @@ const Header = ({
         <div className="navbar-center">
           <ul className="navbar-menu">
             <li><Link to="/" className="nav-link">Inicio</Link></li>
-            <li><Link to="/catalogo" className="nav-link">Catálogo</Link></li>
+            <li><Link to="/catalogo" className="nav-link">Productos</Link></li>
             <li
               className="dropdown"
               ref={dropdownRef}

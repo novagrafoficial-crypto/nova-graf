@@ -1,11 +1,8 @@
 // frontend/src/pages/public/Home.jsx
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/public/Home.css';
-import heroImg from '../../assets/Novagraf.jpg';
-
-const API = 'http://localhost:5000';
 
 const PASOS = [
   { icon: '🛍️', num: '01', titulo: 'Elige tu producto', desc: 'Explora nuestro catálogo y selecciona el producto base que deseas personalizar.' },
@@ -42,23 +39,25 @@ const Home = () => {
   const [portIdx, setPortIdx] = useState(0);
   const [contacto, setContacto] = useState({ nombre: '', correo: '', mensaje: '' });
   const [enviado,  setEnviado]  = useState(false);
-  const [visibleSections, setVisibleSections] = useState({});
 
   useEffect(() => {
-    axios.get(`${API}/api/client/productos/catalogo`)
+    // ✅ Endpoint público para productos (catálogo)
+    axios.get('/api/public/productos/catalogo')
       .then(res => setProductos(res.data.slice(0, 6)))
       .catch(err => console.error('Error productos:', err))
       .finally(() => setLoadingProd(false));
 
-    axios.get(`${API}/api/public/public/portafolio`)
+    // ✅ Endpoint público para portafolio
+    axios.get('/api/public/portafolio')
       .then(res => setPortafolio(res.data))
       .catch(err => console.error('Error portafolio:', err))
       .finally(() => setLoadingPort(false));
 
+    // ✅ Misión, visión, valores (rutas relativas)
     Promise.allSettled([
-      fetch(`${API}/api/public/mision`).then(r => r.json()),
-      fetch(`${API}/api/public/vision`).then(r => r.json()),
-      fetch(`${API}/api/public/valores`).then(r => r.json()),
+      fetch('/api/public/mision').then(r => r.json()),
+      fetch('/api/public/vision').then(r => r.json()),
+      fetch('/api/public/valores').then(r => r.json()),
     ]).then(([resMision, resVision, resValores]) => {
       if (resMision.status === 'fulfilled') {
         const d = resMision.value; setMision(d?.data ?? d);
@@ -77,7 +76,7 @@ const Home = () => {
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            setVisibleSections(prev => ({ ...prev, [entry.target.id]: true }));
+            entry.target.classList.add('animate-in');
           }
         });
       },
@@ -109,60 +108,45 @@ const Home = () => {
   }
 
   return (
-  <main className="home">
-    {/* ══════════════════════════════════════════
-          HERO (Estilo Kids Gift Shop)
+    <main className="home">
+      {/* ══════════════════════════════════════════
+            HERO (Estilo NovaGraf)
         ══════════════════════════════════════════ */}
-    <section className="hero-nova">
-      {/* El fondo ahora es un contenedor limpio */}
-      <div className="hero-nova__inner">
-        
-        {/* LADO IZQUIERDO: TEXTO Y ACCIONES */}
-        <div className="hero-nova__content">
-          <div className="hero-nova__badge">
-             <span>✨ Personalización profesional</span>
+      <section className="hero-nova">
+        <div className="hero-nova__inner">
+           <div className="hero-card">   {/* ← NUEVO RECUADRO */}
+          <div className="hero-nova__content">
+            <div className="hero-nova__badge">
+              <span>✨ Personalización profesional</span>
+            </div>
+            <h1 className="hero-nova__titulo">
+              Tu marca, <br />
+              <span className="hero-nova__destaque">impresa</span> <br />
+              en todo.
+            </h1>
+            <p className="hero-nova__desc">
+              Transforma cualquier producto con tu imagen, logo o diseño. <br />
+              <strong>Calidad garantizada. Entregas puntuales.</strong> <br />
+              Huejutla de Reyes, Hidalgo.
+            </p>
+            <div className="hero-nova__actions">
+              <Link to="/catalogo" className="btn-redondeado btn-principal">
+                Ver catálogo
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </Link>
+              <a href="#portafolio" className="btn-redondeado btn-secundario">Ver trabajos</a>
+            </div>
           </div>
-          <h1 className="hero-nova__titulo">
-            Tu marca, <br />
-            <span className="hero-nova__destaque">impresa</span> <br />
-            en todo.
-          </h1>
-          <p className="hero-nova__desc">
-            Transforma cualquier producto con tu imagen, logo o diseño. <br />
-            <strong>Calidad garantizada. Entregas puntuales.</strong> <br />
-            Huejutla de Reyes, Hidalgo.
-          </p>
-          <div className="hero-nova__actions">
-            <Link to="/catalogo" className="btn-redondeado btn-principal">
-              Ver catálogo
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </Link>
-            <a href="#portafolio" className="btn-redondeado btn-secundario">Ver trabajos</a>
           </div>
         </div>
-      </div>
 
-      {/* LA CURVA: El toque que hace que se vea como el ejemplo que te gustó */}
-      <div className="hero-nova__curva">
-  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path 
-      d="M0,0 C480,100 960,100 1440,0 L1440,120 L0,120 Z" 
-      fill="#1A6163">
-    </path>
-  </svg>
-</div>
-    </section>
-      {/* ══════════════════════════════════════════
-          STATS BAR
-      ══════════════════════════════════════════ */}
-      <div className="stats-bar">
-        {STATS.map((s, i) => (
-          <div key={i} className="stats-bar__item">
-            <strong>{s.valor}</strong>
-            <span>{s.label}</span>
-          </div>
-        ))}
-      </div>
+        {/* CURVA DECORATIVA */}
+        <div className="hero-nova__curva">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,0 C480,100 960,100 1440,0 L1440,120 L0,120 Z" fill="#1A6163" />
+          </svg>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════
           PORTAFOLIO
@@ -223,7 +207,7 @@ const Home = () => {
       {/* ══════════════════════════════════════════
           CÓMO FUNCIONA
       ══════════════════════════════════════════ */}
-      <section className="proceso-section" id="proceso">
+      <section className="proceso-section" id="proceso" data-animate>
         <div className="proceso-section__deco" />
         <div className="ng-section__head ng-section__head--light">
           <div className="ng-section__label ng-section__label--light">Proceso</div>
@@ -293,7 +277,7 @@ const Home = () => {
       {/* ══════════════════════════════════════════
           TESTIMONIOS
       ══════════════════════════════════════════ */}
-      <section className="testimonios-section" id="testimonios">
+      <section className="testimonios-section" id="testimonios" data-animate>
         <div className="ng-section__head ng-section__head--center">
           <div className="ng-section__label">Clientes</div>
           <h2 className="ng-section__title">Lo que dicen de nosotros</h2>
@@ -319,7 +303,7 @@ const Home = () => {
       {/* ══════════════════════════════════════════
           CONTACTO
       ══════════════════════════════════════════ */}
-      <section className="contacto-section" id="contacto-rapido">
+      <section className="contacto-section" id="contacto-rapido" data-animate>
         <div className="contacto-section__inner">
           <div className="contacto-info">
             <div className="ng-section__label">Contacto</div>
@@ -328,55 +312,27 @@ const Home = () => {
               Cuéntanos tu idea y te ayudamos a plasmarla en el producto ideal para ti o tu empresa.
             </p>
             <ul className="contacto-datos">
-              <li>
-                <span className="contacto-datos__ico">📍</span>
-                Huejutla de Reyes Hidalgo
-              </li>
-              <li>
-                <span className="contacto-datos__ico">📧</span>
-                contacto@novagraf.com
-              </li>
-              <li>
-                <span className="contacto-datos__ico">📞</span>
-                782 123 4567
-              </li>
+              <li><span className="contacto-datos__ico">📍</span> Huejutla de Reyes Hidalgo</li>
+              <li><span className="contacto-datos__ico">📧</span> contacto@novagraf.com</li>
+              <li><span className="contacto-datos__ico">📞</span> 782 123 4567</li>
             </ul>
           </div>
 
           <form className="contacto-form" onSubmit={handleContacto}>
-            {enviado && (
-              <div className="contacto-form__ok">
-                ✅ ¡Mensaje enviado! Te contactaremos pronto.
-              </div>
-            )}
+            {enviado && <div className="contacto-form__ok">✅ ¡Mensaje enviado! Te contactaremos pronto.</div>}
             <div className="contacto-form__row">
               <div className="contacto-form__field">
                 <label>Nombre</label>
-                <input
-                  type="text" placeholder="Tu nombre"
-                  value={contacto.nombre}
-                  onChange={e => setContacto(p => ({ ...p, nombre: e.target.value }))}
-                  required
-                />
+                <input type="text" placeholder="Tu nombre" value={contacto.nombre} onChange={e => setContacto(p => ({ ...p, nombre: e.target.value }))} required />
               </div>
               <div className="contacto-form__field">
                 <label>Correo</label>
-                <input
-                  type="email" placeholder="tu@correo.com"
-                  value={contacto.correo}
-                  onChange={e => setContacto(p => ({ ...p, correo: e.target.value }))}
-                  required
-                />
+                <input type="email" placeholder="tu@correo.com" value={contacto.correo} onChange={e => setContacto(p => ({ ...p, correo: e.target.value }))} required />
               </div>
             </div>
             <div className="contacto-form__field">
               <label>Mensaje</label>
-              <textarea
-                placeholder="Cuéntanos tu proyecto..." rows={5}
-                value={contacto.mensaje}
-                onChange={e => setContacto(p => ({ ...p, mensaje: e.target.value }))}
-                required
-              />
+              <textarea placeholder="Cuéntanos tu proyecto..." rows={5} value={contacto.mensaje} onChange={e => setContacto(p => ({ ...p, mensaje: e.target.value }))} required />
             </div>
             <button type="submit" className="btn-enviar">
               Enviar mensaje
@@ -385,7 +341,6 @@ const Home = () => {
           </form>
         </div>
       </section>
-
     </main>
   );
 };

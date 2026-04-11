@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../../styles/public/Mision.css'; // Ajusta la ruta según tu estructura
-import Footer from '../../components/Footer';
+import '../../styles/public/Mision.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 const RedesSociales = () => {
   const [redes, setRedes] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/public/redes-sociales') // o usa proxy
+    fetch(`${API_URL}/api/public/redes-sociales`)
       .then(res => res.json())
       .then(data => {
         console.log('Respuesta:', data);
-        // Extrae la descripción según la estructura real
         const red_social = data.red_social || data.data?.red_social;
         const url_red_social = data.url_red_social || data.data?.url_red_social;
         if (red_social) {
@@ -39,9 +40,7 @@ const RedesSociales = () => {
       )}
       <Link to="/">Volver al inicio</Link>
     </div>
-    
   );
-  
 };
 
 export default RedesSociales;

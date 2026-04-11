@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { CartProvider } from "./context/CartContext"; // <-- IMPORTANTE
 
 import PublicLayout from "./layouts/PublicLayout";
 import ClientLayout from "./layouts/ClientLayout";
@@ -18,6 +19,7 @@ import VerifyRecovery from "./pages/public/VerifyRecovery";
 import ResetPassword from "./pages/public/ResetPassword";
 import AuthCallback from "./pages/public/AuthCallback";
 import Contacto from './pages/public/Contacto';
+import PortafolioPublico from './pages/public/PortafolioPublico';
 
 
 // Páginas cliente
@@ -25,6 +27,13 @@ import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
+import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
+import CarritoCliente from './pages/Client/CarritoCliente';
+import Checkout from './pages/Client/Checkout';
+import PedidosCliente from './pages/Client/PedidosCliente';
+
+// Dentro de las rutas protegidas del cliente:
+
 
 // Páginas admin
 import AdminMarcas from "./pages/Admin/AdminMarcas";
@@ -67,16 +76,21 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/redes-sociales" element={<Redes />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/catalogo" element={<PortafolioPublico />} />
         </Route>
 
         {/* Rutas cliente */}
-        <Route element={<ClientLayout />}>
+        <Route element={<CartProvider><ClientLayout /></CartProvider>}>
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
-          <Route path="/cliente/pedidos" element={<div>Mis Pedidos</div>} />
-          <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
+          <Route path="/cliente/pedidos" element={<PedidosCliente />} />
+          <Route path="/cliente/carrito" element={<CarritoCliente/>} />
           <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
+          <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
+          <Route path="/cliente/checkout" element={<Checkout />} />
+
+
         </Route>
 
         {/* Rutas admin */}

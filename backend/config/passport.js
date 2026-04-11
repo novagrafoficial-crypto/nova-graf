@@ -5,16 +5,15 @@ const db = require('./db');
 
 // ─── GOOGLE ───────────────────────────────────────────────
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientID:     process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: '/api/auth/google/callback'
+  callbackURL:  process.env.GOOGLE_CALLBACK_URL  // ← FIX: antes era '/api/auth/google/callback' hardcodeado
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    const email = profile.emails[0].value;
-    const nombre = profile.name.givenName || 'Usuario';
+    const email          = profile.emails[0].value;
+    const nombre         = profile.name.givenName  || 'Usuario';
     const apellido_paterno = profile.name.familyName || '';
 
-    // Buscar si ya existe por correo
     const existing = await db.query(
       'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE correo_electronico = $1',
       [email]
@@ -24,12 +23,12 @@ passport.use(new GoogleStrategy({
       const user = existing.rows[0];
       if (user.proveedor === 'local')    return done(null, false, { message: 'email_local' });
       if (user.proveedor === 'facebook') return done(null, false, { message: 'email_facebook' });
-      return done(null, user); // Ya es Google → login directo
+      return done(null, user); // ya es Google → login directo
     }
 
     // Crear nuevo usuario Google
     const result = await db.query(`
-      INSERT INTO usuarios 
+      INSERT INTO usuarios
       (nombre, apellido_paterno, nombre_usuario, correo_electronico, activo, rol, proveedor, contrasena)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       RETURNING id_usuario, nombre, correo_electronico, rol
@@ -43,17 +42,17 @@ passport.use(new GoogleStrategy({
 
 // ─── FACEBOOK ─────────────────────────────────────────────
 passport.use(new FacebookStrategy({
-  clientID: process.env.FACEBOOK_APP_ID,
+  clientID:     process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: '/api/auth/facebook/callback',
-  profileFields: ['id', 'emails', 'name']
+  callbackURL:  process.env.FACEBOOK_CALLBACK_URL,  // ← usa variable de entorno
+  profileFields: ['id', 'email', 'name'],            // ← 'email' no 'emails'
+  scope: ['email'],                                  // ← scope explícito
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    const email = profile.emails?.[0]?.value || `fb_${profile.id}@novagraf.com`;
-    const nombre = profile.name?.givenName || 'Usuario';
+    const email          = profile.emails?.[0]?.value || `fb_${profile.id}@novagraf.com`;
+    const nombre         = profile.name?.givenName  || 'Usuario';
     const apellido_paterno = profile.name?.familyName || '';
 
-    // Buscar si ya existe por correo
     const existing = await db.query(
       'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE correo_electronico = $1',
       [email]
@@ -63,10 +62,9 @@ passport.use(new FacebookStrategy({
       const user = existing.rows[0];
       if (user.proveedor === 'local')  return done(null, false, { message: 'email_local' });
       if (user.proveedor === 'google') return done(null, false, { message: 'email_google' });
-      return done(null, user); // Ya es Facebook → login directo
+      return done(null, user); // ya es Facebook → login directo
     }
 
-    // Crear nuevo usuario Facebook
     const result = await db.query(`
       INSERT INTO usuarios
       (nombre, apellido_paterno, nombre_usuario, correo_electronico, activo, rol, proveedor, contrasena)
@@ -82,7 +80,7 @@ passport.use(new FacebookStrategy({
 
 // ─── SESIÓN ───────────────────────────────────────────────
 passport.serializeUser((user, done) => {
-  done(null, user.id_usuario); // PostgreSQL usa número entero, no necesita toString()
+  done(null, user.id_usuario);
 });
 
 passport.deserializeUser(async (id, done) => {

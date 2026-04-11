@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../../styles/public/Mision.css'; // Ajusta la ruta según tu estructura
+import '../../styles/public/Mision.css';
 import Footer from '../../components/Footer';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Valores = () => {
   const [valores, setValores] = useState([]);
@@ -9,11 +11,11 @@ const Valores = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/public/valores')
+    fetch(`${API_URL}/api/public/valores`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setValores(data); // ahora guardamos todo el array
+          setValores(data);
         } else {
           setError('No se encontraron valores');
         }

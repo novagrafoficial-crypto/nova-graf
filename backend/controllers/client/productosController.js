@@ -5,7 +5,10 @@ const {
   getCategorias,
   getSubcategorias, // ✅ agregado
   getMarcas,        // ✅ agregado
+  getPortafolioByProducto,   // ← importar
 } = require('../../models/client/productosModel');
+
+const productosPersonalizadosModel = require('../../models/client/productosPersonalizadosModel');
 
 // GET /api/client/productos/catalogo
 const mostrarCatalogo = async (req, res) => {
@@ -96,10 +99,49 @@ const mostrarMarcas = async (req, res) => {
   }
 };
 
+// POST /api/client/productos/personalizados
+const crearProductoPersonalizado = async (req, res) => {
+  try {
+    const { variante_id, solicitud_diseno_id, texto_personalizado, imagen_personalizada_url, precio_adicional } = req.body;
+    if (!variante_id) {
+      return res.status(400).json({ message: 'variante_id es obligatorio' });
+    }
+    const nuevo = await productosPersonalizadosModel.crearProductoPersonalizado(
+      variante_id,
+      solicitud_diseno_id,
+      texto_personalizado,
+      imagen_personalizada_url,
+      precio_adicional
+    );
+    res.status(201).json(nuevo);
+  } catch (error) {
+    console.error('Error al crear producto personalizado:', error);
+    res.status(500).json({ message: 'Error al crear producto personalizado' });
+  }
+};
+
+// GET /api/client/productos/:productoId/portafolio
+const mostrarPortafolioPorProducto = async (req, res) => {
+  try {
+    const { productoId } = req.params;
+    if (!productoId || isNaN(productoId)) {
+      return res.status(400).json({ error: 'ID de producto inválido' });
+    }
+    const portafolio = await getPortafolioByProducto(productoId);
+    res.json(portafolio);
+  } catch (error) {
+    console.error('Error al obtener portafolio por producto:', error);
+    res.status(500).json({ error: 'Error al obtener referencias' });
+  }
+};
+
+
 module.exports = {
   mostrarCatalogo,
   mostrarDetalle,
   mostrarCategorias,
   mostrarSubcategorias, // ✅ agregado
   mostrarMarcas,        // ✅ agregado
+  crearProductoPersonalizado, // ✅ agregado
+  mostrarPortafolioPorProducto, // ✅ agregado
 };

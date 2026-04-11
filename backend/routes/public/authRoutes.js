@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('../../config/passport');
+const { generarToken } = require('../../utils/jwt');  // ← AGREGAR
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // ─── GOOGLE ───────────────────────────────────────────────
 router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
+  })
 );
 
 router.get('/google/callback',
@@ -14,7 +18,6 @@ router.get('/google/callback',
     passport.authenticate('google', (err, user, info) => {
       if (err) return res.redirect(`${FRONTEND_URL}/login?error=google`);
 
-      // Usuario rechazado por proveedor incorrecto
       if (!user) {
         const errorCode = info?.message || 'google';
         return res.redirect(`${FRONTEND_URL}/login?error=${errorCode}`);
@@ -26,10 +29,11 @@ router.get('/google/callback',
           id_usuario: user.id_usuario,
           nombre: user.nombre,
           correo_electronico: user.correo_electronico,
-          rol: user.rol
+          rol: user.rol,
         };
-        const encoded = encodeURIComponent(JSON.stringify(userData));
-        res.redirect(`${FRONTEND_URL}/auth/callback?user=${encoded}`);
+        const token = generarToken(userData);  // ← GENERAR TOKEN
+        const encoded = encodeURIComponent(JSON.stringify({ user: userData, token }));
+        res.redirect(`${FRONTEND_URL}/auth/callback?data=${encoded}`);  // ← CAMBIAR A 'data'
       });
     })(req, res, next);
   }
@@ -56,10 +60,11 @@ router.get('/facebook/callback',
           id_usuario: user.id_usuario,
           nombre: user.nombre,
           correo_electronico: user.correo_electronico,
-          rol: user.rol
+          rol: user.rol,
         };
-        const encoded = encodeURIComponent(JSON.stringify(userData));
-        res.redirect(`${FRONTEND_URL}/auth/callback?user=${encoded}`);
+        const token = generarToken(userData);
+        const encoded = encodeURIComponent(JSON.stringify({ user: userData, token }));
+        res.redirect(`${FRONTEND_URL}/auth/callback?data=${encoded}`);
       });
     })(req, res, next);
   }

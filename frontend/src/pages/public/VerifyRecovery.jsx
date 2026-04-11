@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function VerifyRecovery() {
   const { id_usuario } = useParams();
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ function VerifyRecovery() {
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/verify-recovery-otp", {
+      const res = await fetch(`${API_URL}/api/users/verify-recovery-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario, otp }),
@@ -25,7 +27,6 @@ function VerifyRecovery() {
       const data = await res.json();
 
       if (res.ok && data.valid) {
-        // Código correcto → ir a cambiar contraseña
         navigate(`/reset-password/${id_usuario}`);
       } else {
         setMsgColor("#ef4444");
@@ -42,7 +43,7 @@ function VerifyRecovery() {
     setResendLoading(true);
     setMessage("");
     try {
-      const res = await fetch("http://localhost:5000/api/users/resend-recovery-otp", {
+      const res = await fetch(`${API_URL}/api/users/resend-recovery-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_usuario }),
@@ -50,7 +51,7 @@ function VerifyRecovery() {
       const data = await res.json();
       setMsgColor("#16a34a");
       setMessage(data.message || "Código reenviado");
-      setOtp(""); // limpiar el input
+      setOtp("");
     } catch {
       setMsgColor("#ef4444");
       setMessage("Error al reenviar");
@@ -63,7 +64,6 @@ function VerifyRecovery() {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 16px" }}>
         <div style={{ background: "white", borderRadius: "16px", padding: "40px", width: "100%", maxWidth: "420px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
-
           <h2 style={{ fontFamily: "Arial", marginBottom: "8px", color: "#1e293b" }}>
             Verifica tu código
           </h2>
@@ -96,7 +96,6 @@ function VerifyRecovery() {
             </p>
           )}
 
-          {/* Botón reenviar */}
           <div style={{ textAlign: "center", marginTop: "20px" }}>
             <p style={{ color: "#64748b", fontFamily: "Arial", fontSize: "0.9rem", marginBottom: "8px" }}>
               ¿No recibiste el código o expiró?
@@ -109,7 +108,6 @@ function VerifyRecovery() {
               {resendLoading ? "Reenviando..." : "Reenviar código"}
             </button>
           </div>
-
         </div>
       </div>
       <Footer />

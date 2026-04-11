@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../../styles/public/Mision.css'; // Ajusta la ruta según tu estructura
-import Footer from '../../components/Footer';
+import '../../styles/public/Mision.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Mision = () => {
   const [mision, setMision] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/public/mision') // o usa proxy
+    fetch(`${API_URL}/api/public/mision`)
       .then(res => res.json())
       .then(data => {
         console.log('Respuesta:', data);
-        // Extrae la descripción según la estructura real
         const descripcion = data.descripcion || data.data?.descripcion;
         const fecha = data.fecha_creacion || data.data?.fecha_creacion;
         if (descripcion) {
@@ -39,9 +40,7 @@ const Mision = () => {
       )}
       <Link to="/">Volver al inicio</Link>
     </div>
-    
   );
-  
 };
 
 export default Mision;

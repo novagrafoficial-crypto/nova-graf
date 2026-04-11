@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "../../styles/public/Register.css";
-import Footer from "../../components/Footer";
 import { useNavigate } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Register() {
   const [form, setForm] = useState({
@@ -38,7 +39,7 @@ function Register() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/users/register", {
+      const res = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -55,8 +56,8 @@ function Register() {
     }
   };
 
-  const handleGoogleLogin = () => window.location.href = "http://localhost:5000/api/auth/google";
-  const handleFacebookLogin = () => window.location.href = "http://localhost:5000/api/auth/facebook";
+  const handleGoogleLogin = () => window.location.href = `${API_URL}/api/auth/google`;
+  const handleFacebookLogin = () => window.location.href = `${API_URL}/api/auth/facebook`;
 
   return (
     <div className="register-page">
@@ -67,7 +68,6 @@ function Register() {
             {step === 1 ? "Completa tus datos personales" : "Datos de contacto y seguridad"}
           </p>
 
-          {/* Indicador de paso */}
           <div className="step-indicator">
             <div className={`step-dot ${step === 1 ? "active" : ""}`}></div>
             <div className={`step-dot ${step === 2 ? "active" : ""}`}></div>
