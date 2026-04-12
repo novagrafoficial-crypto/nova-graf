@@ -1,6 +1,9 @@
+// frontend/src/components/public/Header.js
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/public/Header.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Header = ({
   cartCount = 0,
@@ -22,7 +25,7 @@ const Header = ({
   const location        = useLocation();
 
   useEffect(() => {
-    fetch('/api/empresa')
+    fetch(`${API_URL}/api/empresa`)
       .then(res => res.json())
       .then(json => { if (json.success) setEmpresa(json.data); })
       .catch(err => console.error('Error al cargar empresa:', err))
@@ -66,7 +69,6 @@ const Header = ({
     }
   };
 
-  // ✅ Scroll al footer de contacto
   const handleContactoClick = (e) => {
     e.preventDefault();
     setMenuOpen(false);
@@ -74,19 +76,14 @@ const Header = ({
     document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // ✅ Scroll a sección del Home (mision, vision, valores, antecedentes)
-  // Si ya estamos en home → scroll directo
-  // Si estamos en otra página → navegar a home con el hash
   const handleNosotrosClick = (e, seccionId) => {
     e.preventDefault();
     setMenuOpen(false);
     setDropdownOpen(false);
 
     if (location.pathname === '/') {
-      // Ya estamos en home → scroll directo
       document.getElementById(seccionId)?.scrollIntoView({ behavior: 'smooth' });
     } else {
-      // Vamos a home y después hacemos scroll
       navigate(`/#${seccionId}`);
     }
   };
@@ -97,7 +94,6 @@ const Header = ({
 
       <div className="navbar-inner">
 
-        {/* Logo dinámico */}
         <div className="navbar-logo">
           <Link to="/">
             {loadingEmpresa ? (
@@ -117,7 +113,6 @@ const Header = ({
           </Link>
         </div>
 
-        {/* Menú escritorio */}
         <div className="navbar-center">
           <ul className="navbar-menu">
             <li><Link to="/" className="nav-link">Inicio</Link></li>
@@ -136,28 +131,24 @@ const Header = ({
               </button>
               <ul className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}>
                 <li className="dropdown-header">Conócenos</li>
-                {/* ✅ Scroll a sección valores en Home */}
                 <li>
                   <a href="#valores" className="dropdown-link"
                     onClick={(e) => handleNosotrosClick(e, 'valores')}>
                     <span className="dropdown-icon">●</span> Valores
                   </a>
                 </li>
-                {/* ✅ Scroll a sección mision en Home */}
                 <li>
                   <a href="#mision" className="dropdown-link"
                     onClick={(e) => handleNosotrosClick(e, 'mision')}>
                     <span className="dropdown-icon">●</span> Misión
                   </a>
                 </li>
-                {/* ✅ Scroll a sección vision en Home */}
                 <li>
                   <a href="#vision" className="dropdown-link"
                     onClick={(e) => handleNosotrosClick(e, 'vision')}>
                     <span className="dropdown-icon">●</span> Visión
                   </a>
                 </li>
-                {/* ✅ Scroll a sección antecedentes en Home */}
                 <li>
                   <a href="#antecedentes" className="dropdown-link"
                     onClick={(e) => handleNosotrosClick(e, 'antecedentes')}>
@@ -166,7 +157,6 @@ const Header = ({
                 </li>
               </ul>
             </li>
-            {/* ✅ Contacto scroll al footer */}
             <li>
               <a href="#contacto" className="nav-link" onClick={handleContactoClick}>
                 Contacto
@@ -175,7 +165,6 @@ const Header = ({
           </ul>
         </div>
 
-        {/* Acciones derecha */}
         <div className="navbar-actions">
           <div className={`search-wrapper ${searchActive ? 'active' : ''}`} ref={searchWrapperRef}>
             <form className="search-form" onSubmit={handleSearchSubmit}>
@@ -229,7 +218,6 @@ const Header = ({
         </div>
       </div>
 
-      {/* Menú móvil */}
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <div className="mobile-search-bar">
           <form onSubmit={handleSearchSubmit}>
@@ -261,7 +249,7 @@ const Header = ({
             </button>
             {dropdownOpen && (
               <ul className="mobile-sub">
-                <li><a href="#mision"      onClick={(e) => handleNosotrosClick(e, 'mision')}>Misións</a></li>
+                <li><a href="#mision"      onClick={(e) => handleNosotrosClick(e, 'mision')}>Misión</a></li>
                 <li><a href="#vision"       onClick={(e) => handleNosotrosClick(e, 'vision')}>Visión</a></li>
                 <li><a href="#valores"      onClick={(e) => handleNosotrosClick(e, 'valores')}>Valores</a></li>
                 <li><a href="#antecedentes" onClick={(e) => handleNosotrosClick(e, 'antecedentes')}>Antecedentes</a></li>

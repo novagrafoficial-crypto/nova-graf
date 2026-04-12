@@ -1,26 +1,27 @@
+// frontend/src/components/client/ClientHeader.js
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext"; // 👈 Importa el hook
+import { useCart } from "../../context/CartContext";
 import "../../styles/client/ClientHeader.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function ClientHeader({ user }) {
   const navigate = useNavigate();
-  const { cartCount } = useCart(); // 👈 Obtén el conteo del contexto
+  const { cartCount } = useCart();
   const [empresa, setEmpresa] = useState({ nombre_empresa: "", logo_url: "" });
   const [loadingEmpresa, setLoadingEmpresa] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Cargar logo y nombre de empresa desde la API
   useEffect(() => {
-    fetch("/api/empresa")
+    fetch(`${API_URL}/api/empresa`)
       .then(res => res.json())
       .then(json => { if (json.success) setEmpresa(json.data); })
       .catch(err => console.error("Error al cargar empresa:", err))
       .finally(() => setLoadingEmpresa(false));
   }, []);
 
-  // Cerrar menú móvil al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target))
@@ -33,7 +34,6 @@ function ClientHeader({ user }) {
   return (
     <header className="ch-header">
       <div className="ch-inner">
-        {/* Logo */}
         <Link to="/cliente/home" className="ch-logo">
           {loadingEmpresa ? (
             <div className="ch-logo__skeleton" />
@@ -47,7 +47,6 @@ function ClientHeader({ user }) {
           )}
         </Link>
 
-        {/* Nav escritorio */}
         <nav className="ch-nav">
           <Link to="/cliente/home" className="ch-nav__link">Inicio</Link>
           <Link to="/cliente/catalogo" className="ch-nav__link">Catálogo</Link>
@@ -55,9 +54,7 @@ function ClientHeader({ user }) {
           <Link to="/cliente/pedidos" className="ch-nav__link">Mis compras</Link>
         </nav>
 
-        {/* Acciones */}
         <div className="ch-actions">
-          {/* Carrito con badge dinámico */}
           <Link to="/cliente/carrito" className="ch-cart" aria-label="Carrito">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
               stroke="currentColor" strokeWidth="2">
@@ -69,7 +66,6 @@ function ClientHeader({ user }) {
             )}
           </Link>
 
-          {/* Usuario */}
           {user ? (
             <button className="ch-user" onClick={() => navigate("/cliente/perfil")} title="Mi perfil">
               <div className="ch-user__avatar">{user.nombre?.charAt(0).toUpperCase()}</div>
@@ -83,7 +79,6 @@ function ClientHeader({ user }) {
             <Link to="/login" className="ch-login">Iniciar sesión</Link>
           )}
 
-          {/* Hamburguesa móvil */}
           <button
             ref={menuRef}
             className={`ch-hamburger ${menuOpen ? "ch-hamburger--open" : ""}`}
@@ -95,7 +90,6 @@ function ClientHeader({ user }) {
         </div>
       </div>
 
-      {/* Menú móvil */}
       <div className={`ch-mobile ${menuOpen ? "ch-mobile--open" : ""}`}>
         <nav className="ch-mobile__nav">
           {[

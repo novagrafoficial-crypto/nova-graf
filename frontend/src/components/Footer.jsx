@@ -1,6 +1,9 @@
+// frontend/src/components/public/Footer.js
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/public/Footer.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ICONOS_CONTACTO = {
   telefono: '📞',
@@ -50,9 +53,9 @@ const Footer = () => {
 
   useEffect(() => {
     Promise.allSettled([
-      fetch('/api/redes-sociales').then(r => r.json()),
-      fetch('/api/contactos').then(r => r.json()),
-      fetch('/api/ubicacion').then(r => r.json()),
+      fetch(`${API_URL}/api/redes-sociales`).then(r => r.json()),
+      fetch(`${API_URL}/api/contactos`).then(r => r.json()),
+      fetch(`${API_URL}/api/ubicacion`).then(r => r.json()),
     ])
       .then(([resRedes, resContactos, resUbicacion]) => {
         if (resRedes.status === 'fulfilled' && resRedes.value.success)
