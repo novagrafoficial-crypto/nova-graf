@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import "../../styles/Admin/AdminInventario.css";
+import "../../styles/admin/AdminInventario.css";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const API      = "http://localhost:5000/api/admin/inventario";

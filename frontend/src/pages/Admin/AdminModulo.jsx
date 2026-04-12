@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import "../../styles/Admin/AdminModulo.css";
+import "../../styles/admin/AdminModulo.css";
 
 const API_MODULO    = "http://localhost:5000/api/admin/modulo";
 const API_MONITOREO = "http://localhost:5000/api/admin/monitoreo";

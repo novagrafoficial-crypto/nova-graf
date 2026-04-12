@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/Admin/AdminSubcategorias.css";
+import "../../styles/admin/AdminSubcategorias.css";
 
 function AdminSubcategorias() {
   const [subcategorias, setSubcategorias] = useState([]);

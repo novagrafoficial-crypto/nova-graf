@@ -7,7 +7,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine
 } from "recharts";
-import "../../styles/Admin/DetallePrediccion.css";
+import "../../styles/admin/DetallePrediccion.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 

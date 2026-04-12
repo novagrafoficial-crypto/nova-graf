@@ -8,7 +8,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   Label,
 } from "recharts";
-import "../../styles/Admin/VentasGrafica.css";
+import "../../styles/admin/VentasGrafica.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../styles/Admin/AdminStock.css'; // Opcional: puedes usar el mismo CSS de la versión HTML o modularizado
+import '../../styles/admin/AdminStock.css'; // Opcional: puedes usar el mismo CSS de la versión HTML o modularizado
 
 // --- Datos Mock (simulan la respuesta de tu API) ---
 const AdminStock = [

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/Admin/AdminMarcas.css";
+import "../../styles/admin/AdminMarcas.css";
 
 function AdminMarcas() {
   const [marcas, setMarcas] = useState([]);
