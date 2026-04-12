@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import "../../styles/admin/DetallePrediccion.css";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL;
 
 const fmtDias = (dias) => {
   if (dias === null || dias === undefined) return "—";

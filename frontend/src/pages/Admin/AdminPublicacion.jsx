@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Eye, EyeOff, Package, Briefcase, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 // ✅ URL dinámica con fallback para desarrollo local
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL;
 
 // ─── MODAL DE CONFIRMACIÓN ───────────────────────────────────────────────────
 const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) => {

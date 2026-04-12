@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../styles/admin/Prediccionpage.css";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL;
 
 const ESTADOS = [
   { key: "todos",      label: "Todos",       icon: "◈" },

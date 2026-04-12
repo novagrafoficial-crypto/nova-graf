@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "../../styles/admin/AdminProductos.css";
 
 // ✅ URLs dinámicas con fallback para desarrollo local
-const API_BASE_FULL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_FULL = import.meta.env.VITE_API_URL;
 const API = `${API_BASE_FULL}/api/admin/productos`;
 const API_BASE = `${API_BASE_FULL}/api/admin`;
 

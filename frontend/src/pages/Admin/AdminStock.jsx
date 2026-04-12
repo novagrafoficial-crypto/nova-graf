@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../styles/admin/AdminStock.css';
 
 // ✅ URL dinámica con fallback para desarrollo local
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL;
 
 // --- Datos Mock (fallback si la API no responde) ---
 const ventasMock = [

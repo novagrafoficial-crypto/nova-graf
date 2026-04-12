@@ -5,7 +5,7 @@ function CategoriesAdmin() {
   const [categories, setCategories] = useState([]);
 
   // ✅ URL dinámica con fallback para desarrollo local
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE = import.meta.env.VITE_API_URL;
   const API = `${API_BASE}/api/admin/categorias`;
 
   // Obtener categorías
