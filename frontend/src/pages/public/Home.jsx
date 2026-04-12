@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/public/Home.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const PASOS = [
   { icon: '🛍️', num: '01', titulo: 'Elige tu producto', desc: 'Explora nuestro catálogo y selecciona el producto base que deseas personalizar.' },
   { icon: '🎨', num: '02', titulo: 'Personalízalo', desc: 'Elige color, agrega tu diseño, logo o texto. Nosotros nos encargamos del resto.' },
@@ -42,22 +44,22 @@ const Home = () => {
 
   useEffect(() => {
     // ✅ Endpoint público para productos (catálogo)
-    axios.get('/api/public/productos/catalogo')
+    axios.get(`${API_URL}/api/public/productos/catalogo`)
       .then(res => setProductos(res.data.slice(0, 6)))
       .catch(err => console.error('Error productos:', err))
       .finally(() => setLoadingProd(false));
 
     // ✅ Endpoint público para portafolio
-    axios.get('/api/public/portafolio')
+    axios.get(`${API_URL}/api/public/portafolio`)
       .then(res => setPortafolio(res.data))
       .catch(err => console.error('Error portafolio:', err))
       .finally(() => setLoadingPort(false));
 
-    // ✅ Misión, visión, valores (rutas relativas)
+    // ✅ Misión, visión, valores (con URL completa)
     Promise.allSettled([
-      fetch('/api/public/mision').then(r => r.json()),
-      fetch('/api/public/vision').then(r => r.json()),
-      fetch('/api/public/valores').then(r => r.json()),
+      fetch(`${API_URL}/api/public/mision`).then(r => r.json()),
+      fetch(`${API_URL}/api/public/vision`).then(r => r.json()),
+      fetch(`${API_URL}/api/public/valores`).then(r => r.json()),
     ]).then(([resMision, resVision, resValores]) => {
       if (resMision.status === 'fulfilled') {
         const d = resMision.value; setMision(d?.data ?? d);

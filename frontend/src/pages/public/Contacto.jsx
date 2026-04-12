@@ -1,13 +1,15 @@
 // frontend/src/pages/public/Contacto.jsx
 import React, { useEffect, useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Contacto = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
 
   useEffect(() => {
-    fetch('/api/ubicacion')
+    fetch(`${API_URL}/api/ubicacion`)
       .then(res => res.json())
       .then(json => {
         if (json.success) setUbicaciones(json.data);
