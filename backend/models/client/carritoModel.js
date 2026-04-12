@@ -17,28 +17,35 @@ const obtenerCarrito = async (usuarioId) => {
       c.id AS carrito_id,
       c.cantidad,
       c.precio_unitario,
-      c.precio_total,
+      (c.cantidad * c.precio_unitario) AS precio_total,
       pp.id AS personalizado_id,
       pp.imagen_personalizada_url,
       pp.texto_personalizado,
       p.nombre AS producto_nombre,
-      pv.color,
+      col.nombre AS color,
       pv.imagen_url AS variante_imagen
     FROM ventas.carrito_compras c
     JOIN productos.productos_personalizados pp ON c.producto_personalizado_id = pp.id
     JOIN productos.producto_variantes pv ON pp.variante_id = pv.id
     JOIN productos.productos p ON pv.producto_id = p.id
+    LEFT JOIN productos.colores col ON pv.color_id = col.id
     WHERE c.usuario_id = $1
-    ORDER BY c.fecha_agregado DESC;
+    ORDER BY c.id DESC;
   `;
   const { rows } = await pool.query(query, [usuarioId]);
   return rows;
 };
 
+
 const obtenerConteoCarrito = async (usuarioId) => {
-  const query = `SELECT COUNT(*) AS count FROM ventas.carrito_compras WHERE usuario_id = $1;`;
+  // 🔁 Cambiamos SUM(cantidad) por COUNT(*)
+  const query = `
+    SELECT COUNT(*) AS total_items
+    FROM ventas.carrito_compras
+    WHERE usuario_id = $1;
+  `;
   const { rows } = await pool.query(query, [usuarioId]);
-  return parseInt(rows[0].count) || 0;
+  return parseInt(rows[0].total_items) || 0;
 };
 
 const actualizarCantidad = async (carritoId, usuarioId, cantidad) => {

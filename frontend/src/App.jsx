@@ -19,6 +19,7 @@ import VerifyRecovery from "./pages/public/VerifyRecovery";
 import ResetPassword from "./pages/public/ResetPassword";
 import AuthCallback from "./pages/public/AuthCallback";
 import Contacto from './pages/public/Contacto';
+import PortafolioPublico from './pages/public/PortafolioPublico';
 
 
 // Páginas cliente
@@ -27,7 +28,11 @@ import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
 import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
+import CarritoCliente from './pages/Client/CarritoCliente';
+import Checkout from './pages/Client/Checkout';
+import PedidosCliente from './pages/Client/PedidosCliente';
 
+// Dentro de las rutas protegidas del cliente:
 
 
 // Páginas admin
@@ -41,9 +46,6 @@ import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminInventario from './pages/Admin/AdminInventario';
-import AdminProveedores from './pages/Admin/AdminProveedores';
-
-//admin modulo de prediccion
 import Reabastecimiento from './pages/Admin/Reabastecimiento';
 import Ventasproducto from "./pages/Admin/Ventasproducto";
 import Variantesmodal from "./pages/Admin/Variantesmodal";
@@ -74,19 +76,21 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/redes-sociales" element={<Redes />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/catalogo" element={<PortafolioPublico />} />
         </Route>
 
         {/* Rutas cliente */}
         <Route element={<CartProvider><ClientLayout /></CartProvider>}>
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
-          <Route path="/cliente/pedidos" element={<div>Mis Pedidos</div>} />
-          <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
+          <Route path="/cliente/pedidos" element={<PedidosCliente />} />
+          <Route path="/cliente/carrito" element={<CarritoCliente/>} />
           <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
           <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
+          <Route path="/cliente/checkout" element={<Checkout />} />
 
-          
+
         </Route>
 
         {/* Rutas admin */}
@@ -101,7 +105,6 @@ function App() {
           <Route path="mision" element={<AdminMision />} />
           <Route path="empresa" element={<AdminEmpresaCom />} />
           <Route path="inventario" element={<AdminInventario />} />
-          <Route path="proveedores" element={<AdminProveedores />} />
           <Route path="stock" element={<Reabastecimiento />} />
           <Route path="stock/:id/ventas" element={<Ventasproducto/>} />
           <Route path="stock/:id/variantes" element={<Variantesmodal/>} />

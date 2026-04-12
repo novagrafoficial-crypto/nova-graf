@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ResetPassword() {
   const { id_usuario } = useParams();
   const navigate = useNavigate();
@@ -10,9 +12,6 @@ function ResetPassword() {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // ✅ 1. Definimos la URL usando la variable de entorno
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +24,6 @@ function ResetPassword() {
 
     setLoading(true);
     try {
-      // ✅ 2. Reemplazamos localhost por la variable dinámica
       const res = await fetch(`${API_URL}/api/users/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

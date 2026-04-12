@@ -5,6 +5,7 @@ const {
   getCategorias,
   getSubcategorias, // ✅ agregado
   getMarcas,        // ✅ agregado
+  getPortafolioByProducto,   // ← importar
 } = require('../../models/client/productosModel');
 
 const productosPersonalizadosModel = require('../../models/client/productosPersonalizadosModel');
@@ -119,6 +120,21 @@ const crearProductoPersonalizado = async (req, res) => {
   }
 };
 
+// GET /api/client/productos/:productoId/portafolio
+const mostrarPortafolioPorProducto = async (req, res) => {
+  try {
+    const { productoId } = req.params;
+    if (!productoId || isNaN(productoId)) {
+      return res.status(400).json({ error: 'ID de producto inválido' });
+    }
+    const portafolio = await getPortafolioByProducto(productoId);
+    res.json(portafolio);
+  } catch (error) {
+    console.error('Error al obtener portafolio por producto:', error);
+    res.status(500).json({ error: 'Error al obtener referencias' });
+  }
+};
+
 
 module.exports = {
   mostrarCatalogo,
@@ -127,4 +143,5 @@ module.exports = {
   mostrarSubcategorias, // ✅ agregado
   mostrarMarcas,        // ✅ agregado
   crearProductoPersonalizado, // ✅ agregado
+  mostrarPortafolioPorProducto, // ✅ agregado
 };

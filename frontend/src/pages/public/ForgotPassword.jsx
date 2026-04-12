@@ -2,14 +2,13 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Footer from "../../components/Footer";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // ✅ 1. Definimos la URL usando la variable de entorno
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +16,6 @@ function ForgotPassword() {
     setMessage("");
 
     try {
-      // ✅ 2. Reemplazamos localhost por la variable con backticks (`)
       const res = await fetch(`${API_URL}/api/users/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,7 +36,7 @@ function ForgotPassword() {
     }
   };
 
-  // --- Estilos verdes (sin cambios) ---
+  // Estilos verdes (sin cambios)
   const styles = {
     container: {
       minHeight: "100vh",
@@ -64,7 +62,7 @@ function ForgotPassword() {
       border: "1px solid #e2e8f0",
     },
     title: {
-      fontFamily: "system-ui, sans-serif",
+      fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       fontSize: "1.75rem",
       fontWeight: "600",
       marginBottom: "8px",

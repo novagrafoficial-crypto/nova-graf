@@ -120,10 +120,30 @@ const getMarcas = async () => {
   return rows;
 };
 
+// ─── PORTAFOLIO ───────────────────
+const getPortafolioByProducto = async (productoId) => {
+  const query = `
+    SELECT 
+      po.id,
+      po.descripcion,
+      po.imagen_url,
+      po.fecha_creacion,
+      p.nombre AS producto_nombre
+    FROM empresa.portafolio po
+    LEFT JOIN productos.productos p ON po.producto_id = p.id
+    WHERE po.producto_id = $1 AND po.publicado = true
+    ORDER BY po.id DESC
+    LIMIT 10;   -- puedes ajustar el límite
+  `;
+  const { rows } = await pool.query(query, [productoId]);
+  return rows;
+};
+
 module.exports = {
   getProductosCatalogo,
   getProductoDetalle,
   getCategorias,
   getSubcategorias,
   getMarcas,
+  getPortafolioByProducto,
 };

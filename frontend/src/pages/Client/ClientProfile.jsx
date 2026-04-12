@@ -1,10 +1,10 @@
+// frontend/src/pages/client/ClientProfile.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "../../utils/auth";
 import "../../styles/client/Clientprofile.css";
 
-// ✅ 1. Definimos la URL base dinámica
 const API_BASE = import.meta.env.VITE_API_URL;
 
 const CAMPOS = [
@@ -27,6 +27,111 @@ const MENU = [
   { id: "configuracion",  icon: "⚙️", label: "Configuración"  },
 ];
 
+// ========== COMPONENTE PARA MOSTRAR PEDIDOS ==========
+function PedidosUsuario() {
+  const [pedidos, setPedidos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPedidos = async () => {
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/client/pedidos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPedidos(data);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend no disponible, usando simulación");
+      }
+
+      const stored = localStorage.getItem('pedidos_simulados');
+      const pedidosSimulados = stored ? JSON.parse(stored) : [];
+      pedidosSimulados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      setPedidos(pedidosSimulados);
+      setLoading(false);
+    };
+
+    fetchPedidos();
+  }, []);
+
+  if (loading) return <p>Cargando tus compras...</p>;
+
+  if (pedidos.length === 0) {
+    return (
+      <div className="cp-empty-section">
+        <span>🛒</span>
+        <p>No has realizado ninguna compra aún.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cp-pedidos-list">
+      {pedidos.map((pedido) => (
+        <div key={pedido.id} className="cp-pedido-card">
+          <div className="cp-pedido-header">
+            <span className="cp-pedido-id">Pedido #{pedido.id}</span>
+            <span className="cp-pedido-fecha">
+              {new Date(pedido.fecha).toLocaleDateString('es-MX')}
+            </span>
+            <span className={`cp-pedido-estado ${pedido.estado?.toLowerCase()}`}>
+              {pedido.estado || 'Completado'}
+            </span>
+          </div>
+          <div className="cp-pedido-items">
+            {pedido.items.map((item, idx) => (
+              <div key={idx} className="cp-pedido-item">
+                <img
+                  src={item.imagen}
+                  alt={item.nombre}
+                  className="cp-pedido-item-img"
+                  onError={(e) => (e.target.src = '/placeholder.png')}
+                />
+                <div className="cp-pedido-item-info">
+                  <h4>{item.nombre}</h4>
+                  <p>Cantidad: {item.cantidad}</p>
+                  <p>Precio unitario: ${Number(item.precio_unitario).toFixed(2)}</p>
+                  {item.texto_personalizado && (
+                    <p className="cp-pedido-item-texto">Texto: {item.texto_personalizado}</p>
+                  )}
+                </div>
+                <div className="cp-pedido-item-total">
+                  ${(item.cantidad * Number(item.precio_unitario)).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="cp-pedido-footer">
+            <div className="cp-pedido-total">
+              Total: <strong>${Number(pedido.total).toFixed(2)}</strong>
+            </div>
+            <div className="cp-pedido-entrega">
+              Entrega: {pedido.forma_entrega === 'domicilio' ? '🚚 Domicilio' :
+                        pedido.forma_entrega === 'punto_entrega' ? '📦 Punto de entrega' :
+                        '🏬 Retiro en tienda'}
+            </div>
+            <div className="cp-pedido-pago">
+              Pago: {pedido.forma_pago === 'tarjeta' ? '💳 Tarjeta' :
+                     pedido.forma_pago === 'transferencia' ? '🏦 Transferencia' :
+                     '💰 Depósito'}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ========== COMPONENTE PRINCIPAL ==========
 function ClientProfile() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,10 +151,14 @@ function ClientProfile() {
   const [pwMsg, setPwMsg] = useState({ text: "", ok: true });
   const [pwSaving, setPwSaving] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  
+  // Estados para el ojito
+  const [showActual, setShowActual] = useState(false);
+  const [showNueva, setShowNueva] = useState(false);
+  const [showConfirmar, setShowConfirmar] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate("/"); return; }
-    // ✅ 2. Uso de API_BASE para obtener el perfil
     fetch(`${API_BASE}/api/users/profile/${user.id_usuario}`)
       .then(r => r.json())
       .then(data => { setProfile(data); setForm(data); })
@@ -65,7 +174,6 @@ function ClientProfile() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // ✅ 3. Uso de API_BASE para actualizar el perfil
       const res = await fetch(`${API_BASE}/api/users/profile/${user.id_usuario}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -98,7 +206,6 @@ function ClientProfile() {
     }
     setPwSaving(true);
     try {
-      // ✅ 4. Uso de API_BASE para cambiar contraseña
       const res = await fetch(`${API_BASE}/api/users/profile/${user.id_usuario}/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -135,21 +242,15 @@ function ClientProfile() {
       case "compras":
         return (
           <div className="cp-card">
-            <h2 className="cp-card__title">Compras activas</h2>
-            {[
-              { id: 1, fecha: "2026-03-15", total: "$450",   estado: "En proceso" },
-              { id: 2, fecha: "2026-03-10", total: "$1,200", estado: "Enviado"    },
-            ].map(p => <PedidoRow key={p.id} pedido={p} />)}
+            <h2 className="cp-card__title">Mis compras</h2>
+            <PedidosUsuario />
           </div>
         );
       case "historial":
         return (
           <div className="cp-card">
             <h2 className="cp-card__title">Historial de compras</h2>
-            {[
-              { id: 3, fecha: "2026-02-28", total: "$320", estado: "Entregado" },
-              { id: 4, fecha: "2026-02-14", total: "$890", estado: "Entregado" },
-            ].map(p => <PedidoRow key={p.id} pedido={p} />)}
+            <PedidosUsuario />
           </div>
         );
       default:
@@ -186,9 +287,54 @@ function ClientProfile() {
             </div>
             {showPw && (
               <div className="cp-pw-mini">
-                <input type="password" placeholder="Contraseña actual" value={pwForm.actual} onChange={e => setPwForm({ ...pwForm, actual: e.target.value })} />
-                <input type="password" placeholder="Nueva contraseña" value={pwForm.nueva} onChange={e => setPwForm({ ...pwForm, nueva: e.target.value })} />
-                <input type="password" placeholder="Confirmar nueva" value={pwForm.confirmar} onChange={e => setPwForm({ ...pwForm, confirmar: e.target.value })} />
+                <div className="cp-pw-input-wrapper">
+                  <input 
+                    type={showActual ? "text" : "password"} 
+                    placeholder="Contraseña actual" 
+                    value={pwForm.actual} 
+                    onChange={e => setPwForm({ ...pwForm, actual: e.target.value })} 
+                  />
+                  <button 
+                    type="button" 
+                    className="cp-pw-toggle" 
+                    onClick={() => setShowActual(!showActual)}
+                    tabIndex={-1}
+                  >
+                    {showActual ? "👁️‍🗨️" : "👁️"}
+                  </button>
+                </div>
+                <div className="cp-pw-input-wrapper">
+                  <input 
+                    type={showNueva ? "text" : "password"} 
+                    placeholder="Nueva contraseña" 
+                    value={pwForm.nueva} 
+                    onChange={e => setPwForm({ ...pwForm, nueva: e.target.value })} 
+                  />
+                  <button 
+                    type="button" 
+                    className="cp-pw-toggle" 
+                    onClick={() => setShowNueva(!showNueva)}
+                    tabIndex={-1}
+                  >
+                    {showNueva ? "👁️‍🗨️" : "👁️"}
+                  </button>
+                </div>
+                <div className="cp-pw-input-wrapper">
+                  <input 
+                    type={showConfirmar ? "text" : "password"} 
+                    placeholder="Confirmar nueva" 
+                    value={pwForm.confirmar} 
+                    onChange={e => setPwForm({ ...pwForm, confirmar: e.target.value })} 
+                  />
+                  <button 
+                    type="button" 
+                    className="cp-pw-toggle" 
+                    onClick={() => setShowConfirmar(!showConfirmar)}
+                    tabIndex={-1}
+                  >
+                    {showConfirmar ? "👁️‍🗨️" : "👁️"}
+                  </button>
+                </div>
                 <div className="cp-pw-actions">
                   <button className="cp-btn cp-btn--primary" onClick={handlePasswordSave} disabled={pwSaving}>Guardar</button>
                   <button className="cp-btn-link" onClick={() => setShowPw(false)}>Cancelar</button>
@@ -212,8 +358,6 @@ function ClientProfile() {
             {profile.fecha_nacimiento && <p><strong>Nacimiento:</strong> {new Date(profile.fecha_nacimiento).toLocaleDateString()}</p>}
           </div>
         </div>
-
-        {/* ... (resto del dashboard queda igual) */}
       </>
     );
   };
@@ -293,26 +437,7 @@ function ClientProfile() {
   );
 }
 
-function PedidoRow({ pedido: p }) {
-  const badge = {
-    "En proceso": "cp-badge--yellow",
-    "Enviado":    "cp-badge--blue",
-    "Entregado":  "cp-badge--green",
-  }[p.estado] || "cp-badge--gray";
-  return (
-    <div className="cp-order">
-      <div>
-        <p className="cp-order__id">Pedido #{p.id}</p>
-        <p className="cp-order__date">{p.fecha}</p>
-      </div>
-      <div className="cp-order__right">
-        <p className="cp-order__total">{p.total}</p>
-        <span className={`cp-badge ${badge}`}>{p.estado}</span>
-      </div>
-    </div>
-  );
-}
-
+// ========== COMPONENTE MIS DISEÑOS ==========
 function MisDisenos() {
   const [disenos, setDisenos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -323,7 +448,6 @@ function MisDisenos() {
     try {
       const token = getToken();
       if (!token) { setError('No has iniciado sesión'); setLoading(false); return; }
-      // ✅ 5. Uso de API_BASE para obtener borradores
       const res = await axios.get(`${API_BASE}/api/client/borradores`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -403,7 +527,7 @@ function MisDisenos() {
 
   return (
     <div className="cp-card">
-      <h2 className="cp-card__title">🎨 Mis diseños guardados</h2>
+      <h2 className="cp-card__title">Mis diseños guardados</h2>
       {disenos.length === 0 ? (
         <div className="cp-empty-section">
           <span>🎨</span>
@@ -412,7 +536,6 @@ function MisDisenos() {
       ) : (
         <div className="disenos-grid">
           {disenos.map(d => {
-            // ✅ 6. Manejo de URLs de imagen para producción
             const imgPreview = d.imagen_preview?.startsWith("http") 
                 ? d.imagen_preview 
                 : d.imagen_preview ? `${API_BASE}${d.imagen_preview}` : null;

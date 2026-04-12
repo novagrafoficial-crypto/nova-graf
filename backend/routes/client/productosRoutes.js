@@ -8,6 +8,7 @@ const {
   mostrarSubcategorias, // ✅ agregado
   mostrarMarcas,        // ✅ agregado
   crearProductoPersonalizado,
+  mostrarPortafolioPorProducto,
 } = require('../../controllers/client/productosController');
 const verificarToken = require('../../src/middlewares/auth'); // <-- añadir
 
@@ -17,7 +18,7 @@ router.get('/categorias',    mostrarCategorias);
 router.get('/subcategorias', mostrarSubcategorias); // ✅ agregado
 router.get('/marcas',        mostrarMarcas);        // ✅ agregado
 router.post('/personalizados', verificarToken, crearProductoPersonalizado);
-router.get('/:id', mostrarDetalle);
+router.get('/:productoId/portafolio', mostrarPortafolioPorProducto);
 
 // Ruta dinámica al final
 router.get('/:id', mostrarDetalle);

@@ -5,11 +5,10 @@ import axios from 'axios';
 import { getToken } from '../../utils/auth';
 import '../../styles/client/ProductoPersonalizado.css';
 
-// ✅ 1. Definimos la URL base usando la variable de entorno
-const API_BASE = import.meta.env.VITE_API_URL;
-const API_BORRADORES = `${API_BASE}/api/client/borradores`;
-const API_CARRITO = `${API_BASE}/api/client/carrito`;
-const API_PRODUCTOS_PERS = `${API_BASE}/api/client/productos/personalizados`;
+const API_URL = import.meta.env.VITE_API_URL;
+const API_BORRADORES = `${API_URL}/api/client/borradores`;
+const API_CARRITO = `${API_URL}/api/client/carrito`;
+const API_PRODUCTOS_PERS = `${API_URL}/api/client/productos/personalizados`;
 
 const FONTS = [
   'Arial', 'Verdana', 'Georgia', 'Times New Roman',
@@ -58,14 +57,12 @@ const ProductoPersonalizador = () => {
   const [resizing, setResizing] = useState(null);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
-  // ✅ 2. Helper para normalizar URLs de imágenes
   const getFullImageUrl = useCallback((url) => {
     if (!url) return null;
     if (url.startsWith('http') || url.startsWith('data:')) return url;
-    return `${API_BASE}${url}`;
+    return `${API_URL}${url}`;
   }, []);
 
-  // Cargar imagen de fondo
   useEffect(() => {
     if (!imagenProducto) {
       setImgError(true);
@@ -73,7 +70,7 @@ const ProductoPersonalizador = () => {
     }
     const fullUrl = getFullImageUrl(imagenProducto);
     const img = new Image();
-    img.crossOrigin = "anonymous"; // Importante para html2canvas y CORS
+    img.crossOrigin = "anonymous";
     img.onload = () => setImgSrc(fullUrl);
     img.onerror = () => {
       console.warn('Error cargando imagen:', fullUrl);
@@ -82,7 +79,6 @@ const ProductoPersonalizador = () => {
     img.src = fullUrl;
   }, [imagenProducto, getFullImageUrl]);
 
-  // Cargar elementos guardados al editar un borrador
   useEffect(() => {
     if (borradorId && elementosGuardados) {
       const maxId = elementosGuardados.reduce((max, el) => Math.max(max, parseInt(el.id) || 0), 0);
@@ -91,7 +87,6 @@ const ProductoPersonalizador = () => {
     }
   }, [borradorId, elementosGuardados]);
 
-  // Cargar propiedades del texto seleccionado
   useEffect(() => {
     if (!seleccionado) return;
     const elemento = elementos.find(el => el.id === seleccionado);
@@ -107,7 +102,6 @@ const ProductoPersonalizador = () => {
     setShadowBlur(elemento.shadowBlur || 4);
   }, [seleccionado]);
 
-  // Aplicar cambios de estilo al elemento seleccionado
   useEffect(() => {
     if (!seleccionado) return;
     const elemento = elementos.find(el => el.id === seleccionado);
@@ -291,18 +285,17 @@ const ProductoPersonalizador = () => {
         .from('borradores')
         .getPublicUrl(filePath);
 
-      // Si editamos, intentar borrar la vieja (opcional)
       if (editandoBorradorId) {
-         try {
-           const { data: borradorActual } = await axios.get(`${API_BORRADORES}/${editandoBorradorId}`, {
-             headers: { Authorization: `Bearer ${token}` }
-           });
-           const oldUrl = borradorActual?.imagen_preview;
-           if (oldUrl && oldUrl.includes('borradores/')) {
-             const oldPath = oldUrl.split('borradores/')[1];
-             await supabase.storage.from('borradores').remove([oldPath]);
-           }
-         } catch(e) { console.warn("No se pudo limpiar imagen previa"); }
+        try {
+          const { data: borradorActual } = await axios.get(`${API_BORRADORES}/${editandoBorradorId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const oldUrl = borradorActual?.imagen_preview;
+          if (oldUrl && oldUrl.includes('borradores/')) {
+            const oldPath = oldUrl.split('borradores/')[1];
+            await supabase.storage.from('borradores').remove([oldPath]);
+          }
+        } catch(e) { console.warn("No se pudo limpiar imagen previa"); }
       }
 
       const varianteId = variante?.variante_id || variante?.id;

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "../../styles/public/Register.css";
-import Footer from "../../components/Footer";
 import { useNavigate } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Register() {
   const [form, setForm] = useState({
@@ -12,9 +13,6 @@ function Register() {
   const [step, setStep] = useState(1);
 
   const navigate = useNavigate();
-
-  // ✅ 1. Definimos la URL usando la variable de entorno
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -41,7 +39,6 @@ function Register() {
       return;
     }
     try {
-      // ✅ 2. Reemplazamos localhost por la variable dinámica
       const res = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,7 +56,6 @@ function Register() {
     }
   };
 
-  // ✅ 3. Actualizamos los botones de redes sociales para que apunten a Render
   const handleGoogleLogin = () => window.location.href = `${API_URL}/api/auth/google`;
   const handleFacebookLogin = () => window.location.href = `${API_URL}/api/auth/facebook`;
 
@@ -72,7 +68,6 @@ function Register() {
             {step === 1 ? "Completa tus datos personales" : "Datos de contacto y seguridad"}
           </p>
 
-          {/* Indicador de paso */}
           <div className="step-indicator">
             <div className={`step-dot ${step === 1 ? "active" : ""}`}></div>
             <div className={`step-dot ${step === 2 ? "active" : ""}`}></div>
@@ -200,7 +195,6 @@ function Register() {
           <p className="required-note">Todos los campos son obligatorios</p>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

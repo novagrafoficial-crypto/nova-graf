@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function VerificarRegistro() {
   const { id_usuario } = useParams();
   const navigate = useNavigate();
@@ -11,16 +13,12 @@ function VerificarRegistro() {
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
 
-  // ✅ 1. Definimos la URL usando la variable de entorno
-  const API_URL = import.meta.env.VITE_API_URL;
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     try {
-      // ✅ 2. Reemplazamos localhost por la variable dinámica en la verificación
       const res = await fetch(`${API_URL}/api/users/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,7 +49,6 @@ function VerificarRegistro() {
     setMessage("");
 
     try {
-      // ✅ 3. Reemplazamos localhost en el reenvío de código
       const res = await fetch(`${API_URL}/api/users/resend-activation-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

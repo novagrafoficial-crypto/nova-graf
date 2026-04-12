@@ -1,8 +1,8 @@
 const userModel = require('../../models/public/userModel');
-const { sendOTPEmail, sendRecoveryEmail } = require('../../config/sendgrid'); 
-const db = require('../../config/db');  // ← FALTABA
-const jwt = require('jsonwebtoken');      // ← NUEVO
-const bcrypt = require('bcrypt');          // ← por si no estaba importado
+const { sendOTPEmail, sendRecoveryEmail } = require('../../config/sendgrid');
+const db = require('../../config/db');
+const bcrypt = require('bcrypt'); // ← FIX: faltaba este import (causa ReferenceError en putPassword)
+const { generarToken } = require('../../utils/jwt');  // ← AGREGAR
 
 // ─── REGISTRO ─────────────────────────────────────────────
 const registerUser = async (req, res) => {
@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
     await sendOTPEmail(correo_electronico, codigo_otp);
 
     res.status(201).json({
-      id_usuario: newUser.id_usuario, 
+      id_usuario: newUser.id_usuario,
       nombre: newUser.nombre,
       correo_electronico: newUser.correo_electronico,
       message: 'Registro exitoso. Revisa tu correo para activar tu cuenta.',
@@ -51,7 +51,7 @@ const verifyUser = async (req, res) => {
   }
 };
 
-// ─── LOGIN ────────────────────────────────────────────────
+// Solo modificamos loginUserController:
 const loginUserController = async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,18 +64,13 @@ const loginUserController = async (req, res) => {
     if (!result.success)
       return res.status(401).json({ message: result.message });
 
-    // ✅ Generar token JWT
-    const token = jwt.sign(
-      { id_usuario: result.user.id_usuario, rol: result.user.rol },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // Generar token JWT
+    const token = generarToken(result.user);
 
-    // ✅ Devolver token junto con el usuario
     return res.status(200).json({
       message: 'Login exitoso',
       user: result.user,
-      token: token
+      token   // ← INCLUIR TOKEN EN RESPUESTA
     });
   } catch (error) {
     console.error(error);
@@ -83,8 +78,7 @@ const loginUserController = async (req, res) => {
   }
 };
 
-
-// ─── RECUPERAR CONTRASEÑA ───────────────────────
+// ─── RECUPERAR CONTRASEÑA ────────────────────────────────
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -104,7 +98,7 @@ const forgotPassword = async (req, res) => {
 
     return res.status(200).json({
       message: 'Código enviado a tu correo',
-      id_usuario: user.id_usuario 
+      id_usuario: user.id_usuario
     });
   } catch (error) {
     console.error(error);
@@ -112,8 +106,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-
-// ─── VERIFICAR OTP RECUPERACIÓN ─────────────
+// ─── VERIFICAR OTP RECUPERACIÓN ──────────────────────────
 const verifyRecoveryOTP = async (req, res) => {
   const { id_usuario, otp } = req.body;
 
@@ -121,7 +114,6 @@ const verifyRecoveryOTP = async (req, res) => {
     return res.status(400).json({ message: 'ID y código son requeridos' });
 
   try {
-  
     const result = await userModel.verifyRecoveryOTP(id_usuario, String(otp));
 
     if (result.success)
@@ -133,8 +125,7 @@ const verifyRecoveryOTP = async (req, res) => {
   }
 };
 
-
-// ─── CAMBIAR CONTRASEÑA  (recuperación)───────────
+// ─── CAMBIAR CONTRASEÑA (recuperación) ───────────────────
 const resetPasswordController = async (req, res) => {
   const { id_usuario, newPassword, confirmPassword } = req.body;
 
@@ -144,7 +135,6 @@ const resetPasswordController = async (req, res) => {
     return res.status(400).json({ message: 'Las contraseñas no coinciden' });
 
   try {
-    
     const result = await userModel.resetPassword(id_usuario, newPassword);
 
     if (result.success)
@@ -156,8 +146,7 @@ const resetPasswordController = async (req, res) => {
   }
 };
 
-
-// ─── REENVIAR CÓDIGO RECUPERAR LA CONTRASEÑA────────────
+// ─── REENVIAR CÓDIGO RECUPERACIÓN ────────────────────────
 const resendRecoveryOTP = async (req, res) => {
   const { id_usuario } = req.body;
 
@@ -170,7 +159,7 @@ const resendRecoveryOTP = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
 
     const otp = await userModel.saveRecoveryOTP(user.id_usuario);
-    await sendRecoveryEmail(user.correo_electronico, otp); // ← corregido
+    await sendRecoveryEmail(user.correo_electronico, otp);
     return res.status(200).json({ message: 'Código reenviado a tu correo' });
   } catch (error) {
     console.error(error);
@@ -178,7 +167,7 @@ const resendRecoveryOTP = async (req, res) => {
   }
 };
 
-//____REENVIAR CODIGO PARA ACTIVAR LA CUENTA_______
+// ─── REENVIAR CÓDIGO ACTIVACIÓN ──────────────────────────
 const resendActivationOTPController = async (req, res) => {
   const { id_usuario } = req.body;
   if (!id_usuario)
@@ -192,7 +181,7 @@ const resendActivationOTPController = async (req, res) => {
       return res.status(400).json({ message: 'Esta cuenta ya está activada' });
 
     const otp = await userModel.resendActivationOTP(id_usuario);
-    await sendOTPEmail(user.correo_electronico, otp); // ← email de activación
+    await sendOTPEmail(user.correo_electronico, otp);
     return res.status(200).json({ message: 'Código reenviado a tu correo' });
   } catch (error) {
     console.error(error);
@@ -200,7 +189,7 @@ const resendActivationOTPController = async (req, res) => {
   }
 };
 
-// Obtener id por email — solo para reenvío de activación
+// ─── OBTENER ID POR EMAIL ─────────────────────────────────
 const getUserIdByEmail = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Correo requerido' });
@@ -215,7 +204,6 @@ const getUserIdByEmail = async (req, res) => {
   }
 };
 
- 
 // ─── PERFIL — GET ─────────────────────────────────────────
 const getProfile = async (req, res) => {
   try {
@@ -227,29 +215,28 @@ const getProfile = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener perfil' });
   }
 };
- 
+
 // ─── PERFIL — PUT (datos personales) ─────────────────────
 const putProfile = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, apellido_paterno, apellido_materno,
             nombre_usuario, fecha_nacimiento, domicilio, telefono } = req.body;
- 
+
     if (!nombre?.trim())
       return res.status(400).json({ message: 'El nombre es obligatorio' });
     if (!apellido_paterno?.trim())
       return res.status(400).json({ message: 'El apellido paterno es obligatorio' });
     if (!nombre_usuario?.trim())
       return res.status(400).json({ message: 'El nombre de usuario es obligatorio' });
- 
-    // Verificar nombre_usuario duplicado
+
     const dup = await db.query(
       'SELECT id_usuario FROM usuarios WHERE nombre_usuario = $1 AND id_usuario <> $2',
       [nombre_usuario.trim(), id]
     );
     if (dup.rowCount > 0)
       return res.status(409).json({ message: 'Ese nombre de usuario ya está en uso' });
- 
+
     const actualizado = await userModel.updateUserProfile(id, {
       nombre:           nombre.trim(),
       apellido_paterno: apellido_paterno.trim(),
@@ -259,7 +246,7 @@ const putProfile = async (req, res) => {
       domicilio:        domicilio?.trim()          || null,
       telefono:         telefono?.trim()           || null,
     });
- 
+
     if (!actualizado) return res.status(404).json({ message: 'Usuario no encontrado' });
     res.json({ message: 'Perfil actualizado', user: actualizado });
   } catch (error) {
@@ -267,32 +254,33 @@ const putProfile = async (req, res) => {
     res.status(500).json({ message: 'Error al actualizar perfil' });
   }
 };
- 
+
 // ─── CONTRASEÑA — PUT (desde perfil, solo locales) ───────
 const putPassword = async (req, res) => {
   try {
     const { id } = req.params;
     const { actual, nueva } = req.body;
- 
+
     if (!actual || !nueva)
       return res.status(400).json({ message: 'Faltan campos' });
     if (nueva.length < 6)
       return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
- 
+
     const row = await db.query(
       'SELECT contrasena, proveedor FROM usuarios WHERE id_usuario = $1', [id]
     );
     if (row.rowCount === 0)
       return res.status(404).json({ message: 'Usuario no encontrado' });
- 
+
     const { contrasena, proveedor } = row.rows[0];
- 
+
     if (proveedor === 'google')
       return res.status(403).json({ message: 'Las cuentas de Google no tienen contraseña local' });
- 
+
+    // FIX: bcrypt ahora está importado correctamente arriba
     const ok = await bcrypt.compare(actual, contrasena);
     if (!ok) return res.status(401).json({ message: 'Contraseña actual incorrecta' });
- 
+
     const hash = await bcrypt.hash(nueva, 10);
     await db.query('UPDATE usuarios SET contrasena = $1 WHERE id_usuario = $2', [hash, id]);
     res.json({ message: 'Contraseña actualizada correctamente' });
@@ -301,12 +289,19 @@ const putPassword = async (req, res) => {
     res.status(500).json({ message: 'Error al cambiar contraseña' });
   }
 };
- 
-// ─── EXPORTS ──────────────────────────────────────────────
 
+// ─── EXPORTS ──────────────────────────────────────────────
 module.exports = {
-  registerUser, verifyUser, loginUserController,
-  forgotPassword, verifyRecoveryOTP, resetPasswordController, 
-  resendRecoveryOTP, resendActivationOTPController, 
-  getUserIdByEmail, getProfile, putProfile, putPassword
+  registerUser,
+  verifyUser,
+  loginUserController,
+  forgotPassword,
+  verifyRecoveryOTP,
+  resetPasswordController,
+  resendRecoveryOTP,
+  resendActivationOTPController,
+  getUserIdByEmail,
+  getProfile,
+  putProfile,
+  putPassword,
 };
