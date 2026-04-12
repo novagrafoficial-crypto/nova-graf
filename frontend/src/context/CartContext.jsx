@@ -1,3 +1,4 @@
+// frontend/src/context/CartContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { getToken } from '../utils/auth';
@@ -9,8 +10,8 @@ export const CartProvider = ({ children }) => {
   const [cartCount, setCartCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Definimos la URL base desde las variables de entorno
-  const API_URL = 'http://localhost:5000';
+  // ✅ URL base desde variables de entorno (corregido)
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchCartCount = useCallback(async () => {
     const token = getToken();
@@ -20,7 +21,6 @@ export const CartProvider = ({ children }) => {
     }
     setIsLoading(true);
     try {
-      // ✅ Actualizada URL de conteo
       const res = await axios.get(`${API_URL}/api/client/carrito/count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -35,13 +35,12 @@ export const CartProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [API_URL]); // Añadida dependencia API_URL
+  }, [API_URL]);
 
   const addToCart = async (productoPersonalizadoId, cantidad, precioUnitario) => {
     const token = getToken();
     if (!token) throw new Error('No autenticado');
     
-    // ✅ Actualizada URL de añadir al carrito
     await axios.post(`${API_URL}/api/client/carrito`, {
       producto_personalizado_id: productoPersonalizadoId,
       cantidad,
