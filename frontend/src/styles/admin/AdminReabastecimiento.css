@@ -1,0 +1,448 @@
+/* src/styles/Admin/AdminReabastecimiento.css */
+
+/* ── Variables ────────────────────────────────────────────────────────────── */
+.rb-page {
+  --rb-bg:       #0f1117;
+  --rb-surface:  #181c28;
+  --rb-surface2: #1f2438;
+  --rb-border:   #3b4890;
+  --rb-accent:   #507eea;
+  --rb-purple:   #9b59f7;
+  --rb-ok:       #22c55e;
+  --rb-warn:     #f59e0b;
+  --rb-danger:   #ef4444;
+  --rb-text:     #e2e8f0;
+  --rb-muted:    #64748b;
+  --rb-radius:   12px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  color: var(--rb-text);
+  background: var(--rb-bg);
+  padding: 2rem 2.25rem;
+  min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.rb-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.rb-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -.025em;
+  margin: 0 0 .3rem;
+  background: linear-gradient(120deg, #e2e8f0 40%, var(--rb-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rb-subtitle {
+  margin: 0;
+  font-size: .875rem;
+  color: var(--rb-muted);
+}
+
+.rb-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius);
+  padding: .55rem 1.1rem;
+  min-width: 72px;
+}
+
+.rb-counter__num {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--rb-accent);
+  line-height: 1;
+}
+
+.rb-counter__label {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--rb-muted);
+}
+
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+.rb-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  align-items: center;
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius);
+  padding: .9rem 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.rb-search {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  background: var(--rb-surface2);
+  border: 1px solid var(--rb-border);
+  border-radius: 8px;
+  padding: 0 .75rem;
+  transition: border-color .2s;
+}
+
+.rb-search:focus-within { border-color: var(--rb-accent); }
+
+.rb-search__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--rb-muted);
+  flex-shrink: 0;
+}
+
+.rb-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--rb-text);
+  font-family: inherit;
+  font-size: .875rem;
+  padding: .6rem 0;
+}
+
+.rb-search input::placeholder { color: var(--rb-muted); }
+
+.rb-search__clear {
+  background: none;
+  border: none;
+  color: var(--rb-muted);
+  cursor: pointer;
+  font-size: .8rem;
+  padding: 0;
+  line-height: 1;
+  transition: color .2s;
+}
+.rb-search__clear:hover { color: var(--rb-danger); }
+
+.rb-filters select {
+  background: var(--rb-surface2);
+  border: 1px solid var(--rb-border);
+  border-radius: 8px;
+  color: var(--rb-text);
+  font-family: inherit;
+  font-size: .875rem;
+  padding: .6rem .85rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.rb-filters select:focus    { border-color: var(--rb-accent); }
+.rb-filters select:disabled { opacity: .4; cursor: not-allowed; }
+
+.rb-clear-btn {
+  background: transparent;
+  border: 1px solid var(--rb-border);
+  border-radius: 8px;
+  color: var(--rb-muted);
+  font-family: inherit;
+  font-size: .82rem;
+  padding: .6rem .9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .2s, color .2s;
+}
+.rb-clear-btn:hover { border-color: var(--rb-danger); color: var(--rb-danger); }
+
+/* ── States ───────────────────────────────────────────────────────────────── */
+.rb-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 4.5rem 2rem;
+  color: var(--rb-muted);
+  font-size: .95rem;
+}
+.rb-state--error { color: var(--rb-danger); }
+.rb-state--empty span { font-size: 2.5rem; display: block; }
+
+.rb-spinner {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--rb-border);
+  border-top-color: var(--rb-accent);
+  border-radius: 50%;
+  animation: rb-spin .75s linear infinite;
+}
+@keyframes rb-spin { to { transform: rotate(360deg); } }
+
+/* ── Tabla (contenedor principal) ───────────────────────────────────────── */
+.rb-grid {
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius);
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Encabezado de tabla (alineado perfectamente con las filas) ─────────── */
+.rb-list-header {
+  display: grid;
+  grid-template-columns: 2.5fr 1.2fr 0.9fr 2fr;
+  align-items: center;           /* centrado vertical */
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;        /* mismo padding vertical que las filas (ajustado) */
+  background: linear-gradient(135deg, #1e2438 0%, #161929 100%);
+  border-bottom: 2px solid var(--rb-accent); /* borde más delgado para no crear separación visual excesiva */
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rb-accent);
+  margin: 0;                     /* eliminar cualquier margen */
+}
+
+/* ── Filas de producto (misma estructura que el header) ─────────────────── */
+.rb-list-item {
+  display: grid;
+  grid-template-columns: 2.5fr 1.2fr 0.9fr 2fr;
+  align-items: center;           /* centrado vertical */
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;        /* exactamente el mismo padding que el header */
+  border-bottom: 1px solid var(--rb-border);
+  transition: background 0.15s;
+  margin: 0;
+}
+
+.rb-list-item:last-child { border-bottom: none; }
+.rb-list-item:hover { background: var(--rb-surface2); }
+
+/* Columna: producto */
+.rb-list-item__main { min-width: 0; }
+
+.rb-list-item__nombre {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rb-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rb-list-item__cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
+.rb-tag {
+  font-size: .68rem;
+  background: var(--rb-surface2);
+  border: 1px solid var(--rb-border);
+  border-radius: 4px;
+  padding: .15rem .5rem;
+  color: var(--rb-muted);
+}
+.rb-tag--sub {
+  border-color: rgba(155,89,247,.35);
+  color: #c084fc;
+}
+
+/* Columna: stock */
+.rb-list-item__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+
+.rb-list-item__stock {
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.rb-list-item__vars {
+  font-size: 0.68rem;
+  color: var(--rb-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Columna: estado */
+.rb-list-item__estado {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.rb-estado-badge {
+  display: inline-block;
+  min-width: 95px;
+  text-align: center;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.rb-estado--critico {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.rb-estado--proximo {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
+}
+
+.rb-estado--abastecido {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+/* Columna: operaciones */
+.rb-list-item__actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0.65rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* ── Botones (tamaño compacto pero legible, evitan desborde) ────────────── */
+.rb-btn {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.1s;
+}
+.rb-btn:active { transform: scale(0.97); }
+
+.rb-btn--primary {
+  background: rgba(79,124,255,.14);
+  color: var(--rb-accent);
+  border-color: rgba(79,124,255,.38);
+}
+.rb-btn--primary:hover { background: rgba(79,124,255,.26); }
+
+.rb-btn--secondary {
+  background: rgba(34,197,94,.1);
+  color: var(--rb-ok);
+  border-color: rgba(34,197,94,.3);
+}
+.rb-btn--secondary:hover { background: rgba(34,197,94,.2); }
+
+.rb-btn--accent {
+  background: rgba(155,89,247,.12);
+  color: #c084fc;
+  border-color: rgba(155,89,247,.35);
+}
+.rb-btn--accent:hover { background: rgba(155,89,247,.22); }
+
+/* ── Responsive (ajustes para pantallas medianas y pequeñas) ────────────── */
+@media (max-width: 1100px) {
+  .rb-list-header,
+  .rb-list-item {
+    grid-template-columns: 2fr 1.2fr 0.9fr 1.8fr;
+  }
+  .rb-btn {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .rb-list-header,
+  .rb-list-item {
+    grid-template-columns: 1.8fr 1fr 0.8fr 1.6fr;
+  }
+  .rb-estado-badge {
+    min-width: 80px;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+  .rb-btn {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .rb-page {
+    padding: 1.25rem 1rem;
+  }
+  .rb-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rb-counter {
+    align-self: flex-end;
+  }
+
+  .rb-list-header {
+    display: none; /* oculto en móvil, las filas se muestran en bloque */
+  }
+
+  .rb-list-item {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .rb-list-item__stats {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .rb-list-item__estado {
+    justify-content: flex-start;
+  }
+
+  .rb-list-item__actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .rb-btn {
+    flex: 0 1 auto;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rb-list-item__actions {
+    gap: 0.3rem;
+  }
+  .rb-btn {
+    font-size: 0.65rem;
+    padding: 0.35rem 0.6rem;
+  }
+}

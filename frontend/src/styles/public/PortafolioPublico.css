@@ -1,0 +1,552 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
+:root {
+  --verde-oscuro: #1A6163;
+  --verde-menta: #35BA99;
+  --gris-claro: #DBDBD3;
+  --negro: #000000;
+  --fondo: #f4f4f0;
+}
+
+/* ── LOADING / ERROR ─────────────────────────── */
+.portafolio-loading,
+.portafolio-error {
+  text-align: center;
+  padding: 6rem 2rem;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--verde-oscuro);
+  font-size: 1rem;
+}
+.portafolio-error { color: #c0392b; }
+
+/* ── CONTENEDOR PRINCIPAL ────────────────────── */
+.portafolio-container {
+  width: 100%;
+  margin: 0;
+padding-top: 90px;
+  background: var(--fondo);
+  min-height: 100vh;
+}
+
+/* ── HEADER ──────────────────────────────────── */
+.portafolio-header {
+  text-align: center;
+  padding: 3.5rem 2rem 2.5rem;
+  background: #fff;
+  border-bottom: 1px solid rgba(26,97,99,0.08);
+  position: relative;
+}
+
+.portafolio-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 100% at 50% 0%,
+    rgba(53,186,153,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.header-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--verde-menta);
+  margin-bottom: 0.7rem;
+  position: relative;
+}
+
+.portafolio-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-weight: 800;
+  color: var(--verde-oscuro);
+  line-height: 1.15;
+  position: relative;
+  letter-spacing: -0.01em;    /* evita el texto estirado */
+  word-spacing: normal;
+}
+
+.portafolio-header h1 span {
+  color: var(--verde-menta);
+  display: inline;            /* inline para no estirar */
+}
+
+.portafolio-header h1 span::after {
+  content: '';
+  display: block;
+  height: 3px;
+  background: var(--verde-menta);
+  border-radius: 2px;
+  opacity: 0.3;
+  margin-top: -4px;
+}
+
+.header-divider {
+  width: 32px;
+  height: 3px;
+  background: linear-gradient(to right, var(--verde-oscuro), var(--verde-menta));
+  border-radius: 2px;
+  margin: 1.1rem auto 0.9rem;
+}
+
+.portafolio-header > p {
+  font-size: 0.92rem;
+  color: #777;
+  max-width: 380px;
+  margin: 0 auto;
+  line-height: 1.65;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+
+/* ── WRAPPER ─────────────────────────────────── */
+.portafolio-grid-wrapper {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 5rem;
+}
+
+/* ── GRID ────────────────────────────────────── */
+.portafolio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+/* ── TARJETA BASE ────────────────────────────── */
+.portafolio-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(26,97,99,0.07);
+  transition: transform 0.35s cubic-bezier(.22,.68,0,1.2),
+              box-shadow 0.35s ease,
+              border-color 0.3s ease;
+  position: relative;
+  cursor: pointer;
+  animation: cardIn 0.45s both;
+}
+
+.portafolio-card:nth-child(2) { animation-delay: 0.07s; }
+.portafolio-card:nth-child(3) { animation-delay: 0.14s; }
+.portafolio-card:nth-child(4) { animation-delay: 0.21s; }
+.portafolio-card:nth-child(5) { animation-delay: 0.28s; }
+.portafolio-card:nth-child(6) { animation-delay: 0.35s; }
+.portafolio-card:nth-child(7) { animation-delay: 0.42s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.portafolio-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(26,97,99,0.12),
+              0 3px 10px rgba(53,186,153,0.07);
+  border-color: rgba(53,186,153,0.25);
+}
+
+/* ── FEATURED — dos columnas balanceadas ──────── */
+.portafolio-card.featured {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* 50/50 exacto */
+  height: 400px;                     /* altura fija controlada */
+  border-radius: 16px;
+}
+
+/* imagen featured */
+.portafolio-card.featured .portafolio-imagen {
+  height: 400px;
+  width: 100%;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.portafolio-card.featured .portafolio-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;  /* muestra la parte superior del producto */
+  display: block;
+}
+
+/* info featured */
+.portafolio-card.featured .portafolio-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem 2.75rem;
+  background: #fff;
+  overflow: hidden;
+  border-left: none;
+}
+
+.portafolio-card.featured .portafolio-info::before {
+  display: none;    /* quitar línea lateral en featured */
+}
+
+.portafolio-card.featured h3 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.portafolio-card.featured .portafolio-info > p {
+  -webkit-line-clamp: 4;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.65;
+}
+
+/* Separador decorativo en featured */
+.portafolio-card.featured .info-footer {
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(26,97,99,0.08);
+  margin-top: auto;
+}
+
+/* ── LABEL FEATURED ──────────────────────────── */
+.featured-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--verde-menta);
+  margin-bottom: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.featured-label span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--verde-menta);
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.6); }
+}
+
+/* ── BADGE ───────────────────────────────────── */
+.card-badge {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 3;
+  background: rgba(26,97,99,0.92);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 100px;
+}
+
+/* ── IMAGEN TARJETA NORMAL ───────────────────── */
+.portafolio-imagen {
+  position: relative;
+  overflow: hidden;
+  height: 240px;          /* altura generosa para ver el producto */
+  background: var(--verde-oscuro);
+}
+
+.portafolio-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.5s cubic-bezier(.22,.68,0,1.2);
+}
+
+.portafolio-card:hover .portafolio-imagen img {
+  transform: scale(1.06);
+}
+
+/* ── OVERLAY + MODAL AL CLICK ────────────────── */
+.imagen-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(26,97,99,0.9) 0%,
+    rgba(26,97,99,0.2) 40%,
+    transparent 65%
+  );
+  display: flex;
+  align-items: flex-end;
+  padding: 1.1rem 1.25rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.portafolio-card:hover .imagen-overlay { opacity: 1; }
+
+.overlay-cta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.overlay-cta svg { stroke: var(--verde-menta); flex-shrink: 0; }
+
+/* ── PLACEHOLDER ─────────────────────────────── */
+.imagen-placeholder {
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(145deg, #1A6163, #0f4446);
+}
+
+.imagen-placeholder span {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── INFO TARJETA NORMAL ─────────────────────── */
+.portafolio-info {
+  padding: 1.2rem 1.3rem 1.35rem;
+  position: relative;
+}
+
+.portafolio-info::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 1.1rem; bottom: 1.1rem;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--verde-menta), var(--verde-oscuro));
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.portafolio-card:hover .portafolio-info::before { opacity: 1; }
+
+.portafolio-info h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+  line-height: 1.3;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+.portafolio-info p {
+  font-size: 0.81rem;
+  color: #777;
+  line-height: 1.55;
+  margin-bottom: 0.85rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+.info-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.portafolio-fecha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.69rem;
+  color: #bbb;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.portafolio-fecha svg { stroke: #bbb; }
+
+.chip-categoria {
+  font-size: 9px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--verde-oscuro);
+  background: rgba(53,186,153,0.09);
+  border: 1px solid rgba(53,186,153,0.18);
+  padding: 3px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* ── VACÍO ───────────────────────────────────── */
+.portafolio-empty {
+  text-align: center;
+  padding: 6rem 2rem;
+  color: #bbb;
+  font-size: 1rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── MODAL LIGHTBOX ──────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  max-width: 860px;
+  width: 100%;
+  max-height: 90vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  animation: scaleIn 0.25s cubic-bezier(.22,.68,0,1.3);
+  position: relative;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-imagen {
+  height: 100%;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.modal-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-info {
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.modal-info h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.modal-info p {
+  font-size: 0.88rem;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+
+.modal-fecha {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: #aaa;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(26,97,99,0.07);
+}
+
+.modal-fecha svg { stroke: #aaa; }
+
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.modal-close:hover { background: rgba(0,0,0,0.8); }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 1100px) {
+  .portafolio-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .portafolio-card.featured {
+    height: 360px;
+  }
+  .portafolio-card.featured .portafolio-imagen {
+    height: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .portafolio-grid-wrapper { padding: 1.75rem 1rem 3rem; }
+  .portafolio-grid { grid-template-columns: 1fr; gap: 1.1rem; }
+
+  .portafolio-card.featured {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .portafolio-card.featured .portafolio-imagen {
+    height: 280px;
+  }
+  .portafolio-card.featured .portafolio-info {
+    padding: 1.5rem;
+  }
+  .portafolio-card.featured h3 { font-size: 1.2rem; }
+
+  .modal-content {
+    grid-template-columns: 1fr;
+    max-height: 85vh;
+  }
+  .modal-imagen { min-height: 260px; max-height: 260px; }
+}

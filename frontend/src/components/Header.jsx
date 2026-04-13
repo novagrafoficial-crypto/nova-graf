@@ -1,7 +1,9 @@
+// frontend/src/components/public/Header.js
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import '../styles/public/Header.css'; 
-import LogoNova from '../assets/LogoNova.png'; // Ruta del logo
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import '../styles/public/Header.css';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Header = ({
   cartCount = 0,
@@ -9,100 +11,112 @@ const Header = ({
   userName = 'Usuario',
   onSearch = (query) => console.log('Buscar:', query)
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [scrolled, setScrolled] = useState(false);
+  const [empresa,       setEmpresa]       = useState({ nombre_empresa: '', logo_url: '' });
+  const [loadingEmpresa,setLoadingEmpresa] = useState(true);
+  const [scrolled,      setScrolled]      = useState(false);
+  const [menuOpen,      setMenuOpen]      = useState(false);
+  const [dropdownOpen,  setDropdownOpen]  = useState(false);
+  const [searchActive,  setSearchActive]  = useState(false);
+  const [searchQuery,   setSearchQuery]   = useState('');
 
-  const dropdownRef = useRef(null);
-  const timeoutRef = useRef(null);
+  const dropdownRef     = useRef(null);
   const searchWrapperRef = useRef(null);
+  const navigate        = useNavigate();
+  const location        = useLocation();
 
-  // Detectar scroll para cambiar estilo de la navbar
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
+    fetch(`${API_URL}/api/empresa`)
+      .then(res => res.json())
+      .then(json => { if (json.success) setEmpresa(json.data); })
+      .catch(err => console.error('Error al cargar empresa:', err))
+      .finally(() => setLoadingEmpresa(false));
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target))
         setDropdownOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Cerrar buscador al hacer clic fuera (opcional)
   useEffect(() => {
     const handleClickOutsideSearch = (event) => {
-      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target)) {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target))
         setSearchActive(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutsideSearch);
     return () => document.removeEventListener('mousedown', handleClickOutsideSearch);
   }, []);
 
-  // Hover con delay para dropdown
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setDropdownOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setDropdownOpen(false);
-    }, 200);
-  };
-
-  const handleSearchToggle = () => {
-    setSearchActive(!searchActive);
-    if (!searchActive) {
-      // Enfocar el input cuando se abre
-      setTimeout(() => {
-        const input = document.querySelector('.search-form input');
-        if (input) input.focus();
-      }, 100);
-    }
-  };
+  const handleMouseEnter  = () => setDropdownOpen(true);
+  const handleMouseLeave  = () => setDropdownOpen(false);
+  const handleSearchToggle = () => setSearchActive(prev => !prev);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       onSearch(searchQuery);
-      setSearchActive(false); // Opcional: cerrar buscador al enviar
+      setSearchActive(false);
+      setMenuOpen(false);
+    }
+  };
+
+  const handleContactoClick = (e) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    setDropdownOpen(false);
+    document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleNosotrosClick = (e, seccionId) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    setDropdownOpen(false);
+
+    if (location.pathname === '/') {
+      document.getElementById(seccionId)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate(`/#${seccionId}`);
     }
   };
 
   return (
     <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-      {/* Línea decorativa superior */}
       <div className="navbar-topline"></div>
 
       <div className="navbar-inner">
-        {/* Logo con imagen */}
+
         <div className="navbar-logo">
           <Link to="/">
-            <img
-              src={LogoNova}
-              alt="Nova Graf"
-              style={{ height: '48px', width: 'auto', display: 'block' }}
-            />
+            {loadingEmpresa ? (
+              <div className="logo-placeholder" />
+            ) : (
+              <div className="logo-container">
+                {empresa.logo_url && (
+                  <img
+                    src={empresa.logo_url}
+                    alt={empresa.nombre_empresa || 'Logo'}
+                    className="logo-image"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                )}
+              </div>
+            )}
           </Link>
         </div>
 
-        {/* Menú de navegación (solo escritorio) */}
         <div className="navbar-center">
           <ul className="navbar-menu">
             <li><Link to="/" className="nav-link">Inicio</Link></li>
-            <li><Link to="/catalogo" className="nav-link">Catálogo</Link></li>
+            <li><Link to="/catalogo" className="nav-link">Productos</Link></li>
             <li
               className="dropdown"
               ref={dropdownRef}
@@ -110,7 +124,7 @@ const Header = ({
               onMouseLeave={handleMouseLeave}
             >
               <button className={`dropdown-btn ${dropdownOpen ? 'active' : ''}`}>
-                Sobre nosotros
+                Nosotros
                 <svg className="arrow-icon" viewBox="0 0 24 24" width="14" height="14">
                   <path d="M7 10l5 5 5-5z" fill="currentColor" />
                 </svg>
@@ -118,34 +132,40 @@ const Header = ({
               <ul className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}>
                 <li className="dropdown-header">Conócenos</li>
                 <li>
-                  <Link to="/nosotros/valores" className="dropdown-link">
+                  <a href="#valores" className="dropdown-link"
+                    onClick={(e) => handleNosotrosClick(e, 'valores')}>
                     <span className="dropdown-icon">●</span> Valores
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/nosotros/mision" className="dropdown-link">
+                  <a href="#mision" className="dropdown-link"
+                    onClick={(e) => handleNosotrosClick(e, 'mision')}>
                     <span className="dropdown-icon">●</span> Misión
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/nosotros/vision" className="dropdown-link">
+                  <a href="#vision" className="dropdown-link"
+                    onClick={(e) => handleNosotrosClick(e, 'vision')}>
                     <span className="dropdown-icon">●</span> Visión
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/nosotros/antecedentes" className="dropdown-link">
+                  <a href="#antecedentes" className="dropdown-link"
+                    onClick={(e) => handleNosotrosClick(e, 'antecedentes')}>
                     <span className="dropdown-icon">●</span> Antecedentes
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </li>
-            <li><Link to="/contacto" className="nav-link">Contacto</Link></li>
+            <li>
+              <a href="#contacto" className="nav-link" onClick={handleContactoClick}>
+                Contacto
+              </a>
+            </li>
           </ul>
         </div>
 
-        {/* Acciones de la derecha */}
         <div className="navbar-actions">
-          {/* Buscador con toggle */}
           <div className={`search-wrapper ${searchActive ? 'active' : ''}`} ref={searchWrapperRef}>
             <form className="search-form" onSubmit={handleSearchSubmit}>
               <input
@@ -163,7 +183,6 @@ const Header = ({
             </button>
           </div>
 
-          {/* Área de usuario / autenticación */}
           <div className="user-area">
             {isLoggedIn ? (
               <Link to="/perfil" className="user-btn">
@@ -173,13 +192,12 @@ const Header = ({
             ) : (
               <div className="auth-links">
                 <Link to="/login" className="auth-link">Iniciar sesión</Link>
-                <Link to="/register" className="auth-link primary">Registrarse</Link>
+                <Link to="/register" className="auth-link primary">Crear cuenta</Link>
               </div>
             )}
           </div>
 
-          {/* Carrito */}
-          <Link to="/carrito" className="cart-btn">
+          <Link to="/register" className="cart-btn">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="21" r="1" />
               <circle cx="20" cy="21" r="1" />
@@ -188,7 +206,6 @@ const Header = ({
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
 
-          {/* Hamburguesa para móvil */}
           <button
             className={`hamburger ${menuOpen ? 'active' : ''}`}
             onClick={() => setMenuOpen(!menuOpen)}
@@ -201,7 +218,6 @@ const Header = ({
         </div>
       </div>
 
-      {/* Menú móvil */}
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <div className="mobile-search-bar">
           <form onSubmit={handleSearchSubmit}>
@@ -224,25 +240,25 @@ const Header = ({
           <li><Link to="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
           <li><Link to="/catalogo" onClick={() => setMenuOpen(false)}>Catálogo</Link></li>
           <li>
-            <button
-              className="mobile-dropdown-toggle"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              Sobre nosotros
+            <button className="mobile-dropdown-toggle"
+              onClick={() => setDropdownOpen(!dropdownOpen)}>
+              Nosotros
               <svg className={`arrow-icon ${dropdownOpen ? 'rotated' : ''}`} viewBox="0 0 24 24" width="14" height="14">
                 <path d="M7 10l5 5 5-5z" fill="currentColor" />
               </svg>
             </button>
             {dropdownOpen && (
               <ul className="mobile-sub">
-                <li><Link to="/nosotros/valores" onClick={() => setMenuOpen(false)}>Valores</Link></li>
-                <li><Link to="/nosotros/mision" onClick={() => setMenuOpen(false)}>Misión</Link></li>
-                <li><Link to="/nosotros/vision" onClick={() => setMenuOpen(false)}>Visión</Link></li>
-                <li><Link to="/nosotros/antecedentes" onClick={() => setMenuOpen(false)}>Antecedentes</Link></li>
+                <li><a href="#mision"      onClick={(e) => handleNosotrosClick(e, 'mision')}>Misión</a></li>
+                <li><a href="#vision"       onClick={(e) => handleNosotrosClick(e, 'vision')}>Visión</a></li>
+                <li><a href="#valores"      onClick={(e) => handleNosotrosClick(e, 'valores')}>Valores</a></li>
+                <li><a href="#antecedentes" onClick={(e) => handleNosotrosClick(e, 'antecedentes')}>Antecedentes</a></li>
               </ul>
             )}
           </li>
-          <li><Link to="/contacto" onClick={() => setMenuOpen(false)}>Contacto</Link></li>
+          <li>
+            <a href="#contacto" onClick={handleContactoClick}>Contacto</a>
+          </li>
         </ul>
 
         <div className="mobile-auth-section">
