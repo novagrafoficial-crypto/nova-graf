@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
+// subir todo al mail
 function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
