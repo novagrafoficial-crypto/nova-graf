@@ -11,20 +11,26 @@ function Register() {
   });
   const [message, setMessage] = useState("");
   const [step, setStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleNext = () => {
-    const requiredStep1 = ["name", "lastNameP", "lastNameM", "username", "birthDate"];
-    const missing = requiredStep1.filter(field => !form[field].trim());
+  const validateStep1 = () => {
+    const required = ["name", "lastNameP", "lastNameM", "username", "birthDate"];
+    const missing = required.filter(field => !form[field].trim());
     if (missing.length > 0) {
       setMessage("Por favor completa todos los campos antes de continuar.");
-      return;
+      return false;
     }
     setMessage("");
-    setStep(2);
+    return true;
+  };
+
+  const handleNext = () => {
+    if (validateStep1()) setStep(2);
   };
 
   const handleBack = () => {
@@ -32,12 +38,22 @@ function Register() {
     setMessage("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validatePasswords = () => {
     if (form.password !== form.confirmPassword) {
       setMessage("Las contraseñas no coinciden");
-      return;
+      return false;
     }
+    if (form.password.length < 6) {
+      setMessage("La contraseña debe tener al menos 6 caracteres");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validatePasswords()) return;
+
     try {
       const res = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
@@ -147,25 +163,43 @@ function Register() {
                   onChange={handleChange}
                   required
                 />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Contraseña"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Repetir contraseña"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="password-field">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Contraseña"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
+                <div className="password-field">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Repetir contraseña"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
                 <div className="step-buttons">
                   <button type="button" className="btn-back" onClick={handleBack}>
-                    Volver
+                    ← Volver
                   </button>
                   <button type="submit" className="btn-register step2-btn">
                     Registrarse

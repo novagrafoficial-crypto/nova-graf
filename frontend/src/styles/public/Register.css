@@ -1,11 +1,11 @@
 :root {
-  --verde-profundo: #1e4620;
-  --verde-principal: #2c6e2f;
-  --verde-suave: #4c9a4f;
-  --verde-claro: #eaf7ea;
-  --gris-fondo: #f9fafb;
-  --gris-borde: #e2e8f0;
-  --gris-texto: #334155;
+  --verde-profundo: #1A6163;
+  --verde-principal: #35BA99;
+  --verde-suave: #6acfaf;
+  --verde-claro: #daf2e8;
+  --gris-fondo: #f4f4f0;
+  --gris-borde: #e2e2da;
+  --gris-texto: #4b5563;
   --sombra-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
   --borde-radio: 20px;
   --transicion: all 0.2s ease;
@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f9f0 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--verde-claro) 0%, #ffffff 100%);
   padding-top: 100px;
   box-sizing: border-box;
 }
@@ -29,7 +29,7 @@
 }
 
 .register-card {
-  max-width: 420px; /* más pequeño */
+  max-width: 420px;
   width: 100%;
   background: white;
   border-radius: var(--borde-radio);
@@ -56,6 +56,28 @@
   font-weight: 400;
 }
 
+/* Indicador de pasos */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gris-borde);
+  transition: var(--transicion);
+}
+
+.step-dot.active {
+  background: var(--verde-principal);
+  transform: scale(1.2);
+}
+
+/* Formulario */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -77,12 +99,49 @@
 .register-form input:focus {
   outline: none;
   border-color: var(--verde-principal);
-  box-shadow: 0 0 0 3px rgba(44, 110, 47, 0.1);
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.1);
 }
 
 .register-form input::placeholder {
   color: #9ca3af;
   font-weight: 400;
+}
+
+/* Campos de contraseña con botón toggle */
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 2.8rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  color: #6b7280;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: var(--verde-principal);
+}
+
+.password-field input:focus + .password-toggle,
+.password-field input:focus ~ .password-toggle {
+  color: var(--verde-principal);
 }
 
 /* Botones */
@@ -112,7 +171,7 @@
   transform: translateY(0);
 }
 
-/* Botón volver */
+/* Botón volver con flecha */
 .btn-back {
   background: #f1f5f9;
   color: var(--gris-texto);
@@ -124,6 +183,10 @@
   cursor: pointer;
   transition: var(--transicion);
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
 }
 
 .btn-back:hover {
@@ -174,7 +237,7 @@
   display: inline-block;
   width: 30px;
   height: 1px;
-  background: #e2e8f0;
+  background: var(--gris-borde);
   vertical-align: middle;
   margin: 0 10px;
 }

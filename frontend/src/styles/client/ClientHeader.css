@@ -52,14 +52,14 @@
 
 /* Contenedor interior más espacioso pero con mejor distribución */
 .ch-inner {
-  max-width: 1400px;          /* Ampliamos un poco el ancho máximo */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1.5rem;          /* Reducimos padding lateral para más espacio */
+  padding: 0 1.5rem;
   height: 84px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;                  /* Reducimos el gap general */
+  gap: 1rem;
 }
 
 /* ── Logo más a la izquierda ── */
@@ -70,13 +70,12 @@
   text-decoration: none;
   flex-shrink: 0;
   transition: transform var(--transition);
-  margin-right: auto;          /* Empuja el logo a la izquierda */
+  margin-right: auto;
 }
 
-/* Para pantallas más grandes, podemos darle un margen derecho mínimo */
 @media (min-width: 1200px) {
   .ch-logo {
-    margin-right: 0;           /* En pantallas grandes, el gap ya lo separa */
+    margin-right: 0;
   }
 }
 
@@ -85,9 +84,9 @@
 }
 
 .ch-logo__img {
-  height: 80px;                /* Un poco más pequeño para laptops pequeñas, pero proporcionado */
+  height: 80px;
   width: auto;
-  max-width: 190px; /*logo */
+  max-width: 190px;
   object-fit: contain;
   transition: filter var(--transition);
 }
@@ -127,23 +126,23 @@
   100% { background-position: -200% 0; }
 }
 
-/* ── Navegación escritorio (se adapta mejor) ── */
+/* ── Navegación escritorio (tamaño de letra reducido) ── */
 .ch-nav {
   display: flex;
   align-items: center;
-  gap: 0.25rem;               /* Reducimos gap entre links */
-  margin: 0;                  /* Eliminamos el margin auto para que no centre */
+  gap: 0.25rem;
+  margin: 0;
 }
 
 .ch-nav__link {
   position: relative;
-  font-size: 1.5rem;            /* Tamaño base ligeramente menor para laptops pequeñas */
+  font-size: 0.95rem;        /* Antes 1.5rem -> ahora más pequeño */
   font-weight: 600;
   color: var(--ch-text);
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  transition: color var( --ch-green), background var(-- --ch-green);
+  transition: color var(--transition), background var(--transition);
   white-space: nowrap;
 }
 
@@ -151,7 +150,7 @@
 @media (max-width: 1024px) {
   .ch-nav__link {
     padding: 0.5rem 0.75rem;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -180,7 +179,7 @@
 .ch-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;               /* Reducimos gap para laptops */
+  gap: 0.75rem;
   flex-shrink: 0;
 }
 
@@ -197,8 +196,8 @@
 }
 
 .ch-cart svg {
-  width: 28px;                /* Tamaño estándar, no tan grande */
-  height: 29px;
+  width: 26px;               /* Ligeramente más pequeño */
+  height: 26px;
 }
 
 .ch-cart:hover {
@@ -213,10 +212,10 @@
   right: -4px;
   background: var(--ch-green);
   color: white;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  height: 18px;
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -230,26 +229,26 @@
 .ch-user {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.6rem;
   background: none;
   border: 1.5px solid var(--ch-border);
   border-radius: 40px;
-  padding: 0.2rem 0.8rem 0.2rem 0.2rem;
+  padding: 0.2rem 0.7rem 0.2rem 0.2rem;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.99rem;
-  font-weight: 750;
+  font-size: 0.85rem;        /* Antes 0.99rem -> reducido */
+  font-weight: 600;
   color: var(--ch-text);
   transition: all var(--transition);
 }
 
 .ch-user__avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--ch-green), var(--ch-green-light));
   color: white;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -257,7 +256,7 @@
 }
 
 .ch-user__name {
-  max-width: 100px;
+  max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -276,7 +275,7 @@
 }
 
 .ch-login {
-  font-size: 0.95rem;
+  font-size: 0.85rem;        /* Antes 0.95rem -> reducido */
   font-weight: 600;
   color: var(--ch-green);
   text-decoration: none;
@@ -341,7 +340,7 @@
 
 .ch-mobile__link {
   padding: 0.9rem 0.5rem;
-  font-size: 1.05rem;
+  font-size: 1rem;           /* En móvil se mantiene legible */
   font-weight: 500;
   color: var(--ch-text);
   text-decoration: none;
@@ -359,7 +358,7 @@
   padding: 1rem 1.5rem;
   cursor: pointer;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--ch-green);
 }
@@ -410,7 +409,7 @@
     margin-left: 0;
   }
   .ch-login {
-    font-size: 0.85rem;
-    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.7rem;
   }
 }

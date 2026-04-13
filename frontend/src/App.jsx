@@ -20,6 +20,12 @@ import ResetPassword from "./pages/public/ResetPassword";
 import AuthCallback from "./pages/public/AuthCallback";
 import Contacto from './pages/public/Contacto';
 import PortafolioPublico from './pages/public/PortafolioPublico';
+import Nosotros from './pages/public/Nosotros';
+import Contactos from './pages/public/Contactos';
+
+
+
+
 
 
 // Páginas cliente
@@ -77,6 +83,9 @@ function App() {
           <Route path="/redes-sociales" element={<Redes />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/catalogo" element={<PortafolioPublico />} />
+          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/contactos" element={<Contactos />} />
+          
         </Route>
 
         {/* Rutas cliente */}

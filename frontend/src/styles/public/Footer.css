@@ -1,11 +1,13 @@
-footer#contacto {
-  /* Este es el tono exacto que se ve en tu sección de valores */
-  background-color: #174d44 !important; 
-  background: #174d44 !important;
+/* frontend/src/styles/public/Footer.css */
+
+/* ========== FOOTER PRINCIPAL ========== */
+.footer {
+  background-color: #1A6163 !important;  /* color corporativo principal */
   color: #ffffff !important;
-  /* El borde superior en el verde acento que ya tienes */
-  border-top: 6px solid #35BA99 !important;
+  border-top: 6px solid #35BA99 !important;  /* acento en verde menta */
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
 }
+
 .footer-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -15,51 +17,140 @@ footer#contacto {
   gap: 40px;
 }
 
+/* ========== COLUMNA MARCA ========== */
 .footer-brand h3 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', Georgia, serif;
   font-size: 2rem;
+  font-weight: 400;
   color: #ffffff !important;
+  margin-bottom: 0.5rem;
 }
 
 .footer-brand h3 span {
   color: #35BA99 !important;
 }
 
+.footer-brand-desc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+/* ========== TÍTULOS DE COLUMNAS ========== */
 .footer-col-title {
   color: #35BA99 !important;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  margin-bottom: 20px;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.2rem;
   border-bottom: 1px solid rgba(53, 186, 153, 0.3);
-  padding-bottom: 5px;
+  padding-bottom: 0.6rem;
+  display: inline-block;
 }
 
+/* ========== LISTAS Y ENLACES ========== */
 .footer-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-.footer-list-link {
-  color: rgba(255, 255, 255, 0.9) !important;
-  text-decoration: none;
+.footer-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
   font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.footer-list-icon {
+  font-size: 1rem;
+  min-width: 24px;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.footer-list-text,
+.footer-list-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  word-break: break-word;
 }
 
 .footer-list-link:hover {
   color: #35BA99 !important;
 }
+
+/* ========== PIE DE PÁGINA INFERIOR ========== */
 .footer-bottom {
-  background-color: rgba(0, 0, 0, 0.2) !important;
-  padding: 20px 0; /* Ajuste de padding */
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  padding: 20px 0;
   width: 100%;
+  margin-top: 0;
 }
 
 .footer-bottom-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px; /* Margen interno para que no toque las orillas */
+  padding: 0 24px;
   display: flex;
-  justify-content: space-between; /* Esto separa el texto a la izquierda y derecha */
+  justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-bottom-text,
+.footer-bottom-credit {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* ========== LOADING ========== */
+.footer-loading {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+  .footer-inner {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 40px 20px;
+  }
+
+  .footer-brand h3 {
+    font-size: 1.8rem;
+  }
+
+  .footer-col-title {
+    margin-bottom: 0.8rem;
+  }
+
+  .footer-bottom-content {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-list-item {
+    flex-wrap: wrap;
+  }
+  .footer-list-icon {
+    align-self: flex-start;
+  }
 }

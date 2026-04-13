@@ -1,5 +1,5 @@
 // frontend/src/pages/public/Home.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/public/Home.css';
@@ -23,10 +23,141 @@ const STATS = [
   { valor: '100%', label: 'Satisfacción garantizada' },
 ];
 
+/* ══════════════════════════════════════════
+   CARRUSEL CINEMÁTICO — solo imágenes
+   Centro: grande con zoom suave
+   Lados: más pequeños, clickables para navegar
+══════════════════════════════════════════ */
+function PortafolioCarousel({ items }) {
+  const [current, setCurrent]   = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [dir, setDir]           = useState(null); // 'left' | 'right'
+  const timer = useRef(null);
+  const total  = items.length;
+
+  const getIdx = useCallback((offset) =>
+    ((current + offset) % total + total) % total,
+    [current, total]
+  );
+
+  const navigate = useCallback((direction) => {
+    if (animating || total < 2) return;
+    setDir(direction);
+    setAnimating(true);
+    timer.current = setTimeout(() => {
+      setCurrent(prev =>
+        direction === 'right'
+          ? (prev + 1) % total
+          : (prev - 1 + total) % total
+      );
+      setAnimating(false);
+      setDir(null);
+    }, 480);
+  }, [animating, total]);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  if (total === 0) return null;
+
+  const slots =
+    total === 1 ? [{ idx: current,      pos: 'center' }]
+    : total === 2 ? [{ idx: getIdx(-1), pos: 'left'   }, { idx: current, pos: 'center' }]
+    : [
+        { idx: getIdx(-1), pos: 'left'   },
+        { idx: current,    pos: 'center' },
+        { idx: getIdx(1),  pos: 'right'  },
+      ];
+
+  return (
+    <div className={`cine-wrap${animating ? ` cine-wrap--${dir}` : ''}`}>
+
+      {/* ── Flecha izquierda ── */}
+      {total > 1 && (
+        <button
+          className="cine-arrow cine-arrow--left"
+          onClick={() => navigate('left')}
+          disabled={animating}
+          aria-label="Anterior"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="2.2"
+               strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+      )}
+
+      {/* ── Stage ── */}
+      <div className="cine-stage">
+        {slots.map(({ idx, pos }) => (
+          <div
+            key={`${idx}-${pos}`}
+            className={`cine-card cine-card--${pos}`}
+            onClick={() => {
+              if (pos === 'left')  navigate('left');
+              if (pos === 'right') navigate('right');
+            }}
+          >
+            <div className="cine-card__frame">
+              <img
+                src={items[idx]?.imagen_url
+                  || 'https://placehold.co/700x520/1A6163/ffffff?text=NovaGraf'}
+                alt={items[idx]?.producto_nombre || `Trabajo ${idx + 1}`}
+                draggable={false}
+                onError={e => {
+                  e.target.src = 'https://placehold.co/700x520/1A6163/ffffff?text=NovaGraf';
+                }}
+              />
+              {/* Borde luminoso solo en center */}
+              {pos === 'center' && <div className="cine-card__glow" />}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Flecha derecha ── */}
+      {total > 1 && (
+        <button
+          className="cine-arrow cine-arrow--right"
+          onClick={() => navigate('right')}
+          disabled={animating}
+          aria-label="Siguiente"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="2.2"
+               strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      )}
+
+      {/* ── Dots ── */}
+      {total > 1 && (
+        <div className="cine-dots">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              className={`cine-dot${i === current ? ' cine-dot--on' : ''}`}
+              onClick={() => {
+                if (i === current || animating) return;
+                navigate(i > current ? 'right' : 'left');
+              }}
+              aria-label={`Imagen ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+/* ══════════════════════════════════════════
+   HOME
+══════════════════════════════════════════ */
 const Home = () => {
   const navigate = useNavigate();
 
-  const [productos,   setProductos]   = useState([]);
   const [portafolio,  setPortafolio]  = useState([]);
   const [mision,      setMision]      = useState(null);
   const [vision,      setVision]      = useState(null);
@@ -36,64 +167,42 @@ const Home = () => {
   const [loadingNos,  setLoadingNos]  = useState(true);
 
   const [coloresSeleccionados, setColoresSeleccionados] = useState({});
-  const [portIdx, setPortIdx] = useState(0);
   const [contacto, setContacto] = useState({ nombre: '', correo: '', mensaje: '' });
   const [enviado,  setEnviado]  = useState(false);
 
   useEffect(() => {
-    // ✅ Endpoint público para productos (catálogo)
     axios.get('/api/public/productos/catalogo')
-      .then(res => setProductos(res.data.slice(0, 6)))
-      .catch(err => console.error('Error productos:', err))
+      .catch(() => {})
       .finally(() => setLoadingProd(false));
 
-    // ✅ Endpoint público para portafolio
     axios.get('/api/public/portafolio')
-      .then(res => setPortafolio(res.data))
-      .catch(err => console.error('Error portafolio:', err))
+      .then(res => {
+        const data = res.data?.portafolio ?? res.data ?? [];
+        setPortafolio(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {})
       .finally(() => setLoadingPort(false));
 
-    // ✅ Misión, visión, valores (rutas relativas)
     Promise.allSettled([
       fetch('/api/public/mision').then(r => r.json()),
       fetch('/api/public/vision').then(r => r.json()),
       fetch('/api/public/valores').then(r => r.json()),
     ]).then(([resMision, resVision, resValores]) => {
-      if (resMision.status === 'fulfilled') {
-        const d = resMision.value; setMision(d?.data ?? d);
-      }
-      if (resVision.status === 'fulfilled') {
-        const d = resVision.value; setVision(d?.data ?? d);
-      }
+      if (resMision.status === 'fulfilled') { const d = resMision.value; setMision(d?.data ?? d); }
+      if (resVision.status  === 'fulfilled') { const d = resVision.value;  setVision(d?.data ?? d); }
       if (resValores.status === 'fulfilled') {
         const d = resValores.value?.data ?? resValores.value;
         setValores(Array.isArray(d) ? d.slice(0, 4) : (d ? [d] : []));
       }
     }).finally(() => setLoadingNos(false));
 
-    // IntersectionObserver para animaciones al hacer scroll
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-in');
-          }
-        });
-      },
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('animate-in'); }),
       { threshold: 0.12 }
     );
     document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, []);
-
-  const seleccionarColor = (productoId, color) => {
-    setColoresSeleccionados(prev => ({ ...prev, [productoId]: color }));
-  };
-
-  const verDetalle = (productoId) => {
-    const color = coloresSeleccionados[productoId] || '';
-    navigate(`/cliente/producto/${productoId}`, { state: { colorSeleccionado: color } });
-  };
 
   const handleContacto = (e) => {
     e.preventDefault();
@@ -102,111 +211,86 @@ const Home = () => {
     setTimeout(() => setEnviado(false), 4000);
   };
 
-  const portGrupos = [];
-  for (let i = 0; i < portafolio.length; i += 3) {
-    portGrupos.push(portafolio.slice(i, i + 3));
-  }
-
   return (
     <main className="home">
-      {/* ══════════════════════════════════════════
-            HERO (Estilo NovaGraf)
-        ══════════════════════════════════════════ */}
-      <section className="hero-nova">
-        <div className="hero-nova__inner">
-           <div className="hero-card">   {/* ← NUEVO RECUADRO */}
-          <div className="hero-nova__content">
-            <div className="hero-nova__badge">
-              <span>✨ Personalización profesional</span>
-            </div>
-            <h1 className="hero-nova__titulo">
-              Tu marca, <br />
-              <span className="hero-nova__destaque">impresa</span> <br />
-              en todo.
-            </h1>
-            <p className="hero-nova__desc">
-              Transforma cualquier producto con tu imagen, logo o diseño. <br />
-              <strong>Calidad garantizada. Entregas puntuales.</strong> <br />
-              Huejutla de Reyes, Hidalgo.
-            </p>
-            <div className="hero-nova__actions">
-              <Link to="/catalogo" className="btn-redondeado btn-principal">
-                Ver catálogo
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </Link>
-              <a href="#portafolio" className="btn-redondeado btn-secundario">Ver trabajos</a>
-            </div>
-          </div>
+
+            {/* ══ NUEVO HERO MODERNO ══ */}
+      <section className="hero-moderno">
+        <div className="hero-moderno__bg">
+          <div className="hero-moderno__gradient"></div>
+          <div className="hero-moderno__particles">
+            <span className="particle"></span>
+            <span className="particle"></span>
+            <span className="particle"></span>
+            <span className="particle"></span>
+            <span className="particle"></span>
           </div>
         </div>
-
-        {/* CURVA DECORATIVA */}
-        <div className="hero-nova__curva">
-          <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0,0 C480,100 960,100 1440,0 L1440,120 L0,120 Z" fill="#1A6163" />
+        <div className="hero-moderno__container">
+          <div className="hero-moderno__content">
+            <span className="hero-moderno__badge">✨ Personalización profesional</span>
+            <h1 className="hero-moderno__title">
+              Tu marca, <br />
+              <span className="hero-moderno__highlight">impresa</span> <br />
+              en todo.
+            </h1>
+            <p className="hero-moderno__desc">
+              Transforma cualquier producto con tu imagen, logo o diseño.<br />
+              <strong>Calidad garantizada. Entregas puntuales.</strong><br />
+              Huejutla de Reyes, Hidalgo.
+            </p>
+            <div className="hero-moderno__actions">
+              <Link to="/catalogo" className="btn-hero btn-hero--primary">
+                Ver catálogo
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <a href="#portafolio" className="btn-hero btn-hero--secondary">
+                Ver trabajos
+              </a>
+            </div>
+            
+          </div>
+          <div className="hero-moderno__image">
+            <div className="hero-image-wrapper">
+              <div className="hero-image-circle"></div>
+              <div className="hero-image-inner">
+                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="200" cy="200" r="180" fill="#35BA99" fillOpacity="0.15" />
+                  <path d="M200 60 L240 140 L320 140 L260 190 L280 270 L200 220 L120 270 L140 190 L80 140 L160 140 L200 60Z" fill="#1A6163" stroke="#35BA99" strokeWidth="2" />
+                  <circle cx="200" cy="200" r="40" fill="#35BA99" />
+                  <path d="M200 170 L210 190 L230 190 L215 205 L220 225 L200 215 L180 225 L185 205 L170 190 L190 190 L200 170Z" fill="white" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="hero-moderno__wave">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path d="M0,0 C480,100 960,100 1440,0 L1440,120 L0,120 Z" fill="#f7f5f0" />
           </svg>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          PORTAFOLIO
-      ══════════════════════════════════════════ */}
-      <section className="ng-section" id="portafolio" data-animate>
+      {/* ══ PORTAFOLIO ══ */}
+      <section className="ng-section port-section" id="portafolio" data-animate>
         <div className="ng-section__head">
           <div className="ng-section__label">Portafolio</div>
-          <h2 className="ng-section__title">Nuestros Productos</h2>
+          <h2 className="ng-section__title">Nuestros Trabajos</h2>
           <p className="ng-section__sub">Ejemplos reales de productos personalizados para nuestros clientes.</p>
         </div>
 
         {loadingPort ? (
-          <div className="ng-loader">Cargando portafolio…</div>
+          <div className="ng-loader"><span className="port-spinner" /></div>
         ) : portafolio.length === 0 ? (
-          <div className="ng-loader">No hay ejemplos disponibles.</div>
+          <div className="ng-loader">No hay ejemplos disponibles aún.</div>
         ) : (
-          <div className="port-wrapper">
-            <div className="port-grid">
-              {portGrupos[portIdx]?.map((item, i) => (
-                <div key={item.id ?? i} className="port-card" style={{ '--delay': `${i * 0.1}s` }}>
-                  <div className="port-card__img-box">
-                    <img
-                      src={item.imagen_url || 'https://placehold.co/500x380?text=Sin+imagen'}
-                      alt={item.descripcion || 'Portafolio'}
-                      className="port-card__img"
-                      onError={e => { e.target.src = 'https://placehold.co/500x380?text=Sin+imagen'; }}
-                    />
-                    <div className="port-card__hover">
-                      {item.producto_nombre && (
-                        <span className="port-card__tag">{item.producto_nombre}</span>
-                      )}
-                      <p className="port-card__desc">{item.descripcion?.substring(0, 90) || ''}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {portGrupos.length > 1 && (
-              <div className="port-nav">
-                <button className="port-nav__btn" onClick={() => setPortIdx(i => Math.max(i - 1, 0))} disabled={portIdx === 0}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-                </button>
-                <div className="port-nav__dots">
-                  {portGrupos.map((_, i) => (
-                    <button key={i} className={`port-nav__dot${portIdx === i ? ' port-nav__dot--on' : ''}`} onClick={() => setPortIdx(i)} />
-                  ))}
-                </div>
-                <button className="port-nav__btn" onClick={() => setPortIdx(i => Math.min(i + 1, portGrupos.length - 1))} disabled={portIdx === portGrupos.length - 1}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
-                </button>
-              </div>
-            )}
-          </div>
+          <PortafolioCarousel items={portafolio} />
         )}
       </section>
 
-      {/* ══════════════════════════════════════════
-          CÓMO FUNCIONA
-      ══════════════════════════════════════════ */}
+      {/* ══ CÓMO FUNCIONA ══ */}
       <section className="proceso-section" id="proceso" data-animate>
         <div className="proceso-section__deco" />
         <div className="ng-section__head ng-section__head--light">
@@ -218,9 +302,7 @@ const Home = () => {
           {PASOS.map((paso, i) => (
             <div key={i} className="paso" style={{ '--delay': `${i * 0.15}s` }}>
               <div className="paso__num">{paso.num}</div>
-              <div className="paso__icon-wrap">
-                <span className="paso__icon">{paso.icon}</span>
-              </div>
+              <div className="paso__icon-wrap"><span className="paso__icon">{paso.icon}</span></div>
               <h3 className="paso__titulo">{paso.titulo}</h3>
               <p className="paso__desc">{paso.desc}</p>
               {i < PASOS.length - 1 && <div className="paso__arrow">→</div>}
@@ -229,15 +311,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          NOSOTROS
-      ══════════════════════════════════════════ */}
+      {/* ══ NOSOTROS ══ */}
       <section className="ng-section nosotros-section" id="nosotros" data-animate>
         <div className="ng-section__head">
           <div className="ng-section__label">Nosotros</div>
           <h2 className="ng-section__title">Conoce nuestra esencia</h2>
         </div>
-
         {loadingNos ? (
           <div className="ng-loader">Cargando…</div>
         ) : (
@@ -274,9 +353,7 @@ const Home = () => {
         )}
       </section>
 
-      {/* ══════════════════════════════════════════
-          TESTIMONIOS
-      ══════════════════════════════════════════ */}
+      {/* ══ TESTIMONIOS ══ */}
       <section className="testimonios-section" id="testimonios" data-animate>
         <div className="ng-section__head ng-section__head--center">
           <div className="ng-section__label">Clientes</div>
@@ -300,24 +377,19 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          CONTACTO
-      ══════════════════════════════════════════ */}
+      {/* ══ CONTACTO ══ */}
       <section className="contacto-section" id="contacto-rapido" data-animate>
         <div className="contacto-section__inner">
           <div className="contacto-info">
             <div className="ng-section__label">Contacto</div>
             <h2 className="ng-section__title">¿Tienes un proyecto?</h2>
-            <p className="contacto-info__desc">
-              Cuéntanos tu idea y te ayudamos a plasmarla en el producto ideal para ti o tu empresa.
-            </p>
+            <p className="contacto-info__desc">Cuéntanos tu idea y te ayudamos a plasmarla en el producto ideal para ti o tu empresa.</p>
             <ul className="contacto-datos">
               <li><span className="contacto-datos__ico">📍</span> Huejutla de Reyes Hidalgo</li>
               <li><span className="contacto-datos__ico">📧</span> contacto@novagraf.com</li>
               <li><span className="contacto-datos__ico">📞</span> 782 123 4567</li>
             </ul>
           </div>
-
           <form className="contacto-form" onSubmit={handleContacto}>
             {enviado && <div className="contacto-form__ok">✅ ¡Mensaje enviado! Te contactaremos pronto.</div>}
             <div className="contacto-form__row">
@@ -341,6 +413,7 @@ const Home = () => {
           </form>
         </div>
       </section>
+
     </main>
   );
 };
