@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-const API = "http://localhost:5000/api/admin/Provedores";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+const API = `${API_URL}/api/admin/Provedores`;
 
 export default function AdminProveedores() {
   const [proveedores, setProveedores] = useState([]);

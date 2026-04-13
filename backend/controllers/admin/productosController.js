@@ -53,6 +53,7 @@ const obtenerProductoDetalle = async (req, res) => {
     const producto = await productosModel.obtenerProductoDetalle(req.params.id);
     res.json(producto);
   } catch (err) {
+    console.error('[obtenerProductoDetalle ERROR]', err.message); // agrega esto
     if (err.message.includes('no encontrado'))
       return res.status(404).json({ error: err.message });
     res.status(500).json({ error: err.message });
@@ -161,6 +162,7 @@ const eliminarVariante = async (req, res) => {
     const result = await productosModel.eliminarVariante(req.params.varianteId);
     res.json({ mensaje: result.mensaje });
   } catch (err) {
+    console.error('[eliminarVariante ERROR]', err.message); // agrega esto
     if (err.message.includes('no encontrada'))
       return res.status(404).json({ error: err.message });
     res.status(500).json({ error: err.message });

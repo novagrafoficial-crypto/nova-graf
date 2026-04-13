@@ -9,7 +9,8 @@ function AdminMarcas() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = "http://localhost:5000/api/admin/marcas";
+  const API_URL = import.meta.env.VITE_API_URL;
+  const API = `${API_URL}/api/admin/marcas`;
 
   const obtenerMarcas = async () => {
     setLoading(true);

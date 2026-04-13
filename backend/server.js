@@ -5,10 +5,13 @@ const session = require('express-session');
 const passport = require('./config/passport');
 const path = require('path');
 
+
+
+
 // 🔒 Middleware de autenticación
 const verificarToken = require('./src/middlewares/auth');
 
-// const detectarAtaque = require('./src/middlewares/rasp'); // opcional
+const detectarAtaque = require('./src/middlewares/rasp'); // opcional
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,7 +21,9 @@ const PORT = process.env.PORT || 5000;
 ================================ */
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 /* ================================
@@ -86,6 +91,8 @@ const inventarioRoutes=require('./routes/admin/inventarioRoutes')
 const adminVisionRoutes = require('./routes/admin/empresa/adminVisionRoutes');
 const MonitoreoRoutes = require('./routes/admin/MonitoreoRoutes');
 const proveedoresRoutes = require('./routes/admin/proveedoresRoutes');
+const AtributosproducRoutes = require('./routes/admin/AtributosproducRoutes');
+
 
 
 // Empresa
@@ -100,6 +107,7 @@ app.use('/api/admin/mision', adminMisionRoutes);
 app.use('/api/admin/inventario', inventarioRoutes);
 app.use('/api/admin/Monitoreo', MonitoreoRoutes); 
 app.use('/api/admin/provedores', proveedoresRoutes); 
+app.use('/api/admin/Atributosproduc', AtributosproducRoutes); 
 
 
 // Catálogos y módulos

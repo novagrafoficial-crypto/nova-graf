@@ -255,6 +255,11 @@ const eliminarProducto = async (id) => {
   );
   if (prod.rowCount === 0) throw new Error('Producto no encontrado');
 
+  // Borrar registros relacionados en otros schemas
+  await db.query('DELETE FROM empresa.portafolio           WHERE producto_id = $1', [id]);
+  await db.query('DELETE FROM marketing.descuento_productos WHERE producto_id = $1', [id]);
+  await db.query('DELETE FROM ventas.borradores_diseno      WHERE producto_id = $1', [id]);
+
   await db.query('DELETE FROM productos.productos WHERE id = $1', [id]);
   return { mensaje: 'Producto eliminado correctamente' };
 };

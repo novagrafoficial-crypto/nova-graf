@@ -1,50 +1,61 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
 
+/* ═══════════════════════════════════════════════════════
+   Admin Empresa — Estilo Corporativo Unificado
+   Paleta: Teal · Rojo · Negro
+   ═══════════════════════════════════════════════════════ */
+
 :root {
-  /* Palette - Deep Emerald & Sage */
+  /* Paleta Corporativa Original */
+  --teal-2: #35BA99;
+  --teal-1: #1A6163;
+  --red: #FF0000;
+  --black: #000000;
+  
+  /* Extended Palette - Armonizada con Teal */
   --bg-primary: #eef5ed;
   --bg-secondary: #f9fef9;
   --surface: #ffffff;
   --surface-elevated: #fbfefb;
-  --border-subtle: #e2f0e0;
-  --border-medium: #cde0ca;
+  --border-subtle: rgba(53, 186, 153, 0.15);
+  --border-medium: rgba(53, 186, 153, 0.25);
   
-  /* Green tones - Sophisticated */
-  --green-deep: #1a4d2a;
-  --green-forest: #2a5e3b;
-  --green-sage: #6c9e6f;
-  --green-moss: #7faa7a;
-  --green-mist: #cbe5cd;
-  --green-light: #e2f1e0;
-  --green-soft-bg: rgba(34, 139, 69, 0.04);
+  /* Teal tones - Unificados */
+  --teal-deep: var(--teal-1, #1A6163);
+  --teal-forest: #0d4a4d;
+  --teal-sage: var(--teal-2, #35BA99);
+  --teal-moss: #4ec4a8;
+  --teal-mist: rgba(53, 186, 153, 0.15);
+  --teal-light: rgba(53, 186, 153, 0.08);
+  --teal-soft-bg: rgba(53, 186, 153, 0.04);
   
-  /* Accents */
-  --accent-primary: #2e7d32;
-  --accent-hover: #1b5e20;
-  --accent-glow: rgba(46, 125, 50, 0.15);
-  --accent-soft: rgba(46, 125, 50, 0.08);
+  /* Accents - Unificados */
+  --accent-primary: var(--teal-2, #35BA99);
+  --accent-hover: var(--teal-1, #1A6163);
+  --accent-glow: rgba(53, 186, 153, 0.2);
+  --accent-soft: rgba(53, 186, 153, 0.08);
   
-  /* Status */
-  --success: #2e7d32;
-  --success-light: #e8f5e9;
-  --danger: #dc3545;
-  --danger-light: #fff5f5;
+  /* Status - Unificados */
+  --success: var(--teal-2, #35BA99);
+  --success-light: rgba(53, 186, 153, 0.1);
+  --danger: var(--red, #FF0000);
+  --danger-light: rgba(255, 0, 0, 0.08);
   --warning: #ffc107;
   --info: #17a2b8;
   
-  /* Text */
-  --text-primary: #1e2f2a;
-  --text-secondary: #4a5e54;
-  --text-tertiary: #7e9488;
+  /* Text - Unificados */
+  --text-primary: var(--black, #000000);
+  --text-secondary: #444444;
+  --text-tertiary: #888888;
   --text-disabled: #b8cdbc;
   
-  /* Shadows - More depth */
+  /* Shadows - Refinados con Teal */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --shadow-xl: 0 20px 32px -12px rgba(0, 0, 0, 0.12);
-  --shadow-accent: 0 4px 14px rgba(46, 125, 50, 0.15);
-  --shadow-hover: 0 8px 24px rgba(46, 125, 50, 0.12);
+  --shadow-md: 0 4px 12px rgba(26, 97, 99, 0.08), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 12px 28px rgba(26, 97, 99, 0.1), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-xl: 0 20px 32px -12px rgba(26, 97, 99, 0.15);
+  --shadow-accent: 0 4px 14px rgba(53, 186, 153, 0.25);
+  --shadow-hover: 0 8px 24px rgba(53, 186, 153, 0.18);
   
   /* Spacing */
   --radius-sm: 8px;
@@ -58,6 +69,10 @@
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ═══════════════════════════════════════════════════════
+   Página Principal
+   ═══════════════════════════════════════════════════════ */
+
 .admin-empresa-page {
   font-family: 'DM Sans', sans-serif;
   background: linear-gradient(135deg, var(--bg-primary) 0%, #f1f8ef 100%);
@@ -67,7 +82,7 @@
   position: relative;
 }
 
-/* Subtle background pattern */
+/* Subtle background pattern con Teal */
 .admin-empresa-page::before {
   content: '';
   position: fixed;
@@ -75,13 +90,16 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle at 25% 40%, rgba(111, 170, 107, 0.02) 2%, transparent 2.5%);
+  background-image: radial-gradient(circle at 25% 40%, rgba(53, 186, 153, 0.03) 2%, transparent 2.5%);
   background-size: 32px 32px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Header Section */
+/* ═══════════════════════════════════════════════════════
+   Header Section
+   ═══════════════════════════════════════════════════════ */
+
 .admin-empresa-header {
   margin-bottom: 48px;
   position: relative;
@@ -92,7 +110,7 @@
   font-family: 'Syne', sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-sage) 100%);
+  background: linear-gradient(135deg, var(--teal-1, #1A6163) 0%, var(--teal-2, #35BA99) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -109,7 +127,7 @@
   left: 0;
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent-primary), var(--green-moss));
+  background: linear-gradient(90deg, var(--teal-2, #35BA99), var(--teal-1, #1A6163));
   border-radius: var(--radius-sm);
 }
 
@@ -122,7 +140,10 @@
   line-height: 1.5;
 }
 
-/* Stats Cards - Added for pro feel */
+/* ═══════════════════════════════════════════════════════
+   Stats Cards
+   ═══════════════════════════════════════════════════════ */
+
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -141,6 +162,7 @@
   transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .stat-card::before {
@@ -150,13 +172,13 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent-primary), var(--green-moss));
+  background: linear-gradient(90deg, var(--teal-2, #35BA99), var(--teal-1, #1A6163));
   transform: scaleX(0);
   transition: transform var(--transition-smooth);
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
   border-color: var(--border-medium);
 }
@@ -178,19 +200,30 @@
   font-family: 'Syne', sans-serif;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--teal-1, #1A6163);
   margin-bottom: 4px;
 }
 
 .stat-trend {
   font-size: 0.75rem;
-  color: var(--success);
+  color: var(--teal-2, #35BA99);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-/* Main Grid */
+.stat-trend.positive {
+  color: var(--teal-2, #35BA99);
+}
+
+.stat-trend.negative {
+  color: var(--red, #FF0000);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Main Grid
+   ═══════════════════════════════════════════════════════ */
+
 .admin-empresa-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -203,7 +236,10 @@
   grid-column: 1 / -1;
 }
 
-/* Cards - Premium styling */
+/* ═══════════════════════════════════════════════════════
+   Cards Premium
+   ═══════════════════════════════════════════════════════ */
+
 .empresa-section {
   background: var(--surface);
   border: 1px solid var(--border-subtle);
@@ -220,7 +256,7 @@
   transform: translateY(-4px);
 }
 
-/* Section Header with icon */
+/* Section Header con icono */
 .empresa-section-header {
   display: flex;
   align-items: center;
@@ -234,7 +270,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--accent-soft), var(--green-light));
+  background: linear-gradient(135deg, var(--teal-soft-bg), var(--teal-light));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,8 +280,12 @@
 }
 
 .empresa-section:hover .empresa-section-icon {
-  transform: scale(1.05);
-  background: linear-gradient(135deg, var(--accent-primary), var(--green-sage));
+  transform: scale(1.05) rotate(5deg);
+  background: linear-gradient(135deg, var(--teal-2, #35BA99), var(--teal-1, #1A6163));
+}
+
+.empresa-section:hover .empresa-section-icon svg,
+.empresa-section:hover .empresa-section-icon i {
   color: white;
 }
 
@@ -258,7 +298,10 @@
   letter-spacing: -0.01em;
 }
 
-/* Form Elements */
+/* ═══════════════════════════════════════════════════════
+   Form Elements
+   ═══════════════════════════════════════════════════════ */
+
 .empresa-field {
   display: flex;
   flex-direction: column;
@@ -299,12 +342,15 @@
 .empresa-input:focus,
 .empresa-textarea:focus,
 .empresa-select:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--teal-2, #35BA99);
   box-shadow: 0 0 0 3px var(--accent-glow);
   background: var(--surface);
 }
 
-/* Buttons - Premium */
+/* ═══════════════════════════════════════════════════════
+   Buttons Premium
+   ═══════════════════════════════════════════════════════ */
+
 .btn-guardar,
 .btn-agregar {
   font-family: 'DM Sans', sans-serif;
@@ -320,11 +366,10 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, var(--accent-primary), var(--green-forest));
+  background: linear-gradient(135deg, var(--teal-2, #35BA99), var(--teal-1, #1A6163));
   color: white;
   padding: 12px 28px;
   box-shadow: var(--shadow-accent);
-  position: relative;
 }
 
 .btn-guardar::before {
@@ -334,7 +379,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
   transition: left var(--transition-smooth);
 }
 
@@ -343,7 +388,7 @@
 }
 
 .btn-guardar:hover {
-  background: linear-gradient(135deg, var(--accent-hover), var(--green-deep));
+  background: linear-gradient(135deg, var(--teal-1, #1A6163), #0d4a4d);
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
@@ -353,8 +398,8 @@
 }
 
 .btn-agregar {
-  background: var(--accent-soft);
-  color: var(--accent-primary);
+  background: var(--teal-soft-bg);
+  color: var(--teal-2, #35BA99);
   padding: 12px 20px;
   border: 1px solid var(--border-medium);
   font-weight: 500;
@@ -362,11 +407,15 @@
 
 .btn-agregar:hover {
   background: var(--accent-glow);
-  border-color: var(--accent-primary);
-  transform: translateY(-1px);
+  border-color: var(--teal-2, #35BA99);
+  transform: translateY(-2px);
+  color: var(--teal-1, #1A6163);
 }
 
-/* List Items - Enhanced */
+/* ═══════════════════════════════════════════════════════
+   List Items
+   ═══════════════════════════════════════════════════════ */
+
 .empresa-item-list {
   display: flex;
   flex-direction: column;
@@ -389,9 +438,9 @@
 }
 
 .empresa-item:hover {
-  border-color: var(--border-medium);
+  border-color: var(--teal-2, #35BA99);
   background: var(--surface);
-  transform: translateX(4px);
+  transform: translateX(6px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -411,7 +460,7 @@
 
 .btn-eliminar-item {
   background: var(--danger-light);
-  color: var(--danger);
+  color: var(--red, #FF0000);
   border: none;
   border-radius: var(--radius-sm);
   padding: 6px 14px;
@@ -424,12 +473,16 @@
 }
 
 .btn-eliminar-item:hover {
-  background: var(--danger);
+  background: var(--red, #FF0000);
   color: white;
   transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.2);
 }
 
-/* Status Messages */
+/* ═══════════════════════════════════════════════════════
+   Status Messages
+   ═══════════════════════════════════════════════════════ */
+
 .empresa-status {
   font-size: 0.8125rem;
   margin-top: 16px;
@@ -439,19 +492,41 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  animation: slideInStatus 0.3s ease;
+}
+
+@keyframes slideInStatus {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .empresa-status.ok {
-  background: var(--success-light);
-  color: var(--success);
-  border-left: 3px solid var(--success);
+  background: rgba(53, 186, 153, 0.1);
+  color: var(--teal-1, #1A6163);
+  border-left: 3px solid var(--teal-2, #35BA99);
 }
 
 .empresa-status.error {
-  background: var(--danger-light);
-  color: var(--danger);
-  border-left: 3px solid var(--danger);
+  background: rgba(255, 0, 0, 0.08);
+  color: var(--red, #FF0000);
+  border-left: 3px solid var(--red, #FF0000);
 }
+
+.empresa-status.info {
+  background: rgba(23, 162, 184, 0.1);
+  color: var(--info);
+  border-left: 3px solid var(--info);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Loading States
+   ═══════════════════════════════════════════════════════ */
 
 .empresa-loading {
   color: var(--text-tertiary);
@@ -467,7 +542,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid var(--border-medium);
-  border-top-color: var(--accent-primary);
+  border-top-color: var(--teal-2, #35BA99);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -476,7 +551,23 @@
   to { transform: rotate(360deg); }
 }
 
-/* Add Row */
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--border-subtle) 25%, var(--border-medium) 50%, var(--border-subtle) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Add Row
+   ═══════════════════════════════════════════════════════ */
+
 .empresa-add-row {
   display: flex;
   gap: 12px;
@@ -487,20 +578,74 @@
   flex: 1;
 }
 
-/* Badge / Chip */
+/* ═══════════════════════════════════════════════════════
+   Badges
+   ═══════════════════════════════════════════════════════ */
+
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  background: var(--accent-soft);
+  background: rgba(53, 186, 153, 0.1);
   border-radius: 20px;
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--accent-primary);
+  color: var(--teal-2, #35BA99);
   margin-left: 8px;
 }
 
-/* Responsive */
+.badge-primary {
+  background: linear-gradient(135deg, var(--teal-2, #35BA99), var(--teal-1, #1A6163));
+  color: white;
+}
+
+.badge-danger {
+  background: rgba(255, 0, 0, 0.1);
+  color: var(--red, #FF0000);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Tooltips
+   ═══════════════════════════════════════════════════════ */
+
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: var(--teal-1, #1A6163);
+  color: white;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  z-index: 100;
+  margin-bottom: 8px;
+  pointer-events: none;
+  animation: tooltipFade 0.2s ease;
+}
+
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════ */
+
 @media (max-width: 1024px) {
   .admin-empresa-page {
     padding: 32px 28px;
@@ -535,11 +680,22 @@
   .stat-value {
     font-size: 1.5rem;
   }
+  
+  .empresa-section-header {
+    gap: 12px;
+  }
+  
+  .empresa-section-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
   .admin-stats-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
   
   .empresa-add-row {
@@ -549,4 +705,72 @@
   .btn-agregar {
     width: 100%;
   }
+  
+  .empresa-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .btn-eliminar-item {
+    align-self: flex-end;
+  }
+  
+  .admin-empresa-page {
+    padding: 16px;
+  }
+  
+  .empresa-section {
+    padding: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Animaciones Adicionales
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s ease;
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Scrollbar personalizado */
+.admin-empresa-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-empresa-page::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 4px;
+}
+
+.admin-empresa-page::-webkit-scrollbar-thumb {
+  background: var(--teal-2, #35BA99);
+  border-radius: 4px;
+}
+
+.admin-empresa-page::-webkit-scrollbar-thumb:hover {
+  background: var(--teal-1, #1A6163);
 }

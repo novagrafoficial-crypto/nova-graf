@@ -6,7 +6,8 @@ const AdminEmpresa = () => {
   const [vision, setVision] = useState("");
   const [valores, setValores] = useState([]);
 
-  const API = "http://localhost:5000/api/admin";
+  const API_URL = import.meta.env.VITE_API_URL;
+  const API = `${API_URL}/api/admin/admin`;
 
   useEffect(() => {
     cargarDatos();

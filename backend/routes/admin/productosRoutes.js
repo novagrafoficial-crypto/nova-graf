@@ -1,19 +1,12 @@
-const express = require('express');
-const router  = express.Router();
-const multer  = require('multer');
-
-const ctrl = require('../../controllers/admin/productosController');
-
-// ─── MULTER (memoria, sin guardar archivo) ────────────────
-// El frontend manda FormData para que los campos JSON string
-// lleguen parseados. No guardamos ningún archivo en disco
-// porque las imágenes van directo a Supabase Storage desde
-// el frontend. Multer solo se usa para poder leer req.body
-// cuando Content-Type es multipart/form-data.
+const express        = require('express');
+const router         = express.Router();
+const multer         = require('multer');
+const ctrl           = require('../../controllers/admin/productosController');
+const detectarAtaque = require('../../src/middlewares/rasp');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// ─── MIDDLEWARES: VALIDAR IDs ─────────────────────────────
+// ── Validadores de IDs ────────────────────────────────────
 
 const validarId = (req, res, next) => {
   if (isNaN(req.params.id))
@@ -27,40 +20,43 @@ const validarVarianteId = (req, res, next) => {
   next();
 };
 
-// ─── CATÁLOGOS ────────────────────────────────────────────
+// ── Catálogos ─────────────────────────────────────────────
 
 router.get('/catalogos', ctrl.obtenerCatalogos);
 
-// ─── PRODUCTOS ────────────────────────────────────────────
+// ── Productos ─────────────────────────────────────────────
 
 router.get('/',    ctrl.obtenerProductos);
 router.get('/:id', validarId, ctrl.obtenerProductoDetalle);
 
-// upload.any() acepta FormData con cualquier campo (incluyendo
-// el campo "imagen" que manda el frontend actual) sin guardar nada
+// 🔒 RASP va antes de multer para analizar el body JSON
 router.post('/',
+  detectarAtaque,
   upload.any(),
   ctrl.crearProducto
 );
 
 router.put('/:id',
   validarId,
+  detectarAtaque,   // 🔒 RASP antes de multer
   upload.any(),
   ctrl.actualizarProducto
 );
 
 router.delete('/:id', validarId, ctrl.eliminarProducto);
 
-// ─── VARIANTES ────────────────────────────────────────────
+// ── Variantes ─────────────────────────────────────────────
 
 router.post('/:id/variantes',
   validarId,
+  detectarAtaque,   // 🔒 RASP también en variantes
   ctrl.agregarVariante
 );
 
 router.put('/:id/variantes/:varianteId',
   validarId,
   validarVarianteId,
+  detectarAtaque,
   ctrl.actualizarVariante
 );
 
@@ -73,6 +69,7 @@ router.delete('/:id/variantes/:varianteId',
 router.patch('/:id/variantes/:varianteId/stock',
   validarId,
   validarVarianteId,
+  detectarAtaque,
   ctrl.actualizarStock
 );
 
