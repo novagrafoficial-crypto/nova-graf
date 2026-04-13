@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/admin/AdminCategorias.css";
+import "../../styles/admin/adminCategorias.css";
 
 function AdminCategorias() {
   const [categorias, setCategorias] = useState([]);
