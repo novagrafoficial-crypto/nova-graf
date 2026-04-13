@@ -36,15 +36,24 @@ const crearVenta = async (usuarioId, totalVenta, anticipo, saldo, formaPago, for
   return rows[0];
 };
 
-// Insertar detalle de venta
+// Insertar detalle de venta (con variante_id para el trigger)
 const agregarDetalleVenta = async (ventaId, productoPersonalizadoId, cantidad, precioUnitario) => {
+  // 1. Obtener la variante_id asociada al producto personalizado
+  const queryVariante = `SELECT variante_id FROM productos.productos_personalizados WHERE id = $1;`;
+  const { rows } = await pool.query(queryVariante, [productoPersonalizadoId]);
+  const varianteId = rows[0]?.variante_id;
+  
+  if (!varianteId) {
+    throw new Error(`No se encontró variante para el producto personalizado ${productoPersonalizadoId}`);
+  }
+
   const total = cantidad * precioUnitario;
-  const query = `
+  const queryDetalle = `
     INSERT INTO inventario.ventas_detalle 
-      (venta_id, producto_personalizado_id, cantidad, precio_unitario, total)
-    VALUES ($1, $2, $3, $4, $5);
+      (venta_id, variante_id, producto_personalizado_id, cantidad, precio_unitario, total)
+    VALUES ($1, $2, $3, $4, $5, $6);
   `;
-  await pool.query(query, [ventaId, productoPersonalizadoId, cantidad, precioUnitario, total]);
+  await pool.query(queryDetalle, [ventaId, varianteId, productoPersonalizadoId, cantidad, precioUnitario, total]);
 };
 
 // Vaciar carrito del usuario

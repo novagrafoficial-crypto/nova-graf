@@ -1,19 +1,24 @@
 /* src/styles/Admin/AdminReabastecimiento.css */
 
-/* ── Variables ────────────────────────────────────────────────────────────── */
+/* ── Variables (Paleta de marca) ─────────────────────────────────────────── */
 .rb-page {
-  --rb-bg:       #0f1117;
-  --rb-surface:  #181c28;
-  --rb-surface2: #1f2438;
-  --rb-border:   #3b4890;
-  --rb-accent:   #507eea;
-  --rb-purple:   #9b59f7;
-  --rb-ok:       #22c55e;
-  --rb-warn:     #f59e0b;
-  --rb-danger:   #ef4444;
-  --rb-text:     #e2e8f0;
-  --rb-muted:    #64748b;
-  --rb-radius:   12px;
+  --rb-teal-dark:   #1A6163;   /* PANTONE 7721 CP */
+  --rb-teal-mint:   #35BA99;   /* PANTONE 7465 CP */
+  --rb-gray-light:  #DBDBDB;   /* PANTONE Cool Gray 1 CP (aprox) */
+  --rb-gray-muted:  #8A8F99;
+
+  --rb-bg:          #0A1415;
+  --rb-surface:     #10292B;
+  --rb-surface2:    #17383B;
+  --rb-border:      var(--rb-teal-dark);
+  --rb-accent:      var(--rb-teal-mint);
+  --rb-ok:          #22c55e;
+  --rb-warn:        #f59e0b;
+  --rb-danger:      #ef4444;
+  --rb-text:        var(--rb-gray-light);
+  --rb-muted:       var(--rb-gray-muted);
+  --rb-radius:      12px;
+
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
   color: var(--rb-text);
   background: var(--rb-bg);
@@ -35,7 +40,7 @@
   font-weight: 700;
   letter-spacing: -.025em;
   margin: 0 0 .3rem;
-  background: linear-gradient(120deg, #e2e8f0 40%, var(--rb-accent));
+  background: linear-gradient(120deg, var(--rb-text) 40%, var(--rb-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -196,30 +201,30 @@
   flex-direction: column;
 }
 
-/* ── Encabezado de tabla (alineado perfectamente con las filas) ─────────── */
+/* ── Encabezado de tabla ─────────────────────────────────────────────────── */
 .rb-list-header {
   display: grid;
   grid-template-columns: 2.5fr 1.2fr 0.9fr 2fr;
-  align-items: center;           /* centrado vertical */
+  align-items: center;
   gap: 1rem;
-  padding: 0.9rem 1.5rem;        /* mismo padding vertical que las filas (ajustado) */
-  background: linear-gradient(135deg, #1e2438 0%, #161929 100%);
-  border-bottom: 2px solid var(--rb-accent); /* borde más delgado para no crear separación visual excesiva */
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(135deg, #0E2A2C 0%, #0A1F20 100%);
+  border-bottom: 2px solid var(--rb-accent);
   font-size: 0.85rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--rb-accent);
-  margin: 0;                     /* eliminar cualquier margen */
+  margin: 0;
 }
 
-/* ── Filas de producto (misma estructura que el header) ─────────────────── */
+/* ── Filas de producto ───────────────────────────────────────────────────── */
 .rb-list-item {
   display: grid;
   grid-template-columns: 2.5fr 1.2fr 0.9fr 2fr;
-  align-items: center;           /* centrado vertical */
+  align-items: center;
   gap: 1rem;
-  padding: 0.9rem 1.5rem;        /* exactamente el mismo padding que el header */
+  padding: 0.9rem 1.5rem;
   border-bottom: 1px solid var(--rb-border);
   transition: background 0.15s;
   margin: 0;
@@ -256,8 +261,8 @@
   color: var(--rb-muted);
 }
 .rb-tag--sub {
-  border-color: rgba(155,89,247,.35);
-  color: #c084fc;
+  border-color: rgba(53, 186, 153, 0.35);
+  color: #6ee7c3;
 }
 
 /* Columna: stock */
@@ -330,7 +335,7 @@
   align-items: center;
 }
 
-/* ── Botones (tamaño compacto pero legible, evitan desborde) ────────────── */
+/* ── Botones con los nuevos colores de marca ─────────────────────────────── */
 .rb-btn {
   font-family: inherit;
   font-size: 0.78rem;
@@ -345,27 +350,27 @@
 .rb-btn:active { transform: scale(0.97); }
 
 .rb-btn--primary {
-  background: rgba(79,124,255,.14);
+  background: rgba(53, 186, 153, 0.14);
   color: var(--rb-accent);
-  border-color: rgba(79,124,255,.38);
+  border-color: rgba(53, 186, 153, 0.4);
 }
-.rb-btn--primary:hover { background: rgba(79,124,255,.26); }
+.rb-btn--primary:hover { background: rgba(53, 186, 153, 0.26); }
 
 .rb-btn--secondary {
-  background: rgba(34,197,94,.1);
+  background: rgba(34, 197, 94, 0.1);
   color: var(--rb-ok);
-  border-color: rgba(34,197,94,.3);
+  border-color: rgba(34, 197, 94, 0.3);
 }
-.rb-btn--secondary:hover { background: rgba(34,197,94,.2); }
+.rb-btn--secondary:hover { background: rgba(34, 197, 94, 0.2); }
 
 .rb-btn--accent {
-  background: rgba(155,89,247,.12);
-  color: #c084fc;
-  border-color: rgba(155,89,247,.35);
+  background: rgba(26, 97, 99, 0.18);
+  color: #7fd1c2;
+  border-color: rgba(26, 97, 99, 0.5);
 }
-.rb-btn--accent:hover { background: rgba(155,89,247,.22); }
+.rb-btn--accent:hover { background: rgba(26, 97, 99, 0.3); }
 
-/* ── Responsive (ajustes para pantallas medianas y pequeñas) ────────────── */
+/* ── Responsive (sin cambios estructurales) ──────────────────────────────── */
 @media (max-width: 1100px) {
   .rb-list-header,
   .rb-list-item {
@@ -406,7 +411,7 @@
   }
 
   .rb-list-header {
-    display: none; /* oculto en móvil, las filas se muestran en bloque */
+    display: none;
   }
 
   .rb-list-item {

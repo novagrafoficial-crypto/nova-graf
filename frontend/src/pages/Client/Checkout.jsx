@@ -156,50 +156,45 @@ const Checkout = () => {
 
   // Simular compra (llamada después de confirmación)
   const ejecutarCompra = async () => {
-    setProcesando(true);
-    try {
-      // Crear objeto del pedido
-      const nuevoPedido = {
-        id: Date.now(),
-        fecha: new Date().toISOString(),
-        estado: 'Completado',
-        forma_entrega: formaEntrega,
-        forma_pago: formaPago,
-        total: total,
-        items: items.map(item => ({
-          nombre: item.producto_nombre,
-          cantidad: item.cantidad,
-          precio_unitario: item.precio_unitario,
-          imagen: item.imagen_personalizada_url || item.variante_imagen,
-          texto_personalizado: item.texto_personalizado || null,
-          color: item.color || null,
-        }))
-      };
+  setProcesando(true);
+  const token = getToken();
 
-      // Guardar en localStorage (simulación)
-      const stored = localStorage.getItem('pedidos_simulados');
-      const pedidosAnteriores = stored ? JSON.parse(stored) : [];
-      pedidosAnteriores.unshift(nuevoPedido);
-      localStorage.setItem('pedidos_simulados', JSON.stringify(pedidosAnteriores));
-
-      // Simular tiempo de procesamiento
-      setTimeout(() => {
-        mostrarNotificacion('exito', '¡Compra realizada!', 'Tu pedido ha sido registrado con éxito. Revisa "Mis compras".');
-        refreshCart();
-        // Redirigir después de cerrar el modal
-        const cerrarYRedirigir = () => {
-          setNotifModal({ ...notifModal, visible: false });
-          navigate('/cliente/pedidos');
-        };
-        setNotifModal(prev => ({ ...prev, onCerrar: cerrarYRedirigir }));
-        setProcesando(false);
-      }, 1000);
-    } catch (err) {
-      console.error(err);
-      mostrarNotificacion('error', 'Error', 'No se pudo completar la compra. Intenta de nuevo.');
-      setProcesando(false);
-    }
+  const payload = {
+    formaPago: formaPago,      // 'tarjeta', 'efectivo', 'deposito' (según tus opciones)
+    formaEntrega: formaEntrega, // 'domicilio', 'punto_entrega', 'tienda'
+    direccion: formaEntrega === 'domicilio' ? direccion : null,
+    datosTarjeta: formaPago === 'tarjeta' ? datosTarjeta : null,
   };
+  
+
+  try {
+    const response = await fetch(`${API_URL}/api/client/checkout/procesar`, { // ← Ruta corregida
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error en la compra');
+
+    mostrarNotificacion('exito', '¡Compra realizada!', data.mensaje);
+    refreshCart(); // Limpia el contexto del carrito
+
+    const cerrarYRedirigir = () => {
+      setNotifModal(prev => ({ ...prev, visible: false }));
+      navigate('/cliente/pedidos');
+    };
+    setNotifModal(prev => ({ ...prev, onCerrar: cerrarYRedirigir }));
+  } catch (err) {
+    console.error(err);
+    mostrarNotificacion('error', 'Error', err.message);
+  } finally {
+    setProcesando(false);
+  }
+};
 
   const handleSimularCompra = (e) => {
     e.preventDefault();
