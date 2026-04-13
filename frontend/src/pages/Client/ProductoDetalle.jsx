@@ -122,165 +122,175 @@ const ProductoDetalle = () => {
   return (
     <div className="detalle-wrapper">
 
-      {/* ── BOTÓN VOLVER ── */}
-      <button className="btn-volver" onClick={() => navigate(-1)}>
-        ← Volver al catálogo
-      </button>
+      {/* ── HERO HEADER ── */}
+      <div className="detalle-header">
+        <button className="btn-volver" onClick={() => navigate(-1)}>
+          ← Volver al catálogo
+        </button>
+        <h2 className="detalle-header__titulo">Personaliza tu producto</h2>
+        <p className="detalle-header__subtitulo">
+          Elige color, talla y diseño — hecho únicamente para ti.
+        </p>
+      </div>
 
-      <div className="detalle-layout">
+      {/* ── CONTENIDO ── */}
+      <div className="detalle-contenido">
+        <div className="detalle-layout">
 
-        {/* ── REFERENCIAS / PORTAFOLIO ── */}
-        {portafolioLimitado.length > 0 && (
-          <div className="detalle-referencias">
-            <h4>✦ Inspiración</h4>
-            <div className="detalle-referencias-grid">
-              {portafolioLimitado.map(ref => {
-                const imgUrl = ref.imagen_url?.startsWith('http')
-                  ? ref.imagen_url
-                  : `${API_URL}${ref.imagen_url}`;
-                return (
-                  <img
-                    key={ref.id}
-                    src={imgUrl}
-                    alt={ref.descripcion || 'Referencia'}
-                    className="ref-img"
-                    onClick={() => openImageModal(ref.imagen_url)}
-                    title="Ver ampliado"
-                  />
-                );
-              })}
+          {/* ── REFERENCIAS / PORTAFOLIO ── */}
+          {portafolioLimitado.length > 0 && (
+            <div className="detalle-referencias">
+              <h4>✦ Inspiración</h4>
+              <div className="detalle-referencias-grid">
+                {portafolioLimitado.map(ref => {
+                  const imgUrl = ref.imagen_url?.startsWith('http')
+                    ? ref.imagen_url
+                    : `${API_URL}${ref.imagen_url}`;
+                  return (
+                    <img
+                      key={ref.id}
+                      src={imgUrl}
+                      alt={ref.descripcion || 'Referencia'}
+                      className="ref-img"
+                      onClick={() => openImageModal(ref.imagen_url)}
+                      title="Ver ampliado"
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* ── IMAGEN CENTRAL ── */}
-        <div className="detalle-imagen">
-          <img
-            src={
-              disenoPersonalizadoUrl ||
-              varianteActiva?.imagen_url ||
-              'https://via.placeholder.com/500x400?text=Sin+imagen'
-            }
-            alt={producto.producto_nombre}
-            onClick={() => openImageModal(disenoPersonalizadoUrl || varianteActiva?.imagen_url)}
-          />
-          {disenoPersonalizadoUrl && (
-            <div className="diseno-badge">✦ Diseño aplicado</div>
           )}
-        </div>
 
-        {/* ── INFO DEL PRODUCTO ── */}
-        <div className="detalle-info">
-
-          <h1 className="detalle-nombre">{producto.producto_nombre}</h1>
-
-          <div className="detalle-badges">
-            {producto.categoria   && <span className="badge">{producto.categoria}</span>}
-            {producto.subcategoria && <span className="badge">{producto.subcategoria}</span>}
-            {producto.marca       && <span className="badge badge--marca">{producto.marca}</span>}
-          </div>
-
-          <p className="detalle-desc">{producto.descripcion}</p>
-
-          <div className="detalle-precio">
-            <span>${precioFinal.toFixed(2)}</span>
-            {varianteActiva?.precio_adicional > 0 && (
-              <small>(+${Number(varianteActiva.precio_adicional).toFixed(2)} por este color)</small>
+          {/* ── IMAGEN CENTRAL ── */}
+          <div className="detalle-imagen">
+            <img
+              src={
+                disenoPersonalizadoUrl ||
+                varianteActiva?.imagen_url ||
+                'https://via.placeholder.com/500x400?text=Sin+imagen'
+              }
+              alt={producto.producto_nombre}
+              onClick={() => openImageModal(disenoPersonalizadoUrl || varianteActiva?.imagen_url)}
+            />
+            {disenoPersonalizadoUrl && (
+              <div className="diseno-badge">✦ Diseño aplicado</div>
             )}
           </div>
 
-          {producto.material && (
-            <p className="detalle-material">
-              <strong>Material:</strong> {producto.material}
-            </p>
-          )}
+          {/* ── INFO DEL PRODUCTO ── */}
+          <div className="detalle-info">
 
-          {/* SELECTOR DE COLOR */}
-          <div className="detalle-colores">
-            <p className="detalle-colores__label">
-              Color: <strong>{varianteActiva?.color || '—'}</strong>
-            </p>
-            <div className="detalle-colores__lista">
-              {coloresUnicos.map(v => (
-                <button
-                  key={v.variante_id}
-                  className={`color-thumb ${varianteActiva?.color === v.color ? 'color-thumb--activo' : ''}`}
-                  onClick={() => {
-                    setVariante(v);
-                    setAtributos({});
-                    setDisenoPersonalizadoUrl(null);
-                    setDisenoJson(null);
-                  }}
-                  title={v.color}
-                >
-                  {v.imagen_url
-                    ? <img src={v.imagen_url} alt={v.color} className="color-thumb__img" />
-                    : <span className="color-thumb__text">{v.color}</span>
-                  }
-                </button>
-              ))}
+            <h1 className="detalle-nombre">{producto.producto_nombre}</h1>
+
+            <div className="detalle-badges">
+              {producto.categoria    && <span className="badge">{producto.categoria}</span>}
+              {producto.subcategoria && <span className="badge">{producto.subcategoria}</span>}
+              {producto.marca        && <span className="badge badge--marca">{producto.marca}</span>}
             </div>
-          </div>
 
-          {/* ATRIBUTOS */}
-          {Object.entries(atributosAgrupados).map(([tipo, valores]) => (
-            <div key={tipo} className="detalle-atributo-grupo">
-              <p className="detalle-atributo-grupo__label">
-                {tipo}: <strong>{atributosSeleccionados[tipo] || 'Elige una opción'}</strong>
+            <p className="detalle-desc">{producto.descripcion}</p>
+
+            <div className="detalle-precio">
+              <span>${precioFinal.toFixed(2)}</span>
+              {varianteActiva?.precio_adicional > 0 && (
+                <small>(+${Number(varianteActiva.precio_adicional).toFixed(2)} por este color)</small>
+              )}
+            </div>
+
+            {producto.material && (
+              <p className="detalle-material">
+                <strong>Material:</strong> {producto.material}
               </p>
-              <div className="detalle-atributo-grupo__opciones">
-                {[...valores].map(valor => (
+            )}
+
+            {/* SELECTOR DE COLOR */}
+            <div className="detalle-colores">
+              <p className="detalle-colores__label">
+                Color: <strong>{varianteActiva?.color || '—'}</strong>
+              </p>
+              <div className="detalle-colores__lista">
+                {coloresUnicos.map(v => (
                   <button
-                    key={valor}
-                    className={`atributo-chip ${atributosSeleccionados[tipo] === valor ? 'atributo-chip--activo' : ''}`}
-                    onClick={() => seleccionarAtributo(tipo, valor)}
+                    key={v.variante_id}
+                    className={`color-thumb ${varianteActiva?.color === v.color ? 'color-thumb--activo' : ''}`}
+                    onClick={() => {
+                      setVariante(v);
+                      setAtributos({});
+                      setDisenoPersonalizadoUrl(null);
+                      setDisenoJson(null);
+                    }}
+                    title={v.color}
                   >
-                    {valor}
+                    {v.imagen_url
+                      ? <img src={v.imagen_url} alt={v.color} className="color-thumb__img" />
+                      : <span className="color-thumb__text">{v.color}</span>
+                    }
                   </button>
                 ))}
               </div>
             </div>
-          ))}
 
-          {/* CANTIDAD */}
-          <div className="detalle-cantidad">
-            <label htmlFor="cantidad">Cantidad:</label>
-            <input
-              type="number"
-              id="cantidad"
-              min="1"
-              value={cantidad}
-              onChange={e => setCantidad(Math.max(1, parseInt(e.target.value) || 1))}
-              className="cantidad-input"
-            />
-          </div>
+            {/* ATRIBUTOS */}
+            {Object.entries(atributosAgrupados).map(([tipo, valores]) => (
+              <div key={tipo} className="detalle-atributo-grupo">
+                <p className="detalle-atributo-grupo__label">
+                  {tipo}: <strong>{atributosSeleccionados[tipo] || 'Elige una opción'}</strong>
+                </p>
+                <div className="detalle-atributo-grupo__opciones">
+                  {[...valores].map(valor => (
+                    <button
+                      key={valor}
+                      className={`atributo-chip ${atributosSeleccionados[tipo] === valor ? 'atributo-chip--activo' : ''}`}
+                      onClick={() => seleccionarAtributo(tipo, valor)}
+                    >
+                      {valor}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
 
-          {/* ── AVISO PERSONALIZACIÓN ── */}
-          <p className="detalle-aviso-personalizacion">
-            <strong>Este producto se hace a tu medida</strong>
-            Antes de agregarlo al carrito, necesitas personalizarlo: elige el diseño, texto o imagen que llevará. ¡Así garantizamos que sea único para ti!
-          </p>
-
-          {/* ACCIONES */}
-          <div className="detalle-acciones">
-            <button className="btn-personalizar" onClick={abrirPersonalizador}>
-              🎨 Personalizar ahora
-            </button>
-            <button className="btn-solicitar" onClick={solicitarDiseno}>
-              📎 Solicitar diseño
-            </button>
-          </div>
-
-          {/* DISEÑO APLICADO */}
-          {disenoPersonalizadoUrl && (
-            <div className="diseno-info">
-              <span>✓ Diseño personalizado listo</span>
-              <button className="btn-quitar-diseno" onClick={quitarDiseno}>✕ Quitar</button>
+            {/* CANTIDAD */}
+            <div className="detalle-cantidad">
+              <label htmlFor="cantidad">Cantidad:</label>
+              <input
+                type="number"
+                id="cantidad"
+                min="1"
+                value={cantidad}
+                onChange={e => setCantidad(Math.max(1, parseInt(e.target.value) || 1))}
+                className="cantidad-input"
+              />
             </div>
-          )}
 
-        </div>{/* fin detalle-info */}
-      </div>{/* fin detalle-layout */}
+            {/* AVISO */}
+            <p className="detalle-aviso-personalizacion">
+              <strong>Este producto se hace a tu medida</strong>
+              Antes de agregarlo al carrito, necesitas personalizarlo: elige el diseño,
+              texto o imagen que llevará. ¡Así garantizamos que sea único para ti!
+            </p>
+
+            {/* ACCIONES */}
+            <div className="detalle-acciones">
+              <button className="btn-personalizar" onClick={abrirPersonalizador}>
+                🎨 Personalizar ahora
+              </button>
+              <button className="btn-solicitar" onClick={solicitarDiseno}>
+                📎 Solicitar diseño
+              </button>
+            </div>
+
+            {/* DISEÑO APLICADO */}
+            {disenoPersonalizadoUrl && (
+              <div className="diseno-info">
+                <span>✓ Diseño personalizado listo</span>
+                <button className="btn-quitar-diseno" onClick={quitarDiseno}>✕ Quitar</button>
+              </div>
+            )}
+
+          </div>{/* fin detalle-info */}
+        </div>{/* fin detalle-layout */}
+      </div>{/* fin detalle-contenido */}
 
       {/* ── MODAL ── */}
       {modalImageUrl && (

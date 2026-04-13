@@ -81,7 +81,7 @@
   background:
     radial-gradient(ellipse 80% 70% at 20% 110%, #35BA99 0%, transparent 60%),
     radial-gradient(ellipse 60% 60% at 90% -10%, #1A6163 0%, transparent 55%),
-    #000000;
+    #1A6163;  /* ← CAMBIADO: antes era #000000, ahora usa el color de la empresa */
   will-change: transform;
   z-index: 0;
 }
@@ -904,4 +904,3 @@
   .home-grid--portfolio { grid-template-columns: 1fr; }
   .home-section__head { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
-
