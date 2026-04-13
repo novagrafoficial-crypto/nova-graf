@@ -7,7 +7,7 @@ import '../styles/public/Footer.css';
 //  En desarrollo local, si no está definida, se usa cadena vacía
 //  y el proxy de Vite redirige a localhost:5000
 // ═══════════════════════════════════════════════════════════
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const ICONOS_CONTACTO = {
   telefono: '📞',

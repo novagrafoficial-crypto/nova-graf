@@ -8,7 +8,7 @@ import "../../styles/client/ClientHeader.css";
 //  En desarrollo local, si no está definida, se usa cadena vacía
 //  y el proxy de Vite redirige a localhost:5000
 // ═══════════════════════════════════════════════════════════
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
 
 function ClientHeader({ user }) {
   const navigate = useNavigate();
