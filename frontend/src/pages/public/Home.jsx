@@ -4,6 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/public/Home.css';
 
+// ═══════════════════════════════════════════════════════════
+//  URL BASE PARA LA API (desde variable de entorno)
+//  En desarrollo local, si no está definida, se usa cadena vacía
+//  y el proxy de Vite redirige a localhost:5000
+// ═══════════════════════════════════════════════════════════
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const PASOS = [
   { icon: '🛍️', num: '01', titulo: 'Elige tu producto', desc: 'Explora nuestro catálogo y selecciona el producto base que deseas personalizar.' },
   { icon: '🎨', num: '02', titulo: 'Personalízalo', desc: 'Elige color, agrega tu diseño, logo o texto. Nosotros nos encargamos del resto.' },
@@ -16,13 +23,6 @@ const TESTIMONIOS = [
   { nombre: 'Ana L.', texto: 'El equipo fue muy amable y el resultado superó mis expectativas.', estrellas: 4 },
 ];
 
-const STATS = [
-  { valor: '500+', label: 'Clientes felices' },
-  { valor: '1,200+', label: 'Productos entregados' },
-  { valor: '8', label: 'Años de experiencia' },
-  { valor: '100%', label: 'Satisfacción garantizada' },
-];
-
 /* ══════════════════════════════════════════
    CARRUSEL CINEMÁTICO — solo imágenes
    Centro: grande con zoom suave
@@ -31,7 +31,7 @@ const STATS = [
 function PortafolioCarousel({ items }) {
   const [current, setCurrent]   = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [dir, setDir]           = useState(null); // 'left' | 'right'
+  const [dir, setDir]           = useState(null);
   const timer = useRef(null);
   const total  = items.length;
 
@@ -71,7 +71,6 @@ function PortafolioCarousel({ items }) {
   return (
     <div className={`cine-wrap${animating ? ` cine-wrap--${dir}` : ''}`}>
 
-      {/* ── Flecha izquierda ── */}
       {total > 1 && (
         <button
           className="cine-arrow cine-arrow--left"
@@ -87,7 +86,6 @@ function PortafolioCarousel({ items }) {
         </button>
       )}
 
-      {/* ── Stage ── */}
       <div className="cine-stage">
         {slots.map(({ idx, pos }) => (
           <div
@@ -108,14 +106,12 @@ function PortafolioCarousel({ items }) {
                   e.target.src = 'https://placehold.co/700x520/1A6163/ffffff?text=NovaGraf';
                 }}
               />
-              {/* Borde luminoso solo en center */}
               {pos === 'center' && <div className="cine-card__glow" />}
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Flecha derecha ── */}
       {total > 1 && (
         <button
           className="cine-arrow cine-arrow--right"
@@ -131,7 +127,6 @@ function PortafolioCarousel({ items }) {
         </button>
       )}
 
-      {/* ── Dots ── */}
       {total > 1 && (
         <div className="cine-dots">
           {items.map((_, i) => (
@@ -151,7 +146,6 @@ function PortafolioCarousel({ items }) {
   );
 }
 
-
 /* ══════════════════════════════════════════
    HOME
 ══════════════════════════════════════════ */
@@ -166,16 +160,16 @@ const Home = () => {
   const [loadingPort, setLoadingPort] = useState(true);
   const [loadingNos,  setLoadingNos]  = useState(true);
 
-  const [coloresSeleccionados, setColoresSeleccionados] = useState({});
   const [contacto, setContacto] = useState({ nombre: '', correo: '', mensaje: '' });
   const [enviado,  setEnviado]  = useState(false);
 
   useEffect(() => {
-    axios.get('/api/public/productos/catalogo')
+    // ⭐ TODAS LAS PETICIONES AHORA USAN API_BASE_URL
+    axios.get(`${API_BASE_URL}/api/public/productos/catalogo`)
       .catch(() => {})
       .finally(() => setLoadingProd(false));
 
-    axios.get('/api/public/portafolio')
+    axios.get(`${API_BASE_URL}/api/public/portafolio`)
       .then(res => {
         const data = res.data?.portafolio ?? res.data ?? [];
         setPortafolio(Array.isArray(data) ? data : []);
@@ -184,18 +178,25 @@ const Home = () => {
       .finally(() => setLoadingPort(false));
 
     Promise.allSettled([
-      fetch('/api/public/mision').then(r => r.json()),
-      fetch('/api/public/vision').then(r => r.json()),
-      fetch('/api/public/valores').then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/public/mision`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/public/vision`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/public/valores`).then(r => r.json()),
     ]).then(([resMision, resVision, resValores]) => {
-      if (resMision.status === 'fulfilled') { const d = resMision.value; setMision(d?.data ?? d); }
-      if (resVision.status  === 'fulfilled') { const d = resVision.value;  setVision(d?.data ?? d); }
+      if (resMision.status === 'fulfilled') {
+        const d = resMision.value;
+        setMision(d?.data ?? d);
+      }
+      if (resVision.status === 'fulfilled') {
+        const d = resVision.value;
+        setVision(d?.data ?? d);
+      }
       if (resValores.status === 'fulfilled') {
         const d = resValores.value?.data ?? resValores.value;
         setValores(Array.isArray(d) ? d.slice(0, 4) : (d ? [d] : []));
       }
     }).finally(() => setLoadingNos(false));
 
+    // IntersectionObserver para animaciones
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('animate-in'); }),
       { threshold: 0.12 }
@@ -214,7 +215,7 @@ const Home = () => {
   return (
     <main className="home">
 
-            {/* ══ NUEVO HERO MODERNO ══ */}
+      {/* ══ NUEVO HERO MODERNO ══ */}
       <section className="hero-moderno">
         <div className="hero-moderno__bg">
           <div className="hero-moderno__gradient"></div>
@@ -250,7 +251,6 @@ const Home = () => {
                 Ver trabajos
               </a>
             </div>
-            
           </div>
           <div className="hero-moderno__image">
             <div className="hero-image-wrapper">
@@ -346,7 +346,7 @@ const Home = () => {
                     </li>
                   ))}
                 </ul>
-                <Link to="/nosotros/mision" className="nosotros-link">Conoce más sobre nosotros →</Link>
+                <Link to="/nosotros" className="nosotros-link">Conoce más sobre nosotros →</Link>
               </div>
             )}
           </div>

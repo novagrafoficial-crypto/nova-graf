@@ -3,6 +3,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/public/Nosotros.css';
 
+// ═══════════════════════════════════════════════════════════
+//  URL BASE PARA LA API (desde variable de entorno)
+//  En desarrollo local, si no está definida, se usa cadena vacía
+//  y el proxy de Vite redirige a localhost:5000
+// ═══════════════════════════════════════════════════════════
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const Nosotros = () => {
   const [mision, setMision] = useState(null);
   const [vision, setVision] = useState(null);
@@ -14,10 +21,10 @@ const Nosotros = () => {
     const fetchData = async () => {
       try {
         const [resMision, resVision, resValores, resAntecedentes] = await Promise.allSettled([
-          fetch('/api/public/mision').then(r => r.json()),
-          fetch('/api/public/vision').then(r => r.json()),
-          fetch('/api/public/valores').then(r => r.json()),
-          fetch('/api/public/antecedentes').then(r => r.json())
+          fetch(`${API_BASE_URL}/api/public/mision`).then(r => r.json()),
+          fetch(`${API_BASE_URL}/api/public/vision`).then(r => r.json()),
+          fetch(`${API_BASE_URL}/api/public/valores`).then(r => r.json()),
+          fetch(`${API_BASE_URL}/api/public/antecedentes`).then(r => r.json())
         ]);
 
         // Misión

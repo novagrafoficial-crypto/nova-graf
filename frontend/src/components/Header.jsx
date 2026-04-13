@@ -2,25 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/public/Header.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const Header = ({
   cartCount = 0,
   isLoggedIn = false,
   userName = 'Usuario',
   onSearch = (query) => console.log('Buscar:', query)
 }) => {
-  const [empresa,       setEmpresa]       = useState({ nombre_empresa: '', logo_url: '' });
-  const [loadingEmpresa,setLoadingEmpresa] = useState(true);
-  const [scrolled,      setScrolled]      = useState(false);
-  const [menuOpen,      setMenuOpen]      = useState(false);
-  const [searchActive,  setSearchActive]  = useState(false);
-  const [searchQuery,   setSearchQuery]   = useState('');
+  const [empresa, setEmpresa] = useState({ nombre_empresa: '', logo_url: '' });
+  const [loadingEmpresa, setLoadingEmpresa] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const searchWrapperRef = useRef(null);
-  const navigate        = useNavigate();
-  const location        = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    fetch('/api/empresa')
+    // ⭐ AHORA USA API_BASE_URL
+    fetch(`${API_BASE_URL}/api/empresa`)
       .then(res => res.json())
       .then(json => { if (json.success) setEmpresa(json.data); })
       .catch(err => console.error('Error al cargar empresa:', err))

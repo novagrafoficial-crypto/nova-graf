@@ -1,19 +1,26 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext"; // 👈 Importa el hook
+import { useCart } from "../../context/CartContext";
 import "../../styles/client/ClientHeader.css";
+
+// ═══════════════════════════════════════════════════════════
+//  URL BASE PARA LA API (desde variable de entorno)
+//  En desarrollo local, si no está definida, se usa cadena vacía
+//  y el proxy de Vite redirige a localhost:5000
+// ═══════════════════════════════════════════════════════════
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 function ClientHeader({ user }) {
   const navigate = useNavigate();
-  const { cartCount } = useCart(); // 👈 Obtén el conteo del contexto
+  const { cartCount } = useCart();
   const [empresa, setEmpresa] = useState({ nombre_empresa: "", logo_url: "" });
   const [loadingEmpresa, setLoadingEmpresa] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Cargar logo y nombre de empresa desde la API
+  // Cargar logo y nombre de empresa desde la API (ahora usa API_BASE_URL)
   useEffect(() => {
-    fetch("/api/empresa")
+    fetch(`${API_BASE_URL}/api/empresa`)
       .then(res => res.json())
       .then(json => { if (json.success) setEmpresa(json.data); })
       .catch(err => console.error("Error al cargar empresa:", err))

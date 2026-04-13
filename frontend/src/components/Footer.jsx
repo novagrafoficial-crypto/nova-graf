@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/public/Footer.css';
 
+// ═══════════════════════════════════════════════════════════
+//  URL BASE PARA LA API (desde variable de entorno)
+//  En desarrollo local, si no está definida, se usa cadena vacía
+//  y el proxy de Vite redirige a localhost:5000
+// ═══════════════════════════════════════════════════════════
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const ICONOS_CONTACTO = {
   telefono: '📞',
   teléfono: '📞',
@@ -50,9 +57,9 @@ const Footer = () => {
 
   useEffect(() => {
     Promise.allSettled([
-      fetch('/api/redes-sociales').then(r => r.json()),
-      fetch('/api/contactos').then(r => r.json()),
-      fetch('/api/ubicacion').then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/redes-sociales`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/contactos`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/ubicacion`).then(r => r.json()),
     ])
       .then(([resRedes, resContactos, resUbicacion]) => {
         if (resRedes.status === 'fulfilled' && resRedes.value.success)
