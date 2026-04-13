@@ -1,7 +1,7 @@
 // src/pages/admin/VentasProducto.jsx
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import "../../styles/admin/VentasProducto.css";
+import "../../styles/admin/Ventasproducto.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
