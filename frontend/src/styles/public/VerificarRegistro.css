@@ -1,0 +1,163 @@
+/* Contenedor principal - separación inferior del header */
+.verificar-page {
+  margin-top: 90px;          /* Ajusta según la altura de tu header */
+  min-height: calc(70vh - 90px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 40px;
+  background-color: #F5F7FA; /* Fondo neutro */
+}
+
+/* Tarjeta del formulario */
+.verificar-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+/* Títulos usando el color principal */
+.verificar-card h2 {
+  color: #1A6163;        /* PANTONE 7721 CP */
+  margin-bottom: 8px;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.verificar-card p {
+  color: #565653;        /* Gris elegante */
+  margin-bottom: 28px;
+  font-size: 0.95rem;
+}
+
+/* Campo del código OTP */
+.otp-input {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.8rem;
+  letter-spacing: 10px;
+  text-align: center;
+  border: 2px solid #DBDBDB;   /* Cool Gray 1 CP */
+  border-radius: 14px;
+  font-family: monospace;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.otp-input:focus {
+  border-color: #35BA99;       /* PANTONE 7465 CP */
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.2);
+}
+
+/* Botón principal */
+.btn-verify {
+  width: 100%;
+  padding: 12px;
+  background-color: #35BA99;   /* 7465 CP */
+  color: white;
+  border: none;
+  border-radius: 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.05s;
+}
+
+.btn-verify:hover:not(:disabled) {
+  background-color: #1A6163;   /* 7721 CP más oscuro */
+}
+
+.btn-verify:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-verify:disabled {
+  background-color: #B0BEC5;
+  cursor: not-allowed;
+}
+
+/* Mensajes de éxito/error */
+.message {
+  margin-top: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.message.success {
+  color: #35BA99;
+}
+
+.message.error {
+  color: #D32F2F;
+}
+
+/* Sección de reenvío */
+.resend-section {
+  margin-top: 28px;
+  border-top: 1px solid #DBDBDB;
+  padding-top: 20px;
+}
+
+.resend-section p {
+  color: #7A7A7A;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.btn-resend {
+  background: transparent;
+  border: none;
+  color: #1A6163;        /* 7721 CP */
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-resend:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn-resend:disabled {
+  color: #B0BEC5;
+  cursor: not-allowed;
+}
+
+.resend-message {
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.resend-message.success {
+  color: #35BA99;
+}
+
+.resend-message.error {
+  color: #D32F2F;
+}
+
+/* Ajuste para móviles (header más pequeño) */
+@media (max-width: 640px) {
+  .verificar-page {
+    margin-top: 70px;
+    min-height: calc(70vh - 70px);
+    padding: 16px;
+  }
+  .verificar-card {
+    padding: 32px 20px;
+  }
+  .verificar-card h2 {
+    font-size: 1.5rem;
+  }
+  .otp-input {
+    font-size: 1.4rem;
+    letter-spacing: 6px;
+  }
+}

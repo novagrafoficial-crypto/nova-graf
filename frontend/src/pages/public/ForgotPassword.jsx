@@ -15,6 +15,14 @@ function ForgotPassword() {
     setLoading(true);
     setMessage("");
 
+    // Validación básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage("Ingresa un correo electrónico válido");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_URL}/api/users/forgot-password`, {
         method: "POST",
@@ -36,14 +44,13 @@ function ForgotPassword() {
     }
   };
 
-  // Estilos verdes (sin cambios)
   const styles = {
     container: {
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
-      background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
-      paddingTop: "80px",
+      background: "#F5F7FA",
+      marginTop: "90px",
     },
     main: {
       flex: 1,
@@ -58,83 +65,78 @@ function ForgotPassword() {
       padding: "40px",
       width: "100%",
       maxWidth: "420px",
-      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02)",
-      border: "1px solid #e2e8f0",
+      boxShadow: "0 8px 28px rgba(0, 0, 0, 0.08)",
+      border: `1px solid #DBDBDB`,
     },
     title: {
-      fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+      fontFamily: "system-ui, sans-serif",
       fontSize: "1.75rem",
       fontWeight: "600",
       marginBottom: "8px",
-      color: "#065f46",
+      color: "#1A6163",
     },
     description: {
-      color: "#4b5563",
+      color: "#565653",
       marginBottom: "28px",
       fontFamily: "system-ui, sans-serif",
       fontSize: "0.95rem",
-      lineHeight: "1.5",
     },
     label: {
       display: "block",
       fontFamily: "system-ui, sans-serif",
-      fontSize: "0.875rem",
+      fontSize: "0.85rem",
       fontWeight: "500",
-      color: "#374151",
+      color: "#1A6163",
       marginBottom: "6px",
     },
     input: {
       width: "100%",
       padding: "12px 16px",
-      borderRadius: "12px",
-      border: "1px solid #d1d5db",
+      borderRadius: "14px",
+      border: `2px solid #DBDBDB`,
       fontFamily: "system-ui, sans-serif",
       fontSize: "0.95rem",
       boxSizing: "border-box",
-      transition: "all 0.2s ease",
       outline: "none",
+      transition: "all 0.2s",
     },
     inputFocus: {
-      borderColor: "#10b981",
-      boxShadow: "0 0 0 3px rgba(16, 185, 129, 0.2)",
+      borderColor: "#35BA99",
+      boxShadow: "0 0 0 3px rgba(53, 186, 153, 0.2)",
     },
     button: {
       width: "100%",
       padding: "12px",
-      background: "#10b981",
+      background: "#35BA99",
       color: "white",
       border: "none",
-      borderRadius: "12px",
+      borderRadius: "40px",
       fontFamily: "system-ui, sans-serif",
       fontSize: "1rem",
-      fontWeight: "500",
+      fontWeight: "600",
       cursor: "pointer",
-      transition: "background-color 0.2s ease",
+      transition: "background 0.2s",
     },
-    buttonHover: {
-      background: "#059669",
-    },
-    buttonDisabled: {
-      background: "#9ca3af",
-      cursor: "not-allowed",
-    },
+    buttonHover: { background: "#1A6163" },
+    buttonDisabled: { background: "#B0BEC5", cursor: "not-allowed" },
     message: {
       marginTop: "16px",
-      color: "#dc2626",
       textAlign: "center",
       fontFamily: "system-ui, sans-serif",
-      fontSize: "0.875rem",
+      fontSize: "0.9rem",
+      fontWeight: "500",
+      color: "#ef4444",
     },
     backLink: {
       textAlign: "center",
-      marginTop: "20px",
+      marginTop: "24px",
       fontFamily: "system-ui, sans-serif",
-      fontSize: "0.875rem",
+      fontSize: "0.9rem",
     },
     link: {
-      color: "#10b981",
+      color: "#1A6163",
       textDecoration: "none",
-      fontWeight: "500",
+      fontWeight: "600",
       display: "inline-flex",
       alignItems: "center",
       gap: "4px",
@@ -161,7 +163,7 @@ function ForgotPassword() {
                 required
                 style={styles.input}
                 onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
-                onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+                onBlur={(e) => (e.target.style.borderColor = "#DBDBDB")}
               />
             </div>
 

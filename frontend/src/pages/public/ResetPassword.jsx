@@ -21,6 +21,15 @@ function ResetPassword() {
       setMessage("Las contraseñas no coinciden");
       return;
     }
+    if (newPassword.length < 8) {
+      setMessage("La contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+    // Validación opcional: al menos una letra y un número
+    if (!/\d/.test(newPassword) || !/[a-zA-Z]/.test(newPassword)) {
+      setMessage("La contraseña debe contener al menos una letra y un número");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -45,21 +54,102 @@ function ResetPassword() {
     }
   };
 
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 16px" }}>
-        <div style={{ background: "white", borderRadius: "16px", padding: "40px", width: "100%", maxWidth: "420px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+  const styles = {
+    container: {
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: "#F5F7FA",
+      marginTop: "90px",
+    },
+    main: {
+      flex: 1,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "40px 16px",
+    },
+    card: {
+      background: "white",
+      borderRadius: "24px",
+      padding: "40px",
+      width: "100%",
+      maxWidth: "420px",
+      boxShadow: "0 8px 28px rgba(0, 0, 0, 0.08)",
+      border: `1px solid #DBDBDB`,
+    },
+    title: {
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "1.75rem",
+      fontWeight: "600",
+      marginBottom: "8px",
+      color: "#1A6163",
+    },
+    description: {
+      color: "#565653",
+      marginBottom: "28px",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.95rem",
+    },
+    label: {
+      display: "block",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.85rem",
+      fontWeight: "500",
+      color: "#1A6163",
+      marginBottom: "6px",
+    },
+    input: {
+      width: "100%",
+      padding: "12px 16px",
+      borderRadius: "14px",
+      border: `2px solid #DBDBDB`,
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.95rem",
+      boxSizing: "border-box",
+      outline: "none",
+      transition: "all 0.2s",
+    },
+    inputFocus: {
+      borderColor: "#35BA99",
+      boxShadow: "0 0 0 3px rgba(53, 186, 153, 0.2)",
+    },
+    button: {
+      width: "100%",
+      padding: "12px",
+      background: "#35BA99",
+      color: "white",
+      border: "none",
+      borderRadius: "40px",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "1rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "background 0.2s",
+    },
+    buttonHover: { background: "#1A6163" },
+    buttonDisabled: { background: "#B0BEC5", cursor: "not-allowed" },
+    message: {
+      marginTop: "16px",
+      textAlign: "center",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.9rem",
+      fontWeight: "500",
+    },
+  };
 
-          <h2 style={{ fontFamily: "Arial", marginBottom: "8px", color: "#1e293b" }}>
-            Nueva contraseña
-          </h2>
-          <p style={{ color: "#64748b", marginBottom: "28px", fontFamily: "Arial" }}>
-            Escribe tu nueva contraseña.
+  return (
+    <div style={styles.container}>
+      <div style={styles.main}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>Nueva contraseña</h2>
+          <p style={styles.description}>
+            Escribe tu nueva contraseña (mínimo 8 caracteres, una letra y un número).
           </p>
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: "16px" }}>
-              <label style={labelStyle}>Nueva contraseña</label>
+              <label style={styles.label}>Nueva contraseña</label>
               <input
                 type="password"
                 placeholder="Mínimo 8 caracteres"
@@ -67,42 +157,50 @@ function ResetPassword() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={8}
-                style={inputStyle}
+                style={styles.input}
+                onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
+                onBlur={(e) => (e.target.style.borderColor = "#DBDBDB")}
               />
             </div>
 
             <div style={{ marginBottom: "24px" }}>
-              <label style={labelStyle}>Confirmar contraseña</label>
+              <label style={styles.label}>Confirmar contraseña</label>
               <input
                 type="password"
                 placeholder="Repite tu contraseña"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                style={inputStyle}
+                style={styles.input}
+                onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
+                onBlur={(e) => (e.target.style.borderColor = "#DBDBDB")}
               />
             </div>
 
-            <button type="submit" disabled={loading} style={btnStyle}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...styles.button,
+                ...(loading ? styles.buttonDisabled : {}),
+              }}
+              onMouseEnter={(e) => !loading && (e.target.style.background = styles.buttonHover.background)}
+              onMouseLeave={(e) => !loading && (e.target.style.background = styles.button.background)}
+            >
               {loading ? "Actualizando..." : "Actualizar contraseña"}
             </button>
           </form>
 
           {message && (
-            <p style={{ marginTop: "16px", textAlign: "center", fontFamily: "Arial", color: success ? "#16a34a" : "#ef4444" }}>
+            <p style={{ ...styles.message, color: success ? "#35BA99" : "#ef4444" }}>
               {message}
             </p>
           )}
-
         </div>
       </div>
       <Footer />
     </div>
   );
 }
-
-const labelStyle = { display: "block", fontFamily: "Arial", fontSize: "0.85rem", color: "#475569", marginBottom: "6px" };
-const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #e2e8f0", fontFamily: "Arial", fontSize: "0.95rem", boxSizing: "border-box" };
-const btnStyle = { width: "100%", padding: "12px", background: "#4f46e5", color: "white", border: "none", borderRadius: "8px", fontFamily: "Arial", fontSize: "1rem", cursor: "pointer" };
 
 export default ResetPassword;
