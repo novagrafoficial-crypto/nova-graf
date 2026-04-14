@@ -1,22 +1,23 @@
 /* Register.css */
 :root {
-  --verde-oscuro: #2e7d32;
-  --verde-medio: #4caf50;
-  --verde-claro: #a5d6a7;
-  --verde-blanco: #e8f5e9;
-  --gris-claro: #f5f5f5;
-  --gris-borde: #e0e0e0;
-  --sombra: 0 15px 35px rgba(0, 0, 0, 0.1);
-  --borde-radio: 30px;
-  --transicion: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --verde-profundo: #1A6163;
+  --verde-principal: #35BA99;
+  --verde-suave: #6acfaf;
+  --verde-claro: #daf2e8;
+  --gris-fondo: #f4f4f0;
+  --gris-borde: #e2e2da;
+  --gris-texto: #4b5563;
+  --sombra-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --borde-radio: 20px;
+  --transicion: all 0.2s ease;
 }
 
 .register-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(145deg, #f1f8e9 0%, #ffffff 100%);
-  padding-top: 100px; /* Más espacio debajo del header */
+  background: linear-gradient(135deg, var(--verde-claro) 0%, #ffffff 100%);
+  padding-top: 100px;
   box-sizing: border-box;
 }
 
@@ -29,7 +30,7 @@
 }
 
 .register-card {
-  max-width: 500px;
+  max-width: 420px;
   width: 100%;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -68,6 +69,28 @@
   font-style: italic;
 }
 
+/* Indicador de pasos */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gris-borde);
+  transition: var(--transicion);
+}
+
+.step-dot.active {
+  background: var(--verde-principal);
+  transform: scale(1.2);
+}
+
+/* Formulario */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -87,10 +110,8 @@
 
 .register-form input:focus {
   outline: none;
-  border-color: var(--verde-medio);
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
-  background-color: white;
-  transform: scale(1.02);
+  border-color: var(--verde-principal);
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.1);
 }
 
 .register-form input::placeholder {
@@ -98,6 +119,45 @@
   font-weight: 300;
 }
 
+/* Campos de contraseña con botón toggle */
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 2.8rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  color: #6b7280;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: var(--verde-principal);
+}
+
+.password-field input:focus + .password-toggle,
+.password-field input:focus ~ .password-toggle {
+  color: var(--verde-principal);
+}
+
+/* Botones */
+.btn-next,
 .btn-register {
   background: linear-gradient(135deg, var(--verde-medio), var(--verde-oscuro));
   color: white;
@@ -124,6 +184,42 @@
   transform: translateY(0) scale(1);
 }
 
+/* Botón volver con flecha */
+.btn-back {
+  background: #f1f5f9;
+  color: var(--gris-texto);
+  border: 1px solid var(--gris-borde);
+  border-radius: 12px;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transicion);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+/* Contenedor de botones en paso 2 */
+.step-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.btn-register {
+  flex: 1;
+  margin-top: 0;
+}
+
+/* Mensajes */
 .message {
   text-align: center;
   margin: 1rem 0 0;
@@ -160,7 +256,7 @@
   display: inline-block;
   width: 30px;
   height: 1px;
-  background: #ddd;
+  background: var(--gris-borde);
   vertical-align: middle;
   margin: 0 10px;
 }

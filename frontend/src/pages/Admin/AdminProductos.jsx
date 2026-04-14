@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../../supabaseClient";
+import "../../styles/admin/AdminProductos.css";
 
 const API      = "http://localhost:5000/api/admin/productos";
 const API_BASE = "http://localhost:5000/api/admin";

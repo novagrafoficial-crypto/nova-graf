@@ -417,7 +417,6 @@
   --gray-warm:    #DBDBD3;
   --ink:          #000000;
 
-  /* Derivados */
   --teal-deep-10: rgba(26, 97, 99, 0.10);
   --teal-deep-20: rgba(26, 97, 99, 0.20);
   --teal-vivid-10:rgba(53, 186, 153, 0.10);
@@ -443,23 +442,23 @@
   --font-body:    'DM Sans', system-ui, sans-serif;
 }
 
-/* ── RESET PARA EL COMPONENTE ── */
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ── WRAPPER ── */
+/* ════════════════════════════════════════
+   WRAPPER
+════════════════════════════════════════ */
 .detalle-wrapper {
-  max-width: 1420px;
-  margin: 0 auto;
-  padding: 2.5rem 2rem 4rem;
-  background: var(--gray-soft);
+  width: 100%;
   min-height: 100vh;
+  background: var(--gray-soft);
   font-family: var(--font-body);
-  animation: fadeWrapper 0.5s var(--ease-out-expo) both;
+  padding: 0 0 4rem;
+  animation: fadeWrapper 0.45s var(--ease-out-expo) both;
 }
 
 @keyframes fadeWrapper {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ── ESTADOS ── */
@@ -472,38 +471,116 @@
   border-radius: var(--radius-lg);
   background: var(--white);
   box-shadow: var(--shadow-card);
+  margin: 2.5rem;
 }
 .detalle-loading { color: var(--teal-deep); }
 .detalle-error   { color: #c0392b; }
 
-/* ── BOTÓN VOLVER ── */
+/* ════════════════════════════════════════
+   HERO HEADER  (mismo diseño que el catálogo)
+════════════════════════════════════════ */
+.detalle-header {
+  position: relative;          /* ← ancla para el botón absoluto */
+  width: 100%;
+  background: linear-gradient(135deg, var(--teal-deep) 0%, #0e4446 60%, #1c5c60 100%);
+  padding: 3.8rem 3rem 3.2rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Círculos decorativos de fondo */
+.detalle-header::before,
+.detalle-header::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.detalle-header::before {
+  width: 500px;
+  height: 500px;
+  background: rgba(53,186,153,0.08);
+  top: -180px;
+  right: -100px;
+}
+.detalle-header::after {
+  width: 320px;
+  height: 320px;
+  background: rgba(53,186,153,0.06);
+  bottom: -120px;
+  left: -60px;
+}
+
+.detalle-header__titulo {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  position: relative;
+  animation: slideDown 0.6s var(--ease-out-expo) 0.1s both;
+}
+
+.detalle-header__subtitulo {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.65);
+  font-weight: 400;
+  position: relative;
+  animation: slideDown 0.6s var(--ease-out-expo) 0.18s both;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════
+   BOTÓN VOLVER — ESQUINA SUPERIOR IZQUIERDA
+   (más corto horizontalmente y con color de texto ajustado)
+════════════════════════════════════════ */
 .btn-volver {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.5rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  background: var(--white);
-  border: 1.5px solid var(--gray-warm);
-  color: var(--teal-deep);
+  gap: 0.3rem;                 /* espacio reducido */
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.30);
+  color: var(--gray-warm);     /* ← color cambiado: #DBDDB3 */
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.3px;
   cursor: pointer;
-  padding: 0.55rem 1.2rem 0.55rem 0.9rem;
+  padding: 0.25rem 0.7rem;     /* ← menos padding horizontal (más corto) */
   border-radius: var(--radius-pill);
-  margin-bottom: 2rem;
-  transition: border-color 0.2s, color 0.2s, transform 0.2s var(--ease-spring), box-shadow 0.2s;
-  box-shadow: var(--shadow-card);
+  z-index: 2;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;          /* evita que el texto salte a dos líneas */
+  transition: background 0.2s, border-color 0.2s, transform 0.2s var(--ease-spring);
 }
 .btn-volver:hover {
-  border-color: var(--teal-vivid);
-  color: var(--teal-deep);
-  transform: translateX(-4px);
-  box-shadow: var(--shadow-lift);
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.55);
+  transform: translateX(-2px);
+  color: #ffffff;               /* al hover se aclara aún más */
 }
-.btn-volver:active { transform: translateX(-2px) scale(0.97); }
+.btn-volver:active {
+  transform: translateX(-1px) scale(0.97);
+}
 
-/* ── LAYOUT PRINCIPAL ── */
+/* ════════════════════════════════════════
+   CONTENIDO PRINCIPAL (debajo del header)
+════════════════════════════════════════ */
+.detalle-contenido {
+  padding: 2.5rem 2.5rem 0;
+}
+
+/* ════════════════════════════════════════
+   LAYOUT PRINCIPAL
+════════════════════════════════════════ */
 .detalle-layout {
   display: flex;
   flex-wrap: wrap;
@@ -581,7 +658,8 @@
   height: 100%;
   min-height: 380px;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 1.5rem;
   transition: transform 0.5s var(--ease-out-expo);
   cursor: zoom-in;
 }
@@ -804,7 +882,7 @@
   box-shadow: var(--shadow-glow);
 }
 
-/* ── AVISO DE PERSONALIZACIÓN REDISEÑADO ── */
+/* ── AVISO DE PERSONALIZACIÓN ── */
 .detalle-aviso-personalizacion {
   position: relative;
   background: linear-gradient(135deg, var(--teal-deep-10) 0%, var(--teal-vivid-10) 100%);
@@ -818,7 +896,6 @@
   line-height: 1.55;
   overflow: hidden;
 }
-/* Icono decorativo */
 .detalle-aviso-personalizacion::before {
   content: '✦';
   position: absolute;
@@ -829,7 +906,6 @@
   color: var(--teal-vivid);
   animation: pulse 2.2s ease-in-out infinite;
 }
-/* Barra lateral animada */
 .detalle-aviso-personalizacion::after {
   content: '';
   position: absolute;
@@ -849,7 +925,6 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.55; }
 }
-
 .detalle-aviso-personalizacion strong {
   display: block;
   font-size: 0.95rem;
@@ -866,7 +941,6 @@
   margin-top: 0.4rem;
 }
 
-/* Base compartida */
 .btn-personalizar,
 .btn-solicitar {
   flex: 1;
@@ -886,8 +960,6 @@
   position: relative;
   overflow: hidden;
 }
-
-/* Ripple effect al hacer clic */
 .btn-personalizar::after,
 .btn-solicitar::after {
   content: '';
@@ -900,7 +972,6 @@
 .btn-personalizar:active::after,
 .btn-solicitar:active::after { opacity: 1; }
 
-/* Personalizar — Teal vibrante */
 .btn-personalizar {
   background: var(--teal-vivid);
   color: var(--white);
@@ -913,7 +984,6 @@
 }
 .btn-personalizar:active { transform: translateY(0) scale(0.98); }
 
-/* Solicitar diseño — Contorno teal profundo */
 .btn-solicitar {
   background: var(--white);
   color: var(--teal-deep);
@@ -926,13 +996,6 @@
   box-shadow: 0 8px 24px var(--teal-deep-20);
 }
 .btn-solicitar:active { transform: translateY(0) scale(0.98); }
-
-/* Responsive botones */
-@media (max-width: 480px) {
-  .detalle-acciones { flex-direction: column; }
-  .btn-personalizar,
-  .btn-solicitar { width: 100%; }
-}
 
 /* ── INFO DISEÑO APLICADO ── */
 .diseno-info {
@@ -1024,18 +1087,23 @@
   transform: scale(1.1) rotate(90deg);
 }
 
-/* ── RESPONSIVE ── */
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
 @media (max-width: 900px) {
   .detalle-nombre { font-size: 1.9rem; }
   .detalle-precio span { font-size: 2rem; }
+  .detalle-header { padding: 3rem 1.5rem 2.5rem; }
+  .detalle-contenido { padding: 1.8rem 1.5rem 0; }
 }
+
 @media (max-width: 768px) {
-  .detalle-wrapper { padding: 1rem; }
+  .detalle-header { padding: 2.5rem 1.2rem 2rem; }
+  .detalle-contenido { padding: 1.2rem 1rem 0; }
   .detalle-layout { flex-direction: column; gap: 1.2rem; padding: 1.2rem; }
   .detalle-referencias {
     width: 100%;
     max-height: 160px;
-    flex-direction: row;
     margin-right: 0;
     margin-bottom: 0;
   }
@@ -1047,4 +1115,17 @@
   .ref-img { width: 80px; min-width: 80px; }
   .detalle-imagen img { min-height: 280px; }
   .detalle-modal-close { top: -38px; width: 32px; height: 32px; }
+}
+
+@media (max-width: 480px) {
+  .detalle-acciones { flex-direction: column; }
+  .btn-personalizar,
+  .btn-solicitar { width: 100%; }
+  .detalle-header__titulo { font-size: 1.8rem; }
+  .btn-volver {
+    top: 0.8rem;
+    left: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+  }
 }

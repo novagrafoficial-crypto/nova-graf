@@ -6,7 +6,7 @@ import AdminAntecedentes from "./AdminAntecedentes";
 import AdminContactos from "./AdminContactos";
 import AdminRedes from "./AdminRedes";
 import AdminUbicacion from "./AdminUbicacion";
-import "../../styles/Admin/Adminempresa.css"
+import "../../styles/admin/Adminempresa.css"
 
 function AdminEmpresa() {
   return (

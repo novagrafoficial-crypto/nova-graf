@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "../../styles/admin/AdminModulo.css";
 
 const API_MODULO    = "http://localhost:5000/api/admin/modulo";

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+//cambios de recuperacion de codigo
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 const generarToken = (usuario) => {

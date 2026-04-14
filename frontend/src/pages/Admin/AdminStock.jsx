@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import '../../styles/admin/AdminStock.css';
+import React, { useState } from 'react';
+import '../../styles/admin/AdminStock.css'; // Opcional: puedes usar el mismo CSS de la versión HTML o modularizado
 
 // ✅ URL dinámica con fallback para desarrollo local
 const API_BASE = import.meta.env.VITE_API_URL;

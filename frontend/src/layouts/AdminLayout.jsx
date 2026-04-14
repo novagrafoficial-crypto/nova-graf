@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import "../styles/Admin/AdminLayout.css";
+import { Outlet, Link, useNavigate } from "react-router-dom";
+import "../styles/admin/AdminLayout.css";
 
 // ✅ Ruta corregida (relativa desde layouts hacia logo)
 import logoNova from "../logo/LOGO.png";

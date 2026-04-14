@@ -1,7 +1,12 @@
 // frontend/src/pages/public/Contacto.jsx
 import React, { useEffect, useState } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL;
+// ═══════════════════════════════════════════════════════════
+//  URL BASE PARA LA API (desde variable de entorno)
+//  En desarrollo local, si no está definida, se usa cadena vacía
+//  y el proxy de Vite redirige a localhost:5000
+// ═══════════════════════════════════════════════════════════
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const Contacto = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
@@ -9,7 +14,7 @@ const Contacto = () => {
   const [error, setError]             = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/ubicacion`)
+    fetch(`${API_BASE_URL}/api/ubicacion`)
       .then(res => res.json())
       .then(json => {
         if (json.success) setUbicaciones(json.data);
@@ -143,21 +148,21 @@ const Contacto = () => {
   );
 };
 
-// ── Estilos ────────────────────────────────────────────────────
+// ── Estilos (ajustados con colores corporativos) ──
 const styles = {
   page: {
     minHeight: '100vh',
     background: 'linear-gradient(160deg, #f0faf9 0%, #ffffff 60%)',
-    fontFamily: "'Segoe UI', sans-serif",
+    fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif",
   },
 
-  // Hero
+  // Hero con colores de la empresa
   hero: {
     position: 'relative',
     textAlign: 'center',
     padding: '80px 20px 60px',
     overflow: 'hidden',
-    background: 'linear-gradient(135deg, #004d40 0%, #00796b 100%)',
+    background: 'linear-gradient(135deg, #1A6163 0%, #35BA99 100%)',
   },
   heroDecor: {
     position: 'absolute',
@@ -172,47 +177,45 @@ const styles = {
     color: '#ffffff',
     margin: '0 0 12px',
     letterSpacing: '-0.02em',
+    fontFamily: "'DM Serif Display', Georgia, serif",
   },
   heroSub: {
     fontSize: '1.1rem',
-    color: '#b2dfdb',
+    color: '#DBDBD3',
     margin: '0 0 28px',
   },
   heroDivider: {
     width: '60px',
     height: '4px',
-    background: '#80cbc4',
+    background: '#35BA99',
     borderRadius: '2px',
     margin: '0 auto',
   },
 
-  // Container
   container: {
     maxWidth: '1100px',
     margin: '0 auto',
     padding: '60px 20px',
   },
 
-  // Grid de cards
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
     gap: '28px',
   },
 
-  // Card
   card: {
     background: '#ffffff',
     borderRadius: '24px',
     padding: '32px 28px',
-    boxShadow: '0 8px 32px rgba(0, 77, 64, 0.10)',
-    border: '1px solid #e0f2f1',
+    boxShadow: '0 8px 32px rgba(26, 97, 99, 0.10)',
+    border: '1px solid #DBDBD3',
     animation: 'slideUp 0.5s ease-out both',
     transition: 'transform 0.2s, box-shadow 0.2s',
   },
   cardBadge: {
     display: 'inline-block',
-    background: 'linear-gradient(135deg, #004d40, #00796b)',
+    background: 'linear-gradient(135deg, #1A6163, #35BA99)',
     color: '#fff',
     fontSize: '0.72rem',
     fontWeight: 700,
@@ -244,27 +247,26 @@ const styles = {
     fontWeight: 700,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    color: '#80cbc4',
+    color: '#35BA99',
   },
   cardValue: {
     margin: 0,
     fontSize: '0.97rem',
-    color: '#263238',
+    color: '#1A6163',
     fontWeight: 500,
     lineHeight: 1.5,
   },
   dividerLine: {
     height: '1px',
-    background: '#e0f2f1',
+    background: '#DBDBD3',
     margin: '20px 0',
   },
 
-  // Botón Maps
   mapsBtn: {
     display: 'inline-block',
     marginTop: '28px',
     padding: '10px 24px',
-    background: '#00796b',
+    background: '#1A6163',
     color: '#fff',
     borderRadius: '40px',
     fontSize: '0.88rem',
@@ -274,7 +276,6 @@ const styles = {
     letterSpacing: '0.02em',
   },
 
-  // Estados de carga / error
   statusBox: {
     textAlign: 'center',
     padding: '60px 20px',
@@ -284,15 +285,15 @@ const styles = {
     gap: '16px',
   },
   statusText: {
-    color: '#90a4ae',
+    color: '#8f8f89',
     fontSize: '1rem',
     margin: 0,
   },
   spinner: {
     width: '36px',
     height: '36px',
-    border: '3px solid #e0f2f1',
-    borderTop: '3px solid #00796b',
+    border: '3px solid #DBDBD3',
+    borderTop: '3px solid #35BA99',
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
