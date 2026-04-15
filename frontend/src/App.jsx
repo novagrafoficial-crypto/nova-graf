@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import PublicLayout from "./layouts/PublicLayout";
 import ClientLayout from "./layouts/ClientLayout";
@@ -21,11 +22,6 @@ import Nosotros from './pages/public/Nosotros';
 import Contactos from './pages/public/Contactos';
 import Redes from './pages/public/RedesSociales';
 
-
-
-
-
-
 // Páginas cliente
 import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
@@ -44,8 +40,6 @@ import AdminInventario from './pages/Admin/AdminInventario';
 import AdminProveedores from './pages/Admin/AdminProveedores';
 import AdminAtributosproduc from './pages/Admin/AdminAtributosproduc';
 import AdminPedidos from './pages/Admin/AdminPedidos';
-
-
 
 function App() {
   return (
@@ -70,7 +64,6 @@ function App() {
           <Route path="/catalogo" element={<PortafolioPublico />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/contactos" element={<Contactos />} />
-          
         </Route>
 
         {/* Rutas cliente */}
@@ -81,22 +74,15 @@ function App() {
           <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
         </Route>
 
-        {/* Rutas admin */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="marcas" element={<AdminMarcas />} />
-          <Route path="categorias" element={<AdminCategorias />} />
-          <Route path="subcategorias" element={<AdminSubcategorias />} />
-          <Route path="productos" element={<AdminProductos />} />
-          <Route path="publicacion" element={<AdminPublicacion />} />
-          <Route path="usuarios" element={<AdminUsuarios />} />
-          <Route path="modulo-extra" element={<AdminModulo />} />
-          <Route path="mision" element={<AdminMision />} />
-          <Route path="empresa" element={<AdminEmpresaCom />} />
-          <Route path="inventario" element={<AdminInventario />} />
-          <Route path="proveedores" element={<AdminProveedores />} />
-          <Route path="Atributos" element={<AdminAtributosproduc />} />
-           <Route path="Pedidos" element={<AdminPedidos />} />
-        </Route>
+        {/* Rutas admin - PROTEGIDAS */}
+        <Route 
+          path="/admin/*" 
+          element={
+            <ProtectedRoute rolRequerido="administrador">
+              <AdminLayout />
+            </ProtectedRoute>
+          } 
+        />
 
       </Routes>
     </BrowserRouter>

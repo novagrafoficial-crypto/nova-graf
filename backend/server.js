@@ -8,6 +8,7 @@ const path = require('path');
 // 🔒 Middleware de autenticación
 const verificarToken = require('./src/middlewares/auth');
 const detectarAtaque = require('./src/middlewares/rasp'); // opcional
+const verificarAdmin = require('./src/middlewares/verificarAdmin'); // ← NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,10 +17,10 @@ const PORT = process.env.PORT || 5000;
    CORS (solo una vez)
 ================================ */
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: 'http://localhost:5173',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id'],
 }));
 
 /* ================================
@@ -30,7 +31,12 @@ app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secreto_temporal',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 horas
+  }
 }));
 
 app.use(passport.initialize());
@@ -94,9 +100,10 @@ app.use('/api/contactos', adminContactosRoutes);
 // app.use('/api', detectarAtaque);
 
 /* ================================
-   PROTEGER TODO ADMIN 🔥
+   🔒 PROTEGER RUTAS ADMIN (AGREGADO)
+   Todas las rutas que empiecen con /api/admin requieren autenticación y rol admin
 ================================ */
-// app.use('/api/admin', verificarToken);
+app.use('/api/admin', verificarAdmin); // ← ESTA LÍNEA PROTEGE TODO
 
 /* ================================
    RUTAS ADMIN — EMPRESA
@@ -126,9 +133,9 @@ app.use('/api/admin/publicaciones', publicacionRoutes);
 ================================ */
 app.use('/api/admin/inventario', inventarioRoutes);
 app.use('/api/admin/Monitoreo', MonitoreoRoutes);
-app.use('/api/admin/provedores', proveedoresRoutes);         // ✅ typo corregido
+app.use('/api/admin/provedores', proveedoresRoutes);
 app.use('/api/admin/Atributosproduc', AtributosproducRoutes);
-app.use('/api/admin', productoProveedoresRoutes);              // ✅ → /api/admin/productos/:id/proveedores
+app.use('/api/admin', productoProveedoresRoutes);
 
 /* ================================
    INICIAR SERVIDOR

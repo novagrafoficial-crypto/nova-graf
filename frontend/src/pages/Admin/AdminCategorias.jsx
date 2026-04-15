@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../../styles/admin/adminCategorias.css";
+import ModalConfirm from "../../components/ModalConfirm";
 
 function AdminCategorias() {
   const [categorias, setCategorias] = useState([]);
@@ -10,15 +11,40 @@ function AdminCategorias() {
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
   const [cargando, setCargando] = useState(false);
+  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
 
   const API = "http://localhost:5000/api/admin/categorias";
 
+  // 🔧 Función para obtener el ID del usuario logueado
+  const getUsuarioId = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.id_usuario || user.id;
+  };
+
   const obtenerCategorias = async () => {
     try {
-      const res = await fetch(API);
-      if (!res.ok) throw new Error("Error en la respuesta");
+      const usuarioId = getUsuarioId();
+      
+      const res = await fetch(API, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': usuarioId, // ← Enviar ID del usuario
+        },
+      });
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("No autorizado. Inicia sesión como administrador.");
+          return;
+        }
+        throw new Error("Error en la respuesta");
+      }
+      
       const data = await res.json();
-      setCategorias(data);
+      setCategorias(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al obtener categorías:", err);
       setError("Error al cargar las categorías");
@@ -50,7 +76,6 @@ function AdminCategorias() {
       return;
     }
 
-    // Verificar duplicado localmente (solo para nuevas categorías)
     if (!editando) {
       const existe = categorias.some(
         cat => cat.nombre.toLowerCase() === nombreTrim.toLowerCase()
@@ -73,9 +98,15 @@ function AdminCategorias() {
         descripcion: descripcion.trim() || null
       };
 
+      const usuarioId = getUsuarioId();
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-User-Id": usuarioId, // ← Enviar ID del usuario
+        },
+        credentials: 'include',
         body: JSON.stringify(body),
       });
 
@@ -85,16 +116,11 @@ function AdminCategorias() {
         return;
       }
 
-      // Resetear formulario
       setNombre("");
       setDescripcion("");
       setEditando(false);
       setIdEditar(null);
-      
-      // Recargar lista
       await obtenerCategorias();
-      
-      // Mensaje de éxito
       mostrarExito(editando ? "Categoría actualizada correctamente" : "Categoría agregada correctamente");
       
     } catch (err) {
@@ -105,21 +131,39 @@ function AdminCategorias() {
     }
   };
 
-  const handleEliminar = async (id, nombreCat) => {
-    if (!window.confirm(`¿Seguro que quieres eliminar la categoría "${nombreCat}"?`)) return;
+  const handleEliminarClick = (cat) => {
+    setCategoriaAEliminar(cat);
+    setModalOpen(true);
+  };
 
+  const confirmarEliminar = async () => {
+    if (!categoriaAEliminar) return;
+    
     try {
-      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+      const usuarioId = getUsuarioId();
+      
+      const res = await fetch(`${API}/${categoriaAEliminar.id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: {
+          'X-User-Id': usuarioId, // ← Enviar ID del usuario
+        },
+      });
+      
       if (!res.ok) {
         const error = await res.json();
         mostrarError(error.error || "No se pudo eliminar");
         return;
       }
+      
       await obtenerCategorias();
       mostrarExito("Categoría eliminada correctamente");
     } catch (err) {
       console.error(err);
       mostrarError("Error al eliminar");
+    } finally {
+      setModalOpen(false);
+      setCategoriaAEliminar(null);
     }
   };
 
@@ -143,6 +187,20 @@ function AdminCategorias() {
 
   return (
     <div className="admin-categorias-container">
+      <ModalConfirm
+        isOpen={modalOpen}
+        title="Eliminar categoría"
+        message={`¿Estás seguro de que quieres eliminar la categoría "${categoriaAEliminar?.nombre}"? Esta acción no se puede deshacer.`}
+        onConfirm={confirmarEliminar}
+        onCancel={() => {
+          setModalOpen(false);
+          setCategoriaAEliminar(null);
+        }}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
       <div className="admin-categorias-inner">
         <h2>Administrar Categorías</h2>
 
@@ -198,16 +256,14 @@ function AdminCategorias() {
                 <tr>
                   <td colSpan="4" className="sin-datos">
                     No hay categorías registradas
-                   </td>
+                  </td>
                 </tr>
               ) : (
                 categorias.map((cat) => (
                   <tr key={cat.id}>
-                    <td>#{cat.id}</td>
-                    <td>
-                      <span className="categorias-counter">{cat.nombre}</span>
-                    </td>
-                    <td>{cat.descripcion || "—"}</td>
+                    <td className="id-cell">#{cat.id}</td>
+                    <td className="nombre-cell">{cat.nombre}</td>
+                    <td className="descripcion-cell">{cat.descripcion || "—"}</td>
                     <td className="acciones">
                       <button
                         type="button"
@@ -219,7 +275,7 @@ function AdminCategorias() {
                       <button
                         type="button"
                         className="btn-eliminar"
-                        onClick={() => handleEliminar(cat.id, cat.nombre)}
+                        onClick={() => handleEliminarClick(cat)}
                       >
                         Eliminar
                       </button>

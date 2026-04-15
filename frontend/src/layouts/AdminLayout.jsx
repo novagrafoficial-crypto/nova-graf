@@ -20,7 +20,6 @@ import AdminPedidos from "../pages/Admin/AdminPedidos";
 // ✅ Ruta del logo (relativa desde layouts hacia logo)
 import logoNova from "../logo/LOGO.png";
 
-
 // Íconos SVG
 const Icons = {
   Dashboard: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
@@ -43,30 +42,30 @@ const Icons = {
 };
 
 const SEARCH_OPTIONS = [
-  { label: "Gestión de Marcas", path: "marcas", keywords: ["marca", "marcas", "brand"] },
-  { label: "Gestión de Categorías", path: "categorias", keywords: ["categoria", "categorias", "categoría", "categorías"] },
-  { label: "Gestión de Subcategorías", path: "subcategorias", keywords: ["subcategoria", "subcategorias", "subcategoría", "subcategorías"] },
-  { label: "Gestión de Productos", path: "productos", keywords: ["producto", "productos", "product"] },
-  { label: "Gestión de Usuarios", path: "usuarios", keywords: ["usuario", "usuarios", "user", "cliente", "clientes"] },
-  { label: "Gestión de BD", path: "modulo-extra", keywords: ["base de datos", "bd", "database", "modulo", "módulo"] },
-  { label: "Gestión de Pedidos", path: "pedidos", keywords: ["pedido", "pedidos", "orden", "ordenes", "order"] },
-  { label: "Gestión de Empresa", path: "empresa", keywords: ["empresa", "company", "negocio", "información"] },
-  { label: "Gestión de Proveedores", path: "proveedores", keywords: ["proveedor", "supplier"] },
-  { label: "Atributos de Productos", path: "Atributos", keywords: ["atributo", "atributos", "variante"] },
+  { label: "Gestión de Marcas", path: "/admin/marcas", keywords: ["marca", "marcas", "brand"] },
+  { label: "Gestión de Categorías", path: "/admin/categorias", keywords: ["categoria", "categorias", "categoría", "categorías"] },
+  { label: "Gestión de Subcategorías", path: "/admin/subcategorias", keywords: ["subcategoria", "subcategorias", "subcategoría", "subcategorías"] },
+  { label: "Gestión de Productos", path: "/admin/productos", keywords: ["producto", "productos", "product"] },
+  { label: "Gestión de Usuarios", path: "/admin/usuarios", keywords: ["usuario", "usuarios", "user", "cliente", "clientes"] },
+  { label: "Gestión de BD", path: "/admin/modulo-extra", keywords: ["base de datos", "bd", "database", "modulo", "módulo"] },
+  { label: "Gestión de Pedidos", path: "/admin/pedidos", keywords: ["pedido", "pedidos", "orden", "ordenes", "order"] },
+  { label: "Gestión de Empresa", path: "/admin/empresa", keywords: ["empresa", "company", "negocio", "información"] },
+  { label: "Gestión de Proveedores", path: "/admin/proveedores", keywords: ["proveedor", "supplier"] },
+  { label: "Atributos de Productos", path: "/admin/Atributos", keywords: ["atributo", "atributos", "variante"] },
 ];
 
 const NAV_ITEMS = [
-  { to: "marcas",       icon: Icons.Marcas, label: "Marcas", description: "Administra tus marcas" },
-  { to: "categorias",   icon: Icons.Categorias, label: "Categorías", description: "Organiza por categorías" },
-  { to: "subcategorias",icon: Icons.Subcategorias, label: "Subcategorías", description: "Subcategorías detalladas" },
-  { to: "productos",    icon: Icons.Productos, label: "Productos", description: "Control de inventario" },
-  { to: "usuarios",     icon: Icons.Usuarios, label: "Usuarios", description: "Clientes y administradores" },
-  { to: "modulo-extra", icon: Icons.BD, label: "Base de Datos", description: "Gestión de BD" },
-  { to: "publicacion",  icon: Icons.Publicaciones, label: "Publicaciones", description: "Contenido y noticias" },
-  { to: "pedidos",      icon: Icons.Pedidos, label: "Pedidos", description: "Seguimiento de órdenes" },
-  { to: "empresa",      icon: Icons.Empresa, label: "Empresa", description: "Información corporativa" },
-  { to: "proveedores",  icon: Icons.Proveedores, label: "Proveedores", description: "Gestión de proveedores" },
-  { to: "Atributos",    icon: Icons.Atributos, label: "Atributos", description: "Atributos de productos" },
+  { to: "/admin/marcas", icon: Icons.Marcas, label: "Marcas", description: "Administra tus marcas" },
+  { to: "/admin/categorias", icon: Icons.Categorias, label: "Categorías", description: "Organiza por categorías" },
+  { to: "/admin/subcategorias", icon: Icons.Subcategorias, label: "Subcategorías", description: "Subcategorías detalladas" },
+  { to: "/admin/productos", icon: Icons.Productos, label: "Productos", description: "Control de inventario" },
+  { to: "/admin/usuarios", icon: Icons.Usuarios, label: "Usuarios", description: "Clientes y administradores" },
+  { to: "/admin/modulo-extra", icon: Icons.BD, label: "Base de Datos", description: "Gestión de BD" },
+  { to: "/admin/publicacion", icon: Icons.Publicaciones, label: "Publicaciones", description: "Contenido y noticias" },
+  { to: "/admin/pedidos", icon: Icons.Pedidos, label: "Pedidos", description: "Seguimiento de órdenes" },
+  { to: "/admin/empresa", icon: Icons.Empresa, label: "Empresa", description: "Información corporativa" },
+  { to: "/admin/proveedores", icon: Icons.Proveedores, label: "Proveedores", description: "Gestión de proveedores" },
+  { to: "/admin/Atributos", icon: Icons.Atributos, label: "Atributos", description: "Atributos de productos" },
 ];
 
 function AdminLayout() {
@@ -137,7 +136,11 @@ function AdminLayout() {
     navigate("/");
   };
 
-  const isActive = (path) => location.pathname.includes(path);
+  // ✅ Función isActive corregida
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+  
   const isRootPath = location.pathname === "/admin" || location.pathname === "/admin/";
 
   const getGreeting = () => {
