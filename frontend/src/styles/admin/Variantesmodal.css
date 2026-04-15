@@ -1,15 +1,30 @@
+/* ============================================
+   VARIABLES Y BASE - PALETA DEL DUEÑO
+   ============================================ */
 .vv-page {
-  --vv-bg:      #0f1117;
-  --vv-surface: #181c28;
-  --vv-s2:      #1f2438;
-  --vv-border:  #2a2f4a;
-  --vv-accent:  #4f7cff;
-  --vv-ok:      #22c55e;
-  --vv-warn:    #f59e0b;
-  --vv-danger:  #ef4444;
-  --vv-text:    #e2e8f0;
-  --vv-muted:   #22d5e9;
-  --vv-radius:  12px;
+  /* Colores proporcionados */
+  --vv-teal-dark:   #1A6163;   /* PANTONE 7721 CP - usar con moderación */
+  --vv-teal-mint:   #35BA99;   /* PANTONE 7465 CP - color principal de acento */
+  --vv-gray-light:  #DBDBD3;   /* PANTONE Cool Gray 1 CP - bordes y fondos sutiles */
+
+  /* Fondos blancos / "cuadros en blanco" */
+  --vv-bg:          #FFFFFF;
+  --vv-surface:     #FFFFFF;
+  --vv-s2:          #F8F9FA;   /* gris muy claro para campos */
+  --vv-border:      var(--vv-gray-light);
+  --vv-accent:      var(--vv-teal-mint);
+  
+  /* Estados funcionales (se mantienen) */
+  --vv-ok:          #22c55e;
+  --vv-warn:        #f59e0b;
+  --vv-danger:      #ef4444;
+
+  /* Textos oscuros para contraste */
+  --vv-text:        #1A6163;
+  --vv-muted:       #6B7280;
+  
+  --vv-radius:      12px;
+
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
   color: var(--vv-text);
   background: var(--vv-bg);
@@ -30,14 +45,14 @@
   background: var(--vv-s2);
   border: 1px solid var(--vv-border);
   border-radius: 7px;
-  color: var(--vv-accent);
+  color: var(--vv-teal-dark);
   font-family: inherit;
   font-size: .82rem;
   padding: .35rem .75rem;
   cursor: pointer;
   transition: background .2s;
 }
-.vv-back:hover { background: var(--vv-border); }
+.vv-back:hover { background: #EDF2F7; }
 
 .vv-sep           { color: var(--vv-border); font-size: .85rem; }
 .vv-crumb         { font-size: .85rem; color: var(--vv-muted); }
@@ -48,11 +63,12 @@
 .vv-header { margin-bottom: 1.5rem; }
 
 .vv-title {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -.025em;
   margin: 0 0 .25rem;
-  background: linear-gradient(120deg, #e2e8f0 40%, #4f7cff);
+  /* Gradiente usando los dos colores principales */
+  background: linear-gradient(120deg, var(--vv-teal-dark) 30%, var(--vv-accent) 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -86,7 +102,7 @@
 
 .vv-kpi--blue   { border-top-color: var(--vv-accent); }
 .vv-kpi--green  { border-top-color: var(--vv-ok); }
-.vv-kpi--green2 { border-top-color: #06b6d4; }
+.vv-kpi--green2 { border-top-color: var(--vv-teal-dark); }
 .vv-kpi--warn   { border-top-color: var(--vv-warn); }
 .vv-kpi--danger { border-top-color: var(--vv-danger); }
 
@@ -98,7 +114,7 @@
 
 .vv-kpi--blue   .vv-kpi__num { color: var(--vv-accent); }
 .vv-kpi--green  .vv-kpi__num { color: var(--vv-ok); }
-.vv-kpi--green2 .vv-kpi__num { color: #06b6d4; }
+.vv-kpi--green2 .vv-kpi__num { color: var(--vv-teal-dark); }
 .vv-kpi--warn   .vv-kpi__num { color: var(--vv-warn); }
 .vv-kpi--danger .vv-kpi__num { color: var(--vv-danger); }
 
@@ -144,11 +160,11 @@
 .vv-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: .875rem;
+  font-size: .87rem;
 }
 
 .vv-table thead tr {
-  background: var(--vv-s2);
+  background: #F8F9FC;
   border-bottom: 1px solid var(--vv-border);
 }
 
@@ -158,9 +174,10 @@
   font-size: .9rem;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: var(--vv-muted);
+  color: var(--vv-teal-dark);
   font-weight: 600;
   white-space: nowrap;
+  border-bottom: 2px solid var(--vv-accent);
 }
 
 .vv-row {
@@ -169,7 +186,7 @@
   transition: background .15s;
 }
 .vv-row:last-child { border-bottom: none; }
-.vv-row:hover      { background: var(--vv-s2); }
+.vv-row:hover      { background: #F9FAFB; }
 
 @keyframes vv-row-in {
   from { opacity: 0; transform: translateX(-10px); }
@@ -202,7 +219,7 @@
 .vv-color__dot {
   width: 11px; height: 11px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.15);
+  border: 1px solid rgba(0,0,0,.1);
   flex-shrink: 0;
 }
 
@@ -217,7 +234,7 @@
   font-size: .7rem;
   padding: .12rem .45rem;
   margin: .08rem .1rem .08rem 0;
-  color: #94a3b8;
+  color: #4A5568;
   white-space: nowrap;
 }
 
@@ -278,7 +295,7 @@
 }
 
 .vv-pagination__btn:hover:not(:disabled) {
-  background: var(--vv-border);
+  background: #EDF2F7;
   border-color: var(--vv-accent);
 }
 
@@ -293,7 +310,7 @@
 }
 
 .vv-pagination__btn--active {
-  background: rgba(79,124,255,.2);
+  background: rgba(53, 186, 153, 0.12);
   border-color: var(--vv-accent);
   color: var(--vv-accent);
   font-weight: 700;

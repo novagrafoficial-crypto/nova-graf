@@ -1,15 +1,18 @@
 /* ─── Predicción de Reabastecimiento (vista por producto) ───────────────── */
+/* Paleta de la empresa: PANTONE 7721 CP (#1A6163), 7465 CP (#35BA99), Cool Gray 1 CP (#DBDBD3) */
+/* Fondos blancos, textos oscuros, acentos en mint y teal oscuro */
 
-/* ── Variables ──────────────────────────────────────────────────────────── */
 :root {
-  --pp-bg:            #0f1117;
-  --pp-surface:       #1a1d27;
-  --pp-surface-2:     #22263a;
-  --pp-border:        #2e3348;
-  --pp-text:          #e2e8f0;
-  --pp-text-muted:    #64748b;
-  --pp-accent:        #6366f1;
+  --pp-bg:            #FFFFFF;
+  --pp-surface:       #FFFFFF;
+  --pp-surface-2:     #F8F9FA;      /* gris muy claro para hover y elementos secundarios */
+  --pp-border:        #DBDBD3;      /* PANTONE Cool Gray 1 CP */
+  --pp-text:          #1A6163;      /* texto principal oscuro */
+  --pp-text-muted:    #1A6163;      /* texto secundario gris */
+  --pp-accent:        #35BA99;      /* PANTONE 7465 CP - color principal de acento */
+  --pp-accent-dark:   #1A6163;      /* PANTONE 7721 CP - usar con moderación */
 
+  /* Estados funcionales (colores semánticos mantenidos) */
   --pp-critico:       #ef4444;
   --pp-critico-bg:    rgba(239, 68, 68, 0.08);
   --pp-proximo:       #f59e0b;
@@ -42,12 +45,14 @@
 .pp-back {
   background: transparent;
   border: none;
-  color: var(--pp-accent);
+  color: var(--pp-accent-dark);
   cursor: pointer;
   font-size: 0.85rem;
   padding: 0;
+  transition: color 0.2s;
 }
 .pp-back:hover {
+  color: var(--pp-accent);
   text-decoration: underline;
 }
 .pp-sep {
@@ -60,7 +65,7 @@
   color: var(--pp-text-muted);
 }
 .pp-crumb--active {
-  color: var(--pp-accent);
+  color: var(--pp-accent-dark);
   font-weight: 600;
 }
 
@@ -73,7 +78,11 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0 0 0.35rem;
-  color: #fff;
+  background: linear-gradient(120deg, var(--pp-accent-dark) 30%, var(--pp-accent) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
 }
 .pp-subtitle {
   font-size: 0.85rem;
@@ -104,10 +113,11 @@
 }
 .pp-summary-card:hover {
   background: var(--pp-surface-2);
+  transform: translateY(-2px);
 }
 .pp-summary-card--todos.pp-summary-card--active {
   border-color: var(--pp-accent);
-  background: rgba(99,102,241,0.08);
+  background: rgba(53, 186, 153, 0.08);
 }
 .pp-summary-card--critico.pp-summary-card--active {
   border-color: var(--pp-critico);
@@ -130,6 +140,9 @@
   font-weight: 700;
   font-family: var(--pp-font);
   line-height: 1;
+}
+.pp-summary-card--todos .pp-summary-count {
+  color: var(--pp-accent-dark);
 }
 .pp-summary-card--critico .pp-summary-count {
   color: var(--pp-critico);
@@ -167,6 +180,7 @@
 .pp-clear-filters:hover {
   border-color: var(--pp-critico);
   color: var(--pp-critico);
+  background: rgba(239, 68, 68, 0.05);
 }
 
 /* ── Estados de carga / vacío ───────────────────────────────────────────── */
@@ -205,7 +219,7 @@
   margin-bottom: 1rem;
 }
 
-/* ── Tabla (más espaciada) ───────────────────────────────────────────────── */
+/* ── Tabla (con padding reducido para evitar desbordes) ─────────────────── */
 .pp-table-wrap {
   overflow-x: auto;
   border-radius: var(--pp-radius);
@@ -215,16 +229,16 @@
 .pp-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.95rem;       /* Texto ligeramente más grande */
+  font-size: 0.9rem;  /* ligeramente más pequeño para mejor ajuste */
 }
 .pp-th {
-  padding: 1rem 1.2rem;     /* Más padding en encabezados */
+  padding: 0.75rem .5rem;   /* reducido de 1rem 1.2rem */
   text-align: left;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--pp-text-muted);
-  border-bottom: 1px solid var(--pp-border);
+  color: var(--pp-accent-dark);
+  border-bottom: 2px solid var(--pp-accent);
   white-space: nowrap;
   background: var(--pp-surface);
   user-select: none;
@@ -237,16 +251,17 @@
 }
 .pp-th--sortable {
   cursor: pointer;
+  transition: color 0.2s;
 }
 .pp-th--sortable:hover {
-  color: var(--pp-text);
+  color: var(--pp-accent);
 }
 .pp-sort-icon {
   margin-left: 4px;
   font-size: 0.75em;
 }
 .pp-sort-icon--neutral {
-  opacity: 0.4;
+  opacity: 0.5;
 }
 .pp-tr {
   border-bottom: 1px solid var(--pp-border);
@@ -268,7 +283,7 @@
   border-left: 3px solid var(--pp-abastecido);
 }
 .pp-td {
-  padding: 1rem 1.2rem;     /* Más espacio vertical y horizontal */
+  padding: 0.75rem 1rem;   /* reducido de 1rem 1.2rem */
   vertical-align: middle;
   color: var(--pp-text);
 }
@@ -278,6 +293,11 @@
 }
 .pp-td--center {
   text-align: center;
+}
+/* Columna de atributos: limitamos el ancho máximo y permitimos wrap */
+.pp-td--attrs {
+  max-width: 280px;
+  word-break: break-word;
 }
 .pp-product-name {
   display: flex;
@@ -291,7 +311,7 @@
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(0,0,0,0.1);
 }
 .pp-stock {
   font-weight: 700;
@@ -300,7 +320,7 @@
   color: var(--pp-critico);
 }
 .pp-unit {
-  font-size: 0.75rem;
+  font-size: 0.7rem;   /* reducido para no ocupar tanto espacio */
   color: var(--pp-text-muted);
   margin-left: 2px;
 }
@@ -315,12 +335,13 @@
 }
 .pp-badge {
   display: inline-block;
-  padding: 4px 12px;      /* Badges más grandes */
+  padding: 3px 10px;    /* ligeramente más pequeño */
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;    /* reducido */
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .badge--critico {
   background: var(--pp-critico-bg);
@@ -340,18 +361,19 @@
 .pp-btn-detail {
   background: transparent;
   border: 1px solid var(--pp-border);
-  color: var(--pp-accent);
-  padding: 6px 14px;      /* Botón más grande */
-  border-radius: 8px;
+  color: var(--pp-accent-dark);
+  padding: 4px 12px;    /* reducido */
+  border-radius: 6px;   /* ligeramente más pequeño */
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 .pp-btn-detail:hover {
   background: var(--pp-accent);
-  color: #fff;
   border-color: var(--pp-accent);
+  color: white;
 }
 
 /* ── Paginación ─────────────────────────────────────────────────────────── */
@@ -360,7 +382,7 @@
   justify-content: center;
   align-items: center;
   gap: 1.5rem;
-  padding: 1.2rem 1rem;
+  padding: 1rem 1rem;
   border-top: 1px solid var(--pp-border);
   background: var(--pp-surface);
 }
@@ -368,25 +390,42 @@
   background: var(--pp-surface-2);
   border: 1px solid var(--pp-border);
   color: var(--pp-text);
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   transition: all 0.15s;
 }
 .pp-pagination__btn:hover:not(:disabled) {
   background: var(--pp-accent);
   border-color: var(--pp-accent);
-  color: #fff;
+  color: white;
 }
 .pp-pagination__btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 .pp-pagination__info {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--pp-text-muted);
   font-family: var(--pp-font);
+}
+
+/* ── Atributos (chips) ──────────────────────────────────────────────────── */
+.pp-attr-chip {
+  display: inline-block;
+  background: var(--pp-surface-2);
+  border: 1px solid var(--pp-border);
+  border-radius: 4px;
+  font-size: 0.7rem;    /* reducido */
+  padding: 0.1rem 0.45rem;
+  margin: 0.1rem 0.2rem 0.1rem 0;
+  color: var(--pp-text-muted);
+  white-space: nowrap;
+}
+.pp-muted {
+  color: var(--pp-text-muted);
+  font-size: 0.75rem;
 }
 
 /* ── Responsivo ──────────────────────────────────────────────────────────── */
@@ -398,7 +437,7 @@
     grid-template-columns: repeat(2, 1fr);
   }
   .pp-th, .pp-td {
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.8rem;
   }
 }
 @media (max-width: 700px) {
@@ -422,9 +461,28 @@
     flex-direction: column;
     gap: 0.75rem;
   }
+  /* En móvil, los atributos pueden ocupar más espacio, permitimos que los chips se envuelvan */
+  .pp-td--attrs {
+    max-width: none;
+  }
+  .pp-attr-chip {
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 @media (max-width: 600px) {
   .pp-summary {
     grid-template-columns: 1fr;
+  }
+  .pp-table th, .pp-table td {
+    font-size: 0.8rem;
+  }
+  .pp-btn-detail {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+  }
+  .pp-badge {
+    padding: 2px 8px;
+    font-size: 0.65rem;
   }
 }

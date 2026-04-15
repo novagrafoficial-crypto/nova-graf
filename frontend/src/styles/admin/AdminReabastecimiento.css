@@ -2,21 +2,27 @@
 
 /* ── Variables (Paleta de marca) ─────────────────────────────────────────── */
 .rb-page {
-  --rb-teal-dark:   #1A6163;
-  --rb-teal-mint:   #35BA99;
-  --rb-gray-light:  #DBDBDB;
-  --rb-gray-muted:  #8A8F99;
+  /* Colores proporcionados por el dueño */
+  --rb-teal-dark:   #1A6163;   /* PANTONE 7721 CP - usar con moderación */
+  --rb-teal-mint:   #35BA99;   /* PANTONE 7465 CP - color principal de acento */
+  --rb-gray-light:  #DBDBD3;   /* PANTONE Cool Gray 1 CP - bordes y fondos sutiles */
 
-  --rb-bg:          #0A1415;
-  --rb-surface:     #10292B;
-  --rb-surface2:    #17383B;
-  --rb-border:      var(--rb-teal-dark);
+  /* Fondos blancos / "cuadros en blanco" */
+  --rb-bg:          #FFFFFF;
+  --rb-surface:     #FFFFFF;
+  --rb-surface2:    #F8F9FA;   /* gris muy claro para campos de entrada */
+  --rb-border:      var(--rb-gray-light);
   --rb-accent:      var(--rb-teal-mint);
+  
+  /* Estados funcionales (se mantienen para semántica de stock) */
   --rb-ok:          #22c55e;
   --rb-warn:        #f59e0b;
   --rb-danger:      #ef4444;
-  --rb-text:        var(--rb-gray-light);
-  --rb-muted:       var(--rb-gray-muted);
+
+  /* Textos oscuros para contraste sobre fondo blanco */
+  --rb-text:        #1F2937;
+  --rb-muted:       #6B7280;
+  
   --rb-radius:      12px;
 
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
@@ -40,7 +46,8 @@
   font-weight: 700;
   letter-spacing: -.025em;
   margin: 0 0 .3rem;
-  background: linear-gradient(120deg, var(--rb-text) 40%, var(--rb-accent));
+  /* Gradiente usando los dos colores principales (mint y teal oscuro) */
+  background: linear-gradient(120deg, var(--rb-teal-dark) 30%, var(--rb-accent) 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -214,7 +221,7 @@
 
 /* Encabezado */
 .rb-table thead tr {
-  background: linear-gradient(135deg, #0E2A2C 0%, #0A1F20 100%);
+  background: #F8F9FC;  /* fondo muy claro */
   border-bottom: 2px solid var(--rb-accent);
 }
 
@@ -225,7 +232,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: var(--rb-accent);
+  color: var(--rb-teal-dark); /* PANTONE 7721 CP usado con moderación */
   white-space: nowrap;
 }
 
@@ -238,7 +245,7 @@
   transition: background .15s;
 }
 .rb-table tbody tr:last-child { border-bottom: none; }
-.rb-table tbody tr:hover      { background: var(--rb-surface2); }
+.rb-table tbody tr:hover      { background: #F9FAFB; }
 
 .rb-table td {
   padding: .9rem 1.25rem;
@@ -272,7 +279,7 @@
 }
 .rb-tag--sub {
   border-color: rgba(53, 186, 153, .35);
-  color: #6ee7c3;
+  color: #2c7a6e;
 }
 
 /* Celda: stock */
@@ -300,7 +307,7 @@
   white-space: nowrap;
 }
 
-/* Celda: badge de estado */
+/* Celda: badge de estado (colores funcionales se mantienen) */
 .rb-badge {
   display: inline-flex;
   align-items: center;
@@ -367,25 +374,25 @@
 .rb-btn:active { transform: scale(.97); }
 
 .rb-btn--primary {
-  background: rgba(53, 186, 153, .12);
+  background: rgba(53, 186, 153, .08);
   color: var(--rb-accent);
-  border-color: rgba(53, 186, 153, .38);
+  border-color: rgba(53, 186, 153, .35);
 }
-.rb-btn--primary:hover { background: rgba(53, 186, 153, .24); }
+.rb-btn--primary:hover { background: rgba(53, 186, 153, .18); }
 
 .rb-btn--secondary {
-  background: rgba(34, 197, 94, .10);
+  background: rgba(34, 197, 94, .08);
   color: var(--rb-ok);
   border-color: rgba(34, 197, 94, .30);
 }
-.rb-btn--secondary:hover { background: rgba(34, 197, 94, .20); }
+.rb-btn--secondary:hover { background: rgba(34, 197, 94, .16); }
 
 .rb-btn--accent {
-  background: rgba(26, 97, 99, .20);
-  color: #7fd1c2;
-  border-color: rgba(26, 97, 99, .50);
+  background: rgba(26, 97, 99, .08);  /* PANTONE 7721 CP con moderación */
+  color: var(--rb-teal-dark);
+  border-color: rgba(26, 97, 99, .30);
 }
-.rb-btn--accent:hover { background: rgba(26, 97, 99, .32); }
+.rb-btn--accent:hover { background: rgba(26, 97, 99, .16); }
 
 /* ── Paginación ──────────────────────────────────────────────────────────── */
 .rb-pagination {
@@ -413,7 +420,7 @@
 .rb-pg-btn:hover:not(:disabled) {
   border-color: var(--rb-accent);
   color: var(--rb-accent);
-  background: rgba(53, 186, 153, .08);
+  background: rgba(53, 186, 153, .05);
 }
 .rb-pg-btn:disabled {
   opacity: .35;
@@ -446,16 +453,16 @@
 .rb-pg-num:hover:not(.rb-pg-num--active) {
   border-color: var(--rb-accent);
   color: var(--rb-accent);
-  background: rgba(53, 186, 153, .08);
+  background: rgba(53, 186, 153, .05);
 }
 .rb-pg-num--active {
   background: var(--rb-accent);
   border-color: var(--rb-accent);
-  color: #0A1415;
+  color: white;
   cursor: default;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* ── Responsive (mismas posiciones y tamaños) ─────────────────────────────── */
 @media (max-width: 1100px) {
   .rb-btn { padding: .4rem .75rem; font-size: .7rem; }
 }
