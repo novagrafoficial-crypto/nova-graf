@@ -22,7 +22,7 @@ const MENU = [
   { id: "mi-perfil",     icon: "👤", label: "Mi perfil"     },
   { id: "mis-disenos",   icon: "🎨", label: "Mis diseños"   },
   { id: "compras",       icon: "🛒", label: "Compras"       },
-  { id: "ventas",        icon: "💰", label: "Ventas"        },
+  { id: "pedidos",       icon: "💰", label: "Pedidos"       },
   { id: "facturacion",   icon: "🧾", label: "Facturación"   },
   { id: "historial",     icon: "📜", label: "Historial"     },
   { id: "configuracion", icon: "⚙️",  label: "Configuración" },

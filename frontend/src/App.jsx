@@ -37,6 +37,7 @@ import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
 import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
 import PedidosCliente from './pages/Client/PedidosCliente';
+import SolicitarDiseno from './pages/Client/SolicitarDiseno';
 
 // Dentro de las rutas protegidas del cliente:
 
@@ -58,6 +59,8 @@ import Variantesmodal from "./pages/Admin/Variantesmodal";
 import Prediccionpage from "./pages/Admin/Prediccionpage";
 import DetallePrediccion from './pages/Admin/DetallePrediccion';
 import VentasGrafica from "./pages/Admin/VentasGrafica";
+import GestionSolicitudes from './pages/Admin/GestionSolicitudes';
+
 
 
 
@@ -98,7 +101,8 @@ function App() {
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
           <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
           <Route path="/cliente/checkout" element={<Checkout />} />
-
+          <Route path="/cliente/producto/:id/solicitar" element={<SolicitarDiseno />} />
+ 
 
         </Route>
 
@@ -120,6 +124,8 @@ function App() {
           <Route path="stock/:id/prediccion" element={<Prediccionpage/>} />
           <Route path="/admin/prediccion/variante/:varianteId" element={<DetallePrediccion />} />
           <Route path="/admin/ventas/:id/grafica" element={<VentasGrafica />} />
+          <Route path="/admin/solicitudes" element={<GestionSolicitudes />} />
+
         </Route>
 
       </Routes>

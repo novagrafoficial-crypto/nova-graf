@@ -20,13 +20,11 @@ const TEXT_COLORS = ['#ffffff','#000000','#e63946','#2563eb','#16a34a','#f59e0b'
 
 let nextId = 1;
 
-// ─── MODAL DE NOTIFICACIÓN (estilo AdminPublicacion) ────────────────────────
+// Modal de notificación
 const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
   if (!visible) return null;
-
   const esExito = tipo === 'exito';
   const icono = esExito ? '✅' : '❌';
-  const colorIcono = esExito ? '#16a34a' : '#dc2626';
   const fondoIcono = esExito ? '#dcfce7' : '#fee2e2';
 
   return (
@@ -41,9 +39,7 @@ const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
           <span>ℹ️</span>
           <span>{esExito ? 'La acción se completó correctamente.' : 'Por favor, intenta de nuevo.'}</span>
         </div>
-        <button className="pers-modal-boton" onClick={onCerrar}>
-          Aceptar
-        </button>
+        <button className="pers-modal-boton" onClick={onCerrar}>Aceptar</button>
       </div>
     </div>
   );
@@ -59,6 +55,18 @@ const ProductoPersonalizador = () => {
     borradorId,
     elementosGuardados
   } = location.state || {};
+
+  // ========== VALIDACIÓN CRÍTICA: evita página en blanco ==========
+  if (!productoId || !variante) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>⚠️ Información del producto no disponible</h2>
+        <p>Por favor, regresa al catálogo y selecciona una variante antes de personalizar.</p>
+        <button onClick={() => navigate(-1)}>Volver</button>
+      </div>
+    );
+  }
+  // ================================================================
 
   const [elementos, setElementos] = useState([]);
   const [seleccionado, setSelec] = useState(null);
@@ -76,14 +84,7 @@ const ProductoPersonalizador = () => {
   const [imgError, setImgError] = useState(false);
   const [editandoBorradorId, setEditandoBorradorId] = useState(borradorId || null);
 
-  // Estado del modal
-  const [modal, setModal] = useState({
-    visible: false,
-    tipo: 'exito',
-    titulo: '',
-    mensaje: '',
-  });
-
+  const [modal, setModal] = useState({ visible: false, tipo: 'exito', titulo: '', mensaje: '' });
   const escenaRef = useRef(null);
   const fileRef = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
@@ -100,13 +101,8 @@ const ProductoPersonalizador = () => {
     return `${API_URL}${url}`;
   }, []);
 
-  const mostrarModal = (tipo, titulo, mensaje) => {
-    setModal({ visible: true, tipo, titulo, mensaje });
-  };
-
-  const cerrarModal = () => {
-    setModal({ ...modal, visible: false });
-  };
+  const mostrarModal = (tipo, titulo, mensaje) => setModal({ visible: true, tipo, titulo, mensaje });
+  const cerrarModal = () => setModal({ ...modal, visible: false });
 
   useEffect(() => {
     if (!imagenProducto) { setImgError(true); return; }
@@ -318,7 +314,6 @@ const ProductoPersonalizador = () => {
         await axios.post(API_BORRADORES, borradorData, config);
         mostrarModal('exito', '¡Diseño guardado!', 'Tu diseño se ha guardado en "Mis diseños".');
       }
-      // Cerrar modal y redirigir después de que el usuario cierre el modal
       const cerrarYRedirigir = () => {
         setModal({ ...modal, visible: false });
         navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
@@ -332,57 +327,45 @@ const ProductoPersonalizador = () => {
     }
   };
 
-  const agregarAlCarrito = async () => {
-    setGuardando(true);
-    try {
-      const token = getToken();
-      if (!token) {
-        mostrarModal('error', 'Sesión no iniciada', 'Debes iniciar sesión para agregar al carrito.');
-        setGuardando(false);
-        return;
-      }
-      const imagenUrl = await generarImagenDiseno();
-      const blob = await (await fetch(imagenUrl)).blob();
-      const user = JSON.parse(localStorage.getItem('user'));
-      const fileName = `carrito-${Date.now()}.png`;
-      const filePath = `usuario_${user.id_usuario}/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('borradores').upload(filePath, blob, { contentType: 'image/png' });
-      if (uploadError) throw new Error('Error al subir imagen');
-      const { data: { publicUrl } } = supabase.storage.from('borradores').getPublicUrl(filePath);
-      const varianteId = variante?.variante_id || variante?.id;
-      const textoPersonalizado = elementos.filter(el => el.tipo === 'texto').map(t => t.contenido).join(' | ');
-      const precioAdicionalPersonalizacion = 50;
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data: productoPersonalizado } = await axios.post(
-        API_PRODUCTOS_PERS,
-        { variante_id: varianteId, texto_personalizado: textoPersonalizado, imagen_personalizada_url: publicUrl, precio_adicional: precioAdicionalPersonalizacion },
-        config
-      );
-      const precioBase = parseFloat(variante?.precio_base || 0);
-      const precioAdicionalVariante = parseFloat(variante?.precio_adicional || 0);
-      const precioUnitario = precioBase + precioAdicionalVariante + precioAdicionalPersonalizacion;
-      const response = await axios.post(
-        API_CARRITO,
-        { producto_personalizado_id: productoPersonalizado.id, cantidad: 1, precio_unitario: precioUnitario },
-        config
-      );
-      const mensaje = response.data.message?.includes('Cantidad actualizada') 
-        ? 'Cantidad actualizada en el carrito.' 
-        : 'Producto agregado al carrito.';
-      mostrarModal('exito', '¡Agregado al carrito!', mensaje);
-      // Cerrar modal y redirigir
-      const cerrarYRedirigir = () => {
-        setModal({ ...modal, visible: false });
-        navigate('/cliente/carrito');
-      };
-      setModal(prev => ({ ...prev, onCerrar: cerrarYRedirigir }));
-    } catch (err) {
-      console.error(err);
-      mostrarModal('error', 'Error', 'No se pudo agregar al carrito. Intenta de nuevo.');
-    } finally {
+  // Dentro de ProductoPersonalizador.jsx, en la función solicitarCotizacion
+const solicitarCotizacion = async () => {
+  setGuardando(true);
+  try {
+    const token = getToken();
+    if (!token) {
+      mostrarModal('error', 'Sesión no iniciada', 'Debes iniciar sesión para solicitar cotización.');
       setGuardando(false);
+      return;
     }
-  };
+    const imageData = await generarImagenDiseno();
+    const blob = await (await fetch(imageData)).blob();
+    const user = JSON.parse(localStorage.getItem('user'));
+    const fileName = `cotizacion-${Date.now()}.png`;
+    const filePath = `usuario_${user.id_usuario}/${fileName}`;
+    const { error: uploadError } = await supabase.storage.from('borradores').upload(filePath, blob, { contentType: 'image/png' });
+    if (uploadError) throw new Error('Error al subir imagen');
+    const { data: { publicUrl } } = supabase.storage.from('borradores').getPublicUrl(filePath);
+    
+    const varianteId = variante?.variante_id || variante?.id;
+    await axios.post(`${API_URL}/api/client/solicitudes-diseno`, {
+      variante_id: varianteId,
+      descripcion_cliente: "Diseño realizado con el editor interactivo",
+      archivos_referencia: [publicUrl]
+    }, { headers: { Authorization: `Bearer ${token}` } });
+    
+    mostrarModal('exito', 'Solicitud enviada', 'Recibirás los previos y el precio por correo electrónico.');
+    const cerrarYRedirigir = () => {
+      setModal({ ...modal, visible: false });
+      navigate('/cliente/perfil', { state: { activeTab: 'Pedidos' } }); // ← CAMBIADO
+    };
+    setModal(prev => ({ ...prev, onCerrar: cerrarYRedirigir }));
+  } catch (err) {
+    console.error(err);
+    mostrarModal('error', 'Error', 'No se pudo enviar la solicitud. Intenta de nuevo.');
+  } finally {
+    setGuardando(false);
+  }
+};
 
   const cancelar = () => {
     if (editandoBorradorId) {
@@ -394,8 +377,6 @@ const ProductoPersonalizador = () => {
 
   return (
     <div className="personalizador-page">
-
-      {/* Modal de notificación */}
       <ModalNotificacion
         visible={modal.visible}
         tipo={modal.tipo}
@@ -407,106 +388,55 @@ const ProductoPersonalizador = () => {
         }}
       />
 
-      {/* ══ HERO HEADER ══════════════════════════════════ */}
       <div className="personalizador-header">
-        <button className="personalizador-back" onClick={cancelar}>
-          ← Volver
-        </button>
+        <button className="personalizador-back" onClick={cancelar}>← Volver</button>
         <h1 className="personalizador-header__titulo">
           {editandoBorradorId ? 'Edita tu diseño' : 'Crea tu diseño único'}
         </h1>
-        <p className="personalizador-header__subtitulo">
-          Añade texto, imágenes y colores — tu estilo, tu producto.
-        </p>
+        <p className="personalizador-header__subtitulo">Añade texto, imágenes y colores — tu estilo, tu producto.</p>
       </div>
 
-      {/* ══ CONTENIDO PRINCIPAL ══════════════════════════ */}
       <div className="personalizador-contenido">
-
-        {/* ── LIENZO ── */}
         <div className="pers-scene-wrap">
-          <div
-            className="pers-scene"
-            ref={escenaRef}
-            onClick={() => setSelec(null)}
-          >
+          <div className="pers-scene" ref={escenaRef} onClick={() => setSelec(null)}>
             {!imgError && imgSrc ? (
-              <img
-                src={imgSrc}
-                alt="producto"
-                className="pers-producto-img"
-                draggable={false}
-                crossOrigin="anonymous"
-              />
+              <img src={imgSrc} alt="producto" className="pers-producto-img" draggable={false} crossOrigin="anonymous" />
             ) : (
               <div className="pers-fallback-bg">🖼️ Vista previa no disponible</div>
             )}
-
             {elementos.map(el => (
               <div
                 key={el.id}
                 className={`pers-elem ${seleccionado === el.id ? 'selected' : ''}`}
                 style={{
                   position: 'absolute',
-                  left: el.x,
-                  top: el.y,
-                  width: el.w,
-                  height: el.h,
-                  cursor: 'grab',
-                  zIndex: seleccionado === el.id ? 50 : 10,
+                  left: el.x, top: el.y, width: el.w, height: el.h,
+                  cursor: 'grab', zIndex: seleccionado === el.id ? 50 : 10,
                 }}
                 onClick={(e) => { e.stopPropagation(); setSelec(el.id); }}
                 onMouseDown={(e) => iniciarDrag(e, el.id, el.x, el.y)}
               >
-                {seleccionado === el.id && (
-                  <button className="pers-del-btn" onClick={(e) => eliminar(el.id, e)}>✕</button>
-                )}
-
+                {seleccionado === el.id && <button className="pers-del-btn" onClick={(e) => eliminar(el.id, e)}>✕</button>}
                 {el.tipo === 'texto' ? (
                   <div style={{
-                    fontSize: el.fontSize,
-                    color: el.color,
-                    fontFamily: el.fontFamily,
-                    fontWeight: el.fontWeight,
-                    fontStyle: el.fontStyle,
-                    textDecoration: el.textDecoration,
-                    textAlign: el.textAlign,
-                    textShadow: `0 ${el.shadowBlur / 2}px ${el.shadowBlur}px rgba(0,0,0,0.5)`,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                    whiteSpace: 'nowrap',
-                    display: 'inline-block',
-                    lineHeight: 1.2,
-                    width: '100%',
-                  }}>
-                    {el.contenido}
-                  </div>
+                    fontSize: el.fontSize, color: el.color, fontFamily: el.fontFamily,
+                    fontWeight: el.fontWeight, fontStyle: el.fontStyle, textDecoration: el.textDecoration,
+                    textAlign: el.textAlign, textShadow: `0 ${el.shadowBlur / 2}px ${el.shadowBlur}px rgba(0,0,0,0.5)`,
+                    pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap', display: 'inline-block', lineHeight: 1.2, width: '100%',
+                  }}>{el.contenido}</div>
                 ) : (
-                  <img
-                    src={el.src}
-                    alt="elemento"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
-                    draggable={false}
-                  />
+                  <img src={el.src} alt="elemento" style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} draggable={false} />
                 )}
-
-                {seleccionado === el.id && (
-                  <div
-                    className="pers-resize-handle"
-                    onMouseDown={(e) => iniciarResize(e, el.id, el.w, el.h)}
-                  />
-                )}
+                {seleccionado === el.id && <div className="pers-resize-handle" onMouseDown={(e) => iniciarResize(e, el.id, el.w, el.h)} />}
               </div>
             ))}
           </div>
           <p className="pers-hint">✨ Arrastra para mover · Esquina ↘️ para redimensionar</p>
         </div>
 
-        {/* ── PANEL DE HERRAMIENTAS ── */}
         <div className="pers-tools">
-
           <div className="pers-tabs">
-            <button className={`pers-tab ${tab === 'texto'  ? 'active' : ''}`} onClick={() => setTab('texto')}>📝 Texto</button>
+            <button className={`pers-tab ${tab === 'texto' ? 'active' : ''}`} onClick={() => setTab('texto')}>📝 Texto</button>
             <button className={`pers-tab ${tab === 'imagen' ? 'active' : ''}`} onClick={() => setTab('imagen')}>🖼️ Imagen</button>
             <button className={`pers-tab ${tab === 'estilo' ? 'active' : ''}`} onClick={() => setTab('estilo')}>✨ Estilo</button>
           </div>
@@ -514,14 +444,7 @@ const ProductoPersonalizador = () => {
           {tab === 'texto' && (
             <div className="tool-section">
               <label className="tool-label">📝 Escribe tu texto</label>
-              <input
-                type="text"
-                className="tool-input"
-                placeholder="Ej: Familia García"
-                value={textoInput}
-                onChange={e => setTextoInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && agregarTexto()}
-              />
+              <input type="text" className="tool-input" placeholder="Ej: Familia García" value={textoInput} onChange={e => setTextoInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && agregarTexto()} />
               <button className="btn-agregar" onClick={agregarTexto}>+ Agregar texto</button>
             </div>
           )}
@@ -538,24 +461,14 @@ const ProductoPersonalizador = () => {
             <div className="tool-section">
               <label className="tool-label">🎨 Color</label>
               <div className="color-row">
-                {TEXT_COLORS.map(c => (
-                  <button
-                    key={c}
-                    className={`color-dot ${colorTexto === c ? 'active' : ''}`}
-                    style={{ background: c }}
-                    onClick={() => setColor(c)}
-                  />
-                ))}
+                {TEXT_COLORS.map(c => <button key={c} className={`color-dot ${colorTexto === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setColor(c)} />)}
               </div>
-
               <label className="tool-label">🔠 Fuente</label>
               <select className="tool-input" value={fontFamily} onChange={e => setFontFamily(e.target.value)}>
                 {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
-
               <label className="tool-label">📏 Tamaño: {fontSize}px</label>
               <input type="range" min="14" max="100" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} />
-
               <div className="style-buttons">
                 <button className={`style-btn ${fontWeight === 'bold' ? 'active' : ''}`} onClick={() => setFontWeight(fontWeight === 'bold' ? 'normal' : 'bold')}>B</button>
                 <button className={`style-btn ${fontStyle === 'italic' ? 'active' : ''}`} onClick={() => setFontStyle(fontStyle === 'italic' ? 'normal' : 'italic')}>I</button>
@@ -564,7 +477,6 @@ const ProductoPersonalizador = () => {
                 <button className="style-btn" onClick={() => setTextAlign('center')}>↔</button>
                 <button className="style-btn" onClick={() => setTextAlign('right')}>→</button>
               </div>
-
               <label className="tool-label">💨 Sombra: {shadowBlur}px</label>
               <input type="range" min="0" max="12" value={shadowBlur} onChange={e => setShadowBlur(Number(e.target.value))} />
             </div>
@@ -574,11 +486,7 @@ const ProductoPersonalizador = () => {
             <div className="tool-section">
               <label className="tool-label">📚 Capas ({elementos.length})</label>
               {[...elementos].reverse().map(el => (
-                <div
-                  key={el.id}
-                  className={`capa-item ${seleccionado === el.id ? 'active' : ''}`}
-                  onClick={() => setSelec(el.id)}
-                >
+                <div key={el.id} className={`capa-item ${seleccionado === el.id ? 'active' : ''}`} onClick={() => setSelec(el.id)}>
                   <span>{el.tipo === 'texto' ? `📝 ${el.contenido.slice(0, 16)}` : '🖼️ Imagen'}</span>
                   <button className="capa-del" onClick={e => { e.stopPropagation(); eliminar(el.id, e); }}>✕</button>
                 </div>
@@ -590,16 +498,10 @@ const ProductoPersonalizador = () => {
             <button className="btn-lista" onClick={guardarEnLista} disabled={guardando}>
               {editandoBorradorId ? '💾 Actualizar borrador' : '📋 Guardar en lista'}
             </button>
-            {!editandoBorradorId && (
-              <button className="btn-carrito" onClick={agregarAlCarrito} disabled={guardando}>
-                🛒 Agregar al carrito
-              </button>
-            )}
             <button className="btn-cancelar" onClick={cancelar}>Cancelar</button>
           </div>
-
-        </div>{/* fin pers-tools */}
-      </div>{/* fin personalizador-contenido */}
+        </div>
+      </div>
     </div>
   );
 };
