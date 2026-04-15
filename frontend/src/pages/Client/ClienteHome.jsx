@@ -122,8 +122,7 @@ export default function ClienteHome() {
 
         <div className="home-hero__content">
           <span className="home-hero__chip">
-            <span className="home-hero__chip-dot" />
-            Nova Graf
+       
           </span>
 
           <h1 className="home-hero__title">
@@ -154,14 +153,6 @@ export default function ClienteHome() {
         </div>
 
         {/* Tarjeta flotante decorativa */}
-        <div className="home-hero__float-card">
-          <div className="home-hero__float-icon">🎨</div>
-          <div>
-            <strong>Personalización</strong>
-            <span>Sin límites creativos</span>
-          </div>
-        </div>
-
         <div className="home-hero__scroll-hint">
           <span>scroll</span>
           <div className="home-hero__scroll-line" />
@@ -247,18 +238,7 @@ export default function ClienteHome() {
             </button>
           </div>
           <div className="home-banner__icons">
-            <div className="home-banner__icon-card home-banner__icon-card--1">
-              <span>🎨</span><small>Diseño</small>
-            </div>
-            <div className="home-banner__icon-card home-banner__icon-card--2">
-              <span>✂️</span><small>Corte</small>
-            </div>
-            <div className="home-banner__icon-card home-banner__icon-card--3">
-              <span>🖨️</span><small>Impresión</small>
-            </div>
-            <div className="home-banner__icon-card home-banner__icon-card--4">
-              <span>📦</span><small>Entrega</small>
-            </div>
+           
           </div>
         </div>
       </section>

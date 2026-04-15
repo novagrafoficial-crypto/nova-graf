@@ -1,0 +1,366 @@
+/* ═══════════════════════════════════════════════════════
+   SolicitudesDiseno.css
+   Paleta corporativa Nova Graf
+   #1A6163  Teal oscuro  (primario)
+   #35BA99  Teal claro   (acento)
+   #DBDBD3  Gris claro   (fondos suaves)
+   #000000  Negro        (texto)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── VARIABLES ── */
+:root {
+  --ng-primary:      #1A6163;
+  --ng-primary-dark: #134849;
+  --ng-accent:       #35BA99;
+  --ng-accent-light: #d0f0e8;
+  --ng-gray:         #DBDBD3;
+  --ng-gray-dark:    #b0b0a8;
+  --ng-gray-text:    #5a5a55;
+  --ng-black:        #000000;
+  --ng-white:        #ffffff;
+  --ng-bg:           #f5f5f2;
+
+  --sd-radius-sm: 6px;
+  --sd-radius-md: 10px;
+  --sd-radius-lg: 14px;
+  --sd-shadow:    0 2px 12px rgba(26, 97, 99, 0.08);
+  --sd-border:    1px solid #e0e0d8;
+}
+
+/* ── CONTENEDOR PRINCIPAL ── */
+.sd-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.sd-titulo {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ng-primary);
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--ng-accent);
+}
+
+/* ── ESTADOS DE CARGA / ERROR / VACÍO ── */
+.sd-loading,
+.sd-error {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1rem;
+  color: var(--ng-gray-text);
+}
+
+.sd-error { color: #c0392b; }
+
+.sd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--ng-gray-text);
+}
+
+.sd-empty__icon { font-size: 2.5rem; }
+
+/* ── LISTA ── */
+.sd-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── TARJETA ── */
+.sd-card {
+  background: var(--ng-white);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-lg);
+  box-shadow: var(--sd-shadow);
+  overflow: hidden;
+}
+
+/* ── ENCABEZADO ── */
+.sd-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0.85rem 1.25rem;
+  background: var(--ng-primary);
+  color: var(--ng-white);
+}
+
+.sd-card__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sd-solicitud-id {
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+
+.sd-fecha {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+/* ── BADGES DE ESTADO ── */
+.sd-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+.estado-pendiente  { background: #fff8e1; color: #856404; }
+.estado-en-proceso { background: #e8f4fd; color: #0c5460; }
+.estado-propuesta  { background: var(--ng-accent-light); color: var(--ng-primary-dark); }
+.estado-aprobado   { background: #d4edda; color: #155724; }
+.estado-rechazado  { background: #f8d7da; color: #721c24; }
+
+/* ── CONTENIDO INTERNO (padding base) ── */
+.sd-producto,
+.sd-seccion,
+.sd-observaciones {
+  padding: 1rem 1.25rem;
+  border-bottom: var(--sd-border);
+}
+
+.sd-producto {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.sd-producto__img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--sd-radius-md);
+  border: var(--sd-border);
+  flex-shrink: 0;
+}
+
+.sd-producto__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sd-producto__nombre {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ng-primary);
+}
+
+.sd-producto__detalle {
+  font-size: 0.875rem;
+  color: var(--ng-gray-text);
+}
+
+.sd-costo-diseno { color: var(--ng-primary); font-weight: 500; }
+
+.sd-total {
+  font-weight: 700;
+  color: var(--ng-primary-dark);
+  font-size: 0.9rem;
+}
+
+/* ── LABEL GENÉRICO ── */
+.sd-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ng-primary);
+  margin: 0 0 6px;
+}
+
+.sd-descripcion {
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── OBSERVACIONES ── */
+.sd-observaciones {
+  background: #f0faf7;
+  border-left: 4px solid var(--ng-accent);
+  border-bottom: var(--sd-border);
+}
+
+.sd-observaciones p {
+  font-size: 0.9rem;
+  color: var(--ng-primary-dark);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── ARCHIVOS DE REFERENCIA ── */
+.sd-archivos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.sd-archivo-preview {
+  display: block;
+  width: 90px;
+  height: 90px;
+  border-radius: var(--sd-radius-md);
+  overflow: hidden;
+  border: 2px solid var(--ng-gray);
+  transition: border-color 0.2s, transform 0.15s;
+  text-decoration: none;
+}
+
+.sd-archivo-preview:hover {
+  border-color: var(--ng-accent);
+  transform: scale(1.03);
+}
+
+.sd-archivo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sd-archivo-fallback {
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 0.75rem;
+  color: var(--ng-gray-text);
+  text-align: center;
+  padding: 8px;
+  background: var(--ng-bg);
+  gap: 4px;
+}
+
+/* ── PROPUESTAS ── */
+.sd-propuestas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.sd-propuesta {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 12px;
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-md);
+  background: var(--ng-bg);
+  transition: border-color 0.2s;
+}
+
+.sd-propuesta--aprobada {
+  border-color: var(--ng-accent);
+  background: #f0faf7;
+}
+
+.sd-propuesta__img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--sd-radius-sm);
+  border: var(--sd-border);
+  flex-shrink: 0;
+}
+
+.sd-propuesta__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sd-propuesta__desc {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sd-propuesta__fecha {
+  font-size: 0.78rem;
+  color: var(--ng-gray-text);
+}
+
+.sd-badge-aprobada {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #d4edda;
+  color: #155724;
+  width: fit-content;
+}
+
+/* ── BOTONES ── */
+.sd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--sd-radius-sm);
+  cursor: pointer;
+  padding: 0.5rem 1.1rem;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.sd-btn:active { transform: scale(0.97); }
+
+.sd-btn--primary {
+  background: var(--ng-primary);
+  color: var(--ng-white);
+}
+
+.sd-btn--primary:hover { background: var(--ng-primary-dark); }
+
+.sd-btn--aprobar {
+  background: var(--ng-accent);
+  color: var(--ng-white);
+  flex-shrink: 0;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.sd-btn--aprobar:hover:not(:disabled) { background: #2da685; }
+
+.sd-btn--aprobar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 540px) {
+  .sd-producto { flex-direction: column; }
+  .sd-producto__img { width: 100%; height: 180px; }
+  .sd-propuesta { flex-direction: column; }
+  .sd-propuesta__img { width: 100%; height: 160px; }
+  .sd-btn--aprobar { width: 100%; }
+  .sd-card__header { flex-direction: column; align-items: flex-start; }
+}

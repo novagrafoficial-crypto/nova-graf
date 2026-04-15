@@ -1,14 +1,8 @@
-// frontend/src/pages/public/Home.jsx
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/public/Home.css';
 
-// ═══════════════════════════════════════════════════════════
-//  URL BASE PARA LA API (desde variable de entorno)
-//  En desarrollo local, si no está definida, se usa cadena vacía
-//  y el proxy de Vite redirige a localhost:5000
-// ═══════════════════════════════════════════════════════════
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const PASOS = [
@@ -25,8 +19,6 @@ const TESTIMONIOS = [
 
 /* ══════════════════════════════════════════
    CARRUSEL CINEMÁTICO — solo imágenes
-   Centro: grande con zoom suave
-   Lados: más pequeños, clickables para navegar
 ══════════════════════════════════════════ */
 function PortafolioCarousel({ items }) {
   const [current, setCurrent]   = useState(0);
@@ -164,7 +156,6 @@ const Home = () => {
   const [enviado,  setEnviado]  = useState(false);
 
   useEffect(() => {
-    // ⭐ TODAS LAS PETICIONES AHORA USAN API_BASE_URL
     axios.get(`${API_BASE_URL}/api/public/productos/catalogo`)
       .catch(() => {})
       .finally(() => setLoadingProd(false));
@@ -196,7 +187,6 @@ const Home = () => {
       }
     }).finally(() => setLoadingNos(false));
 
-    // IntersectionObserver para animaciones
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('animate-in'); }),
       { threshold: 0.12 }
@@ -215,7 +205,7 @@ const Home = () => {
   return (
     <main className="home">
 
-      {/* ══ NUEVO HERO MODERNO ══ */}
+      {/* ══ HERO MODERNO SIN ESTRELLA, TEXTO CENTRADO ══ */}
       <section className="hero-moderno">
         <div className="hero-moderno__bg">
           <div className="hero-moderno__gradient"></div>
@@ -229,7 +219,7 @@ const Home = () => {
         </div>
         <div className="hero-moderno__container">
           <div className="hero-moderno__content">
-            <span className="hero-moderno__badge">✨ Personalización profesional</span>
+            <span className="hero-moderno__badge">Personalización profesional</span>
             <h1 className="hero-moderno__title">
               Tu marca, <br />
               <span className="hero-moderno__highlight">impresa</span> <br />
@@ -254,15 +244,6 @@ const Home = () => {
           </div>
           <div className="hero-moderno__image">
             <div className="hero-image-wrapper">
-              <div className="hero-image-circle"></div>
-              <div className="hero-image-inner">
-                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="200" cy="200" r="180" fill="#35BA99" fillOpacity="0.15" />
-                  <path d="M200 60 L240 140 L320 140 L260 190 L280 270 L200 220 L120 270 L140 190 L80 140 L160 140 L200 60Z" fill="#1A6163" stroke="#35BA99" strokeWidth="2" />
-                  <circle cx="200" cy="200" r="40" fill="#35BA99" />
-                  <path d="M200 170 L210 190 L230 190 L215 205 L220 225 L200 215 L180 225 L185 205 L170 190 L190 190 L200 170Z" fill="white" />
-                </svg>
-              </div>
             </div>
           </div>
         </div>

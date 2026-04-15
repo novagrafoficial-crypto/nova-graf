@@ -16,29 +16,50 @@ const SolicitudDisenoModel = {
   },
 
   // Obtener solicitudes de un usuario
-    async obtenerPorUsuario(usuario_id) {
-    const query = `
-      SELECT s.*, 
-        json_build_object(
-          'id', v.id,
-          'color', v.color,
-          'precio_base', v.precio_base,
-          'talla', v.talla
-        ) as variante,
-        COALESCE(
-          json_agg(p ORDER BY p.fecha_envio) FILTER (WHERE p.id IS NOT NULL), 
-          '[]'
-        ) as propuestas
-      FROM ventas.solicitudes_diseno s
-      LEFT JOIN productos.producto_variantes v ON s.variante_id = v.id
-      LEFT JOIN ventas.propuestas_diseno p ON s.id = p.solicitud_id
-      WHERE s.usuario_id = $1
-      GROUP BY s.id, v.id
-      ORDER BY s.fecha_solicitud DESC
-    `;
-    const { rows } = await pool.query(query, [usuario_id]);
-    return rows;
-  },
+ async obtenerPorUsuario(usuario_id) {
+  const query = `
+    SELECT 
+      s.id,
+      s.descripcion_cliente,
+      s.archivos_referencia,
+      s.estado,
+      s.fecha_solicitud,
+      s.costo_diseno,
+      s.observaciones_admin,
+      json_build_object(
+        'id',          v.id,
+        'precio_base', p.precio_base,        -- ← viene de productos.productos
+        'imagen_url',  v.imagen_url,
+        'color',       col.nombre,
+        'producto',    p.nombre
+      ) AS variante,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id',          prop.id,
+            'imagen_url',  prop.imagen_url,
+            'descripcion', prop.descripcion,
+            'fecha_envio', prop.fecha_envio,
+            'es_aprobada', prop.es_aprobada
+          ) ORDER BY prop.fecha_envio
+        ) FILTER (WHERE prop.id IS NOT NULL),
+        '[]'
+      ) AS propuestas
+    FROM ventas.solicitudes_diseno s
+    LEFT JOIN productos.producto_variantes v  ON s.variante_id = v.id
+    LEFT JOIN productos.colores col           ON v.color_id = col.id
+    LEFT JOIN productos.productos p           ON v.producto_id = p.id
+    LEFT JOIN ventas.propuestas_diseno prop   ON s.id = prop.solicitud_id
+    WHERE s.usuario_id = $1
+    GROUP BY 
+      s.id, s.descripcion_cliente, s.archivos_referencia, s.estado,
+      s.fecha_solicitud, s.costo_diseno, s.observaciones_admin,
+      v.id, v.imagen_url, col.nombre, p.nombre, p.precio_base
+    ORDER BY s.fecha_solicitud DESC
+  `;
+  const { rows } = await pool.query(query, [usuario_id]);
+  return rows;
+},
 
   // Obtener una solicitud con sus propuestas y datos del usuario
   async obtenerPorId(id) {

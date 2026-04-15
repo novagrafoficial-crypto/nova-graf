@@ -45,12 +45,91 @@
   font-size: 0.95rem;
 }
 
-/* Cuerpo del formulario */
-.sd-body {
-  padding: 2rem;
+/* ============================================
+   NUEVO: AVISO DE PAGO ANTICIPADO (50%)
+   ============================================ */
+.sd-aviso-pago {
+  background: rgba(53, 186, 153, 0.08);  /* #35BA99 con 8% opacidad */
+  border-left: 5px solid var(--sd-primary);
+  border-radius: 12px;
+  margin: 1rem 2rem 1.5rem 2rem;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.sd-aviso-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.sd-aviso-texto {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--sd-text);
+}
+.sd-aviso-texto strong {
+  color: var(--sd-primary);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+.sd-aviso-texto ul {
+  margin: 0.5rem 0 0.75rem 1.2rem;
+  padding-left: 0;
+}
+.sd-aviso-texto li {
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+.sd-anticipo-info {
+  background: var(--sd-white);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--sd-border);
+  font-size: 0.85rem;
+  display: inline-block;
+  width: auto;
+}
+.sd-anticipo-info strong {
+  color: var(--sd-primary);
+}
+.sd-anticipo-info br {
+  display: none;
+}
+.sd-anticipo-info::before {
+  content: "💡 ";
+  font-size: 1rem;
 }
 
-/* Grupos de formulario */
+/* Responsive para el aviso */
+@media (max-width: 600px) {
+  .sd-aviso-pago {
+    margin: 0.75rem 1rem 1.25rem 1rem;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .sd-aviso-icon {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  .sd-anticipo-info {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  .sd-anticipo-info br {
+    display: inline;
+  }
+}
+
+/* ============================================
+   RESTO DEL FORMULARIO (sin cambios)
+   ============================================ */
+.sd-body {
+  padding: 0 2rem 2rem 2rem;
+}
+
 .sd-group {
   margin-bottom: 1.8rem;
 }
@@ -66,7 +145,6 @@
   margin-left: 0.2rem;
 }
 
-/* Textarea y campos de texto */
 .sd-textarea {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -83,7 +161,6 @@
   box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.2);
 }
 
-/* Input file personalizado */
 .sd-file-area {
   border: 2px dashed var(--sd-border);
   border-radius: 12px;
@@ -120,7 +197,6 @@
   margin-top: 0.5rem;
 }
 
-/* Vista previa de imágenes (grid) */
 .sd-previews {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -161,7 +237,6 @@
   background: var(--sd-primary);
 }
 
-/* Botón principal */
 .sd-button {
   background: var(--sd-primary);
   color: white;
@@ -187,7 +262,6 @@
   opacity: 0.7;
 }
 
-/* Mensaje de error / advertencia */
 .sd-alert {
   background: #FEF2F2;
   border-left: 4px solid #EF4444;
@@ -197,10 +271,269 @@
   color: #B91C1C;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .sd-body {
-    padding: 1.5rem;
+    padding: 0 1rem 1.5rem 1rem;
+  }
+  .sd-header {
+    padding: 1.2rem 1.5rem;
+  }
+  .sd-header h2 {
+    font-size: 1.5rem;
+  }
+  .sd-previews {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }a/* ============================================
+   VARIABLES (Paleta de marca)
+   ============================================ */
+.sd-page {
+  --sd-primary:    #1A6163;
+  --sd-secondary:  #35BA99;
+  --sd-gray-light: #DBDBD3;
+  --sd-black:      #000000;
+  --sd-white:      #FFFFFF;
+  --sd-text:       #1A1A1A;
+  --sd-text-muted: #5A5A5A;
+  --sd-border:     #D1D5DB;
+  --sd-radius:     16px;
+  --sd-shadow:     0 8px 20px rgba(0,0,0,0.05);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--sd-gray-light);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.sd-container {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--sd-white);
+  border-radius: var(--sd-radius);
+  box-shadow: var(--sd-shadow);
+  overflow: hidden;
+}
+
+.sd-header {
+  background: var(--sd-primary);
+  padding: 1.5rem 2rem;
+  color: white;
+}
+.sd-header h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+.sd-header p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 0.95rem;
+}
+
+/* AVISO DE PAGO ANTICIPADO */
+.sd-aviso-pago {
+  background: rgba(53, 186, 153, 0.08);
+  border-left: 5px solid var(--sd-primary);
+  border-radius: 12px;
+  margin: 1rem 2rem 1.5rem 2rem;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.sd-aviso-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.sd-aviso-texto {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--sd-text);
+}
+.sd-aviso-texto strong {
+  color: var(--sd-primary);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+.sd-aviso-texto ul {
+  margin: 0.5rem 0 0.75rem 1.2rem;
+  padding-left: 0;
+}
+.sd-aviso-texto li {
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+.sd-anticipo-info {
+  background: var(--sd-white);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--sd-border);
+  font-size: 0.85rem;
+  display: inline-block;
+  width: auto;
+}
+.sd-anticipo-info strong {
+  color: var(--sd-primary);
+}
+
+@media (max-width: 600px) {
+  .sd-aviso-pago {
+    margin: 0.75rem 1rem 1.25rem 1rem;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .sd-aviso-icon {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  .sd-anticipo-info {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* RESTO DEL FORMULARIO */
+.sd-body {
+  padding: 0 2rem 2rem 2rem;
+}
+.sd-group {
+  margin-bottom: 1.8rem;
+}
+.sd-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--sd-text);
+  font-size: 0.9rem;
+}
+.sd-label span {
+  color: var(--sd-primary);
+  margin-left: 0.2rem;
+}
+.sd-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--sd-border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border 0.2s, box-shadow 0.2s;
+  resize: vertical;
+}
+.sd-textarea:focus {
+  outline: none;
+  border-color: var(--sd-secondary);
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.2);
+}
+.sd-file-area {
+  border: 2px dashed var(--sd-border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  background: #FAFAFA;
+}
+.sd-file-area:hover {
+  border-color: var(--sd-secondary);
+  background: rgba(53, 186, 153, 0.05);
+}
+.sd-file-input {
+  display: none;
+}
+.sd-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--sd-primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+.sd-file-label svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+.sd-file-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--sd-text-muted);
+  margin-top: 0.5rem;
+}
+.sd-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.sd-preview-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--sd-border);
+  background: #F3F4F6;
+}
+.sd-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sd-preview-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.sd-preview-remove:hover {
+  background: var(--sd-primary);
+}
+.sd-button {
+  background: var(--sd-primary);
+  color: white;
+  border: none;
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+.sd-button:hover:not(:disabled) {
+  background: var(--sd-secondary);
+}
+.sd-button:active {
+  transform: scale(0.98);
+}
+.sd-button:disabled {
+  background: #B0BEC5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.sd-alert {
+  background: #FEF2F2;
+  border-left: 4px solid #EF4444;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  color: #B91C1C;
+}
+@media (max-width: 600px) {
+  .sd-body {
+    padding: 0 1rem 1.5rem 1rem;
   }
   .sd-header {
     padding: 1.2rem 1.5rem;
@@ -211,4 +544,5 @@
   .sd-previews {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
+}
 }

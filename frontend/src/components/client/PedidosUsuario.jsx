@@ -13,35 +13,7 @@ const PAGO_LABEL = {
   transferencia:  "🏦 Transferencia",
 };
 
-// ─── MODAL DE CONFIRMACIÓN ─────────────────────────────────────────
-const ModalConfirmacion = ({ visible, mensaje, onConfirmar, onCancelar }) => {
-  if (!visible) return null;
-  return (
-    <div className="modal-overlay" onClick={onCancelar}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-icon" style={{ background: '#fee2e2' }}>
-          <span style={{ fontSize: '28px' }}>⚠️</span>
-        </div>
-        <h2 className="modal-titulo">Cancelar pedido</h2>
-        <p className="modal-mensaje">{mensaje}</p>
-        <div className="modal-aviso">
-          <span>ℹ️</span>
-          <span>Esta acción no se puede deshacer.</span>
-        </div>
-        <div className="modal-botones">
-          <button className="modal-btn modal-btn--cancelar" onClick={onCancelar}>
-            Cancelar
-          </button>
-          <button className="modal-btn modal-btn--confirmar" onClick={onConfirmar}>
-            Sí, cancelar pedido
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── MODAL DE NOTIFICACIÓN ─────────────────────────────────────────
+// ─── MODAL DE NOTIFICACIÓN (solo para mensajes informativos) ────────────
 const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
   if (!visible) return null;
   const esExito = tipo === 'exito';
@@ -71,16 +43,9 @@ function PedidosUsuario() {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados para modales
-  const [confirmModal, setConfirmModal] = useState({ visible: false, pedidoId: null, mensaje: "" });
+  // Estado para modal de notificación (ya no hay confirmación de cancelación)
   const [notifModal, setNotifModal] = useState({ visible: false, tipo: "exito", titulo: "", mensaje: "" });
 
-  const mostrarConfirmacion = (pedidoId, mensaje) => {
-    setConfirmModal({ visible: true, pedidoId, mensaje });
-  };
-  const cerrarConfirmacion = () => {
-    setConfirmModal({ visible: false, pedidoId: null, mensaje: "" });
-  };
   const mostrarNotificacion = (tipo, titulo, mensaje) => {
     setNotifModal({ visible: true, tipo, titulo, mensaje });
   };
@@ -116,25 +81,6 @@ function PedidosUsuario() {
     fetchPedidos();
   }, []);
 
-  const handleCancelarPedido = async () => {
-    const { pedidoId } = confirmModal;
-    cerrarConfirmacion();
-
-    // Simulación local (si no hay backend real)
-    try {
-      // Aquí puedes llamar al endpoint real cuando exista:
-      // await fetch(`${API_BASE}/api/client/pedidos/${pedidoId}/cancelar`, { method: 'PUT', headers: { Authorization: `Bearer ${getToken()}` } });
-
-      // Actualización local del estado
-      setPedidos(prev =>
-        prev.map(p => p.id === pedidoId ? { ...p, estado: "Cancelado" } : p)
-      );
-      mostrarNotificacion("exito", "Pedido cancelado", "El pedido ha sido cancelado exitosamente.");
-    } catch {
-      mostrarNotificacion("error", "Error", "No se pudo cancelar el pedido. Intenta de nuevo.");
-    }
-  };
-
   if (loading) return <p className="cp-loading-inline">Cargando tus compras…</p>;
 
   if (pedidos.length === 0) {
@@ -148,12 +94,6 @@ function PedidosUsuario() {
 
   return (
     <>
-      <ModalConfirmacion
-        visible={confirmModal.visible}
-        mensaje={confirmModal.mensaje}
-        onConfirmar={handleCancelarPedido}
-        onCancelar={cerrarConfirmacion}
-      />
       <ModalNotificacion
         visible={notifModal.visible}
         tipo={notifModal.tipo}
@@ -173,14 +113,7 @@ function PedidosUsuario() {
               <span className={`cp-pedido-estado cp-pedido-estado--${(pedido.estado || "completado").toLowerCase()}`}>
                 {pedido.estado || "Completado"}
               </span>
-              {pedido.estado !== "Cancelado" && (
-                <button
-                  className="cp-btn cp-btn--small cp-btn--danger"
-                  onClick={() => mostrarConfirmacion(pedido.id, `¿Cancelar el pedido #${pedido.id}?`)}
-                >
-                  Cancelar pedido
-                </button>
-              )}
+              {/* Botón de cancelar eliminado */}
             </div>
 
             <div className="cp-pedido-items">

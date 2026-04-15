@@ -26,6 +26,7 @@ function Login() {
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
   const [cuentaInactiva, setCuentaInactiva] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const errorMessages = {
     email_local:    "Este correo ya está registrado manualmente. Usa tu contraseña para iniciar sesión.",
@@ -142,7 +143,6 @@ function Login() {
     window.location.href = `${API}/api/auth/google`;
   };
 
-  // ← NUEVO: handler de Facebook
   const handleFacebookLogin = () => {
     window.location.href = `${API}/api/auth/facebook`;
   };
@@ -173,10 +173,10 @@ function Login() {
               )}
             </div>
 
-            {/* PASSWORD */}
-            <div className="input-group">
+            {/* PASSWORD con toggle usando iconos FontAwesome */}
+            <div className="input-group password-group">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Contraseña"
                 value={password}
                 onChange={handlePasswordChange}
@@ -184,6 +184,14 @@ function Login() {
                 required
                 style={{ borderColor: errors.password ? "#ef4444" : undefined }}
               />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+              </button>
               {errors.password && (
                 <span style={{ color: "#ef4444", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
                   {errors.password}
@@ -234,7 +242,6 @@ function Login() {
           <div className="social-login" style={{ marginTop: "16px" }}>
             <p style={{ textAlign: "center", color: "#888", marginBottom: "8px" }}>O inicia con</p>
 
-            {/* Google */}
             <button
               onClick={handleGoogleLogin}
               style={{
@@ -247,7 +254,6 @@ function Login() {
               <i className="fab fa-google" style={{ color: "#EA4335" }}></i> Google
             </button>
 
-            {/* ← NUEVO: Botón Facebook */}
             <button
               onClick={handleFacebookLogin}
               style={{

@@ -84,12 +84,13 @@
   gap: 0.85rem;
 }
 
+/* Inputs más pequeños (solo reducción de tamaño) */
 .register-form input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.9rem;      /* antes 0.75rem 1rem */
   border: 1px solid var(--gris-borde);
   border-radius: 12px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;          /* antes 0.9rem */
   transition: var(--transicion);
   background-color: white;
   box-sizing: border-box;
@@ -105,6 +106,21 @@
 .register-form input::placeholder {
   color: #9ca3af;
   font-weight: 400;
+}
+
+/* Contenedor para cada campo con mensaje de error */
+.input-group {
+  position: relative;
+  width: 100%;
+}
+
+/* Mensaje de error */
+.field-error {
+  display: block;
+  color: #e53e3e;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  margin-left: 0.25rem;
 }
 
 /* Campos de contraseña con botón toggle */
@@ -206,7 +222,7 @@
   margin-top: 0;
 }
 
-/* Mensajes */
+/* Mensajes generales (validación de paso) */
 .message {
   text-align: center;
   margin: 1rem 0 0;
@@ -324,4 +340,29 @@
   .social-btn {
     max-width: 100%;
   }
+}
+/* ─── Mostrar/ocultar contraseña con íconos ─── */
+.password-group {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1A6163;
+  transition: opacity 0.2s;
+}
+
+.password-toggle:hover {
+  opacity: 0.7;
 }
