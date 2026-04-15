@@ -1,11 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-
-// El resto de tu código...
+import { Outlet, Link, useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import "../styles/admin/AdminLayout.css";
 
-// ✅ Ruta corregida (relativa desde layouts hacia logo)
+// ✅ Rutas corregidas (subir un nivel desde layouts/)
+import AdminMarcas from "../pages/Admin/AdminMarcas";
+import AdminCategorias from "../pages/Admin/AdminCategorias";
+import AdminSubcategorias from "../pages/Admin/AdminSubcategorias";
+import AdminProductos from "../pages/Admin/AdminProductos";
+import AdminUsuarios from "../pages/Admin/AdminUsuarios";
+import AdminModulo from "../pages/Admin/AdminModulo";
+import AdminPublicacion from "../pages/Admin/AdminPublicacion";
+import AdminMision from "../pages/Admin/AdminMision";
+import AdminEmpresaCom from "../pages/Admin/AdminEmpresaCom";
+import AdminInventario from "../pages/Admin/AdminInventario";
+import AdminProveedores from "../pages/Admin/AdminProveedores";
+import AdminAtributosproduc from "../pages/Admin/AdminAtributosproduc";
+import AdminPedidos from "../pages/Admin/AdminPedidos";
+
+// ✅ Ruta del logo (relativa desde layouts hacia logo)
 import logoNova from "../logo/LOGO.png";
+
 
 // Íconos SVG
 const Icons = {
@@ -19,7 +33,6 @@ const Icons = {
   Publicaciones: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16v16H4z M8 8h8M8 12h6M8 16h4"/></svg>,
   Pedidos: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
   Empresa: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M12 11v6M8 11v2M16 11v2"/></svg>,
-  Inventario: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M8 12h8"/></svg>,
   Proveedores: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>,
   Atributos: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>,
   Search: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>,
@@ -38,7 +51,6 @@ const SEARCH_OPTIONS = [
   { label: "Gestión de BD", path: "modulo-extra", keywords: ["base de datos", "bd", "database", "modulo", "módulo"] },
   { label: "Gestión de Pedidos", path: "pedidos", keywords: ["pedido", "pedidos", "orden", "ordenes", "order"] },
   { label: "Gestión de Empresa", path: "empresa", keywords: ["empresa", "company", "negocio", "información"] },
-  { label: "Gestión de Inventario", path: "inventario", keywords: ["inventario", "stock", "almacen"] },
   { label: "Gestión de Proveedores", path: "proveedores", keywords: ["proveedor", "supplier"] },
   { label: "Atributos de Productos", path: "Atributos", keywords: ["atributo", "atributos", "variante"] },
 ];
@@ -53,7 +65,6 @@ const NAV_ITEMS = [
   { to: "publicacion",  icon: Icons.Publicaciones, label: "Publicaciones", description: "Contenido y noticias" },
   { to: "pedidos",      icon: Icons.Pedidos, label: "Pedidos", description: "Seguimiento de órdenes" },
   { to: "empresa",      icon: Icons.Empresa, label: "Empresa", description: "Información corporativa" },
-  { to: "inventario",   icon: Icons.Inventario, label: "Inventario", description: "Stock y almacén" },
   { to: "proveedores",  icon: Icons.Proveedores, label: "Proveedores", description: "Gestión de proveedores" },
   { to: "Atributos",    icon: Icons.Atributos, label: "Atributos", description: "Atributos de productos" },
 ];
@@ -264,7 +275,21 @@ function AdminLayout() {
             </div>
           </div>
         ) : (
-          <Outlet />
+          <Routes>
+            <Route path="marcas" element={<AdminMarcas />} />
+            <Route path="categorias" element={<AdminCategorias />} />
+            <Route path="subcategorias" element={<AdminSubcategorias />} />
+            <Route path="productos" element={<AdminProductos />} />
+            <Route path="publicacion" element={<AdminPublicacion />} />
+            <Route path="usuarios" element={<AdminUsuarios />} />
+            <Route path="modulo-extra" element={<AdminModulo />} />
+            <Route path="mision" element={<AdminMision />} />
+            <Route path="empresa" element={<AdminEmpresaCom />} />
+            <Route path="inventario" element={<AdminInventario />} />
+            <Route path="proveedores" element={<AdminProveedores />} />
+            <Route path="Atributos" element={<AdminAtributosproduc />} />
+            <Route path="pedidos" element={<AdminPedidos />} />
+          </Routes>
         )}
       </main>
 

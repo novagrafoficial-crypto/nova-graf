@@ -43,6 +43,7 @@ import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminInventario from './pages/Admin/AdminInventario';
 import AdminProveedores from './pages/Admin/AdminProveedores';
 import AdminAtributosproduc from './pages/Admin/AdminAtributosproduc';
+import AdminPedidos from './pages/Admin/AdminPedidos';
 
 
 
@@ -94,6 +95,7 @@ function App() {
           <Route path="inventario" element={<AdminInventario />} />
           <Route path="proveedores" element={<AdminProveedores />} />
           <Route path="Atributos" element={<AdminAtributosproduc />} />
+           <Route path="Pedidos" element={<AdminPedidos />} />
         </Route>
 
       </Routes>

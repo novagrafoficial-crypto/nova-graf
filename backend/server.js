@@ -126,7 +126,7 @@ app.use('/api/admin/publicaciones', publicacionRoutes);
 ================================ */
 app.use('/api/admin/inventario', inventarioRoutes);
 app.use('/api/admin/Monitoreo', MonitoreoRoutes);
-app.use('/api/admin/proveedores', proveedoresRoutes);          // ✅ typo corregido
+app.use('/api/admin/provedores', proveedoresRoutes);         // ✅ typo corregido
 app.use('/api/admin/Atributosproduc', AtributosproducRoutes);
 app.use('/api/admin', productoProveedoresRoutes);              // ✅ → /api/admin/productos/:id/proveedores
 
