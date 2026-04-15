@@ -38,6 +38,10 @@ import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
 import PedidosCliente from './pages/Client/PedidosCliente';
 import SolicitarDiseno from './pages/Client/SolicitarDiseno';
+import UnderConstruction from './pages/Client/UnderConstruction';
+
+// Dentro del Router, junto a las otras rutas de cliente
+
 
 // Dentro de las rutas protegidas del cliente:
 
@@ -102,7 +106,7 @@ function App() {
           <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
           <Route path="/cliente/checkout" element={<Checkout />} />
           <Route path="/cliente/producto/:id/solicitar" element={<SolicitarDiseno />} />
- 
+          <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
 
         </Route>
 

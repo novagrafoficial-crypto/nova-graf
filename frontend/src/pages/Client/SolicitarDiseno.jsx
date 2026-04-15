@@ -85,8 +85,6 @@ const SolicitarDiseno = () => {
         archivosUrls = await subirArchivos(user.id_usuario);
       }
 
-      // 1. Crear la solicitud de diseño
-      console.log('📝 Creando solicitud de diseño...');
       const solicitudRes = await axios.post(`${API_URL}/api/client/solicitudes-diseno`, {
         variante_id: variante.variante_id || variante.id,
         descripcion_cliente: descripcion,
@@ -94,14 +92,11 @@ const SolicitarDiseno = () => {
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       const { precio_base } = solicitudRes.data;
-      console.log('✅ Solicitud creada, precio_base:', precio_base);
 
-      // 2. Preparar payload para carrito (mismo formato que MisDisenos)
       const textoPersonalizado = descripcion.trim() || "Diseño personalizado";
       const imagenPreview = archivosUrls.length > 0 ? archivosUrls[0] : null;
       
-      // Calcular precio unitario igual que en MisDisenos
-      const precioAdicionalPersonalizacion = 50; // mismo valor que en MisDisenos
+      const precioAdicionalPersonalizacion = 50;
       const precioBaseNum = parseFloat(precio_base || 0);
       const precioAdicionalVariante = parseFloat(variante.precio_adicional || 0);
       const precioUnitario = precioBaseNum + precioAdicionalVariante + precioAdicionalPersonalizacion;
@@ -115,32 +110,20 @@ const SolicitarDiseno = () => {
         cantidad: 1,
       };
 
-      console.log('🚀 Enviando al carrito payload:', JSON.stringify(payload, null, 2));
-
-      // 3. Agregar al carrito
-      const carritoRes = await axios.post(`${API_URL}/api/client/carrito`, payload, {
+      await axios.post(`${API_URL}/api/client/carrito`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('✅ Producto agregado al carrito:', carritoRes.data);
 
-      // 4. Redirigir al carrito
       navigate('/cliente/carrito', { 
         state: { mensaje: 'Solicitud creada. Procede al pago del 50% de anticipo para recibir tu previo.' }
       });
     } catch (err) {
-      // Captura DETALLADA del error
-      console.error('❌ ERROR COMPLETO:');
-      console.error('- Mensaje:', err.message);
+      console.error('❌ ERROR:', err);
       if (err.response) {
-        console.error('- Código de estado:', err.response.status);
-        console.error('- Datos del error (backend):', err.response.data);
-        console.error('- Headers:', err.response.headers);
         alert(`Error ${err.response.status}: ${JSON.stringify(err.response.data)}`);
       } else if (err.request) {
-        console.error('- No se recibió respuesta del servidor');
         alert('Error de red: No se pudo conectar con el servidor');
       } else {
-        console.error('- Error al configurar la petición:', err.message);
         alert('Error inesperado: ' + err.message);
       }
     } finally {
@@ -153,72 +136,85 @@ const SolicitarDiseno = () => {
       <div className="sd-container">
         <div className="sd-header">
           <h2>Solicitar diseño personalizado</h2>
-          <p>Describe tu idea y sube imágenes de referencia (logos, bocetos, etc.)</p>
+          <p>Describe tu idea y sube imágenes de referencia</p>
         </div>
 
-        {/* AVISO DE PAGO ANTICIPADO */}
-        <div className="sd-aviso-pago">
-          <div className="sd-aviso-icon">💰</div>
-          <div className="sd-aviso-texto">
-            <strong>Proceso de diseño personalizado:</strong>
-            <ul>
-              <li>Al enviar esta solicitud, el producto se agregará a tu carrito.</li>
-              <li>Deberás pagar el <strong>50% de anticipo</strong> del producto base para que nuestro diseñador prepare hasta <strong>2 previos digitales</strong>.</li>
-              <li>Si apruebas el diseño, podrás pagar el saldo restante y procederemos a la personalización y envío.</li>
-            </ul>
-            {precioBase && (
-              <p className="sd-anticipo-info">
-                <strong>Producto base:</strong> ${precioBase.toFixed(2)} MXN<br />
-                <strong>Anticipo (50%):</strong> ${(precioBase * 0.5).toFixed(2)} MXN
-              </p>
+        {/* NUEVA ESTRUCTURA DE DOS COLUMNAS */}
+        <div className="sd-two-columns">
+          {/* COLUMNA IZQUIERDA: REQUISITOS Y PROCESO */}
+          <div className="sd-requisitos">
+            <div className="sd-requisitos-card">
+              <h3>📋 Requisitos para tu solicitud</h3>
+              <ul>
+                <li>Describe claramente la idea del diseño (colores, textos, posición).</li>
+                <li>Sube imágenes de referencia (logotipos, bocetos, ejemplos).</li>
+                <li>Al enviar, se agregará al carrito el producto base + costo de personalización.</li>
+              </ul>
+              <div className="sd-aviso-pago-horizontal">
+                <div className="sd-aviso-icon">💰</div>
+                <div className="sd-aviso-texto">
+                  <strong>Proceso de pago:</strong>
+                  <p>Se requiere el <strong>50% de anticipo</strong> del producto base para que el diseñador prepare hasta <strong>2 previos digitales</strong>. El saldo restante se paga al aprobar el diseño.</p>
+                  {precioBase && (
+                    <div className="sd-anticipo-info">
+                      <strong>Producto base:</strong> ${precioBase.toFixed(2)} MXN<br />
+                      <strong>Anticipo (50%):</strong> ${(precioBase * 0.5).toFixed(2)} MXN
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* COLUMNA DERECHA: DESCRIPCIÓN + ARCHIVOS */}
+          <div className="sd-formulario">
+            <div className="sd-group">
+              <label className="sd-label">Descripción de tu diseño <span>*</span></label>
+              <textarea 
+                className="sd-textarea" 
+                value={descripcion} 
+                onChange={(e) => setDescripcion(e.target.value)} 
+                placeholder="Ej: Quiero una camiseta con un león y mi nombre en la espalda..." 
+                rows={5} 
+              />
+            </div>
+
+            <div className="sd-group">
+              <label className="sd-label">Imágenes de referencia</label>
+              <div className="sd-file-area" onClick={() => fileInputRef.current?.click()}>
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  onChange={handleArchivos} 
+                  ref={fileInputRef} 
+                  className="sd-file-input" 
+                />
+                <div className="sd-file-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 4v16M4 12h16" />
+                  </svg>
+                  Subir archivos
+                </div>
+                <span className="sd-file-hint">PNG, JPG, WEBP (máx. 5MB cada uno)</span>
+              </div>
+            </div>
+
+            {previews.length > 0 && (
+              <div className="sd-previews">
+                {previews.map((url, idx) => (
+                  <div key={idx} className="sd-preview-item">
+                    <img src={url} alt={`preview-${idx}`} className="sd-preview-img" />
+                    <button className="sd-preview-remove" onClick={() => eliminarPreview(idx)}>✕</button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
-        <div className="sd-body">
-          <div className="sd-group">
-            <label className="sd-label">Descripción de tu diseño <span>*</span></label>
-            <textarea 
-              className="sd-textarea" 
-              value={descripcion} 
-              onChange={(e) => setDescripcion(e.target.value)} 
-              placeholder="Ej: Quiero una camiseta con un león y mi nombre en la espalda..." 
-              rows={5} 
-            />
-          </div>
-
-          <div className="sd-group">
-            <label className="sd-label">Imágenes de referencia</label>
-            <div className="sd-file-area" onClick={() => fileInputRef.current?.click()}>
-              <input 
-                type="file" 
-                multiple 
-                accept="image/*" 
-                onChange={handleArchivos} 
-                ref={fileInputRef} 
-                className="sd-file-input" 
-              />
-              <div className="sd-file-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 4v16M4 12h16" />
-                </svg>
-                Subir archivos
-              </div>
-              <span className="sd-file-hint">PNG, JPG, WEBP (máx. 5MB cada uno)</span>
-            </div>
-          </div>
-
-          {previews.length > 0 && (
-            <div className="sd-previews">
-              {previews.map((url, idx) => (
-                <div key={idx} className="sd-preview-item">
-                  <img src={url} alt={`preview-${idx}`} className="sd-preview-img" />
-                  <button className="sd-preview-remove" onClick={() => eliminarPreview(idx)}>✕</button>
-                </div>
-              ))}
-            </div>
-          )}
-
+        {/* BOTÓN DE ENVÍO (ancho completo) */}
+        <div className="sd-footer">
           <button 
             className="sd-button" 
             onClick={enviarSolicitud} 

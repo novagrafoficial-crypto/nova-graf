@@ -50,6 +50,8 @@
   background: var(--cp-surface);
   font-family: var(--cp-font);
   animation: cpFade 0.4s var(--cp-ease) both;
+  display: flex;
+  flex-direction: column;
 }
 @keyframes cpFade {
   from { opacity: 0; }
@@ -57,7 +59,7 @@
 }
 
 /* ══════════════════════════════════════════
-   HERO HEADER — mismo sistema que el resto
+   HERO HEADER
 ══════════════════════════════════════════ */
 .cp-hero {
   width: 100%;
@@ -66,6 +68,7 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .cp-hero::before {
   content: '';
@@ -108,15 +111,15 @@
 }
 
 /* ══════════════════════════════════════════
-   LAYOUT: SIDEBAR + MAIN
+   LAYOUT: SIDEBAR + MAIN — PANTALLA COMPLETA
 ══════════════════════════════════════════ */
 .cp-layout {
   display: flex;
   align-items: flex-start;
-  gap: 1.8rem;
-  padding: 2.5rem;
-  max-width: 1320px;
-  margin: 0 auto;
+  gap: 0;
+  padding: 0;
+  width: 100%;
+  flex: 1;
   animation: cpSlideUp 0.5s var(--cp-ease) 0.1s both;
 }
 @keyframes cpSlideUp {
@@ -125,20 +128,23 @@
 }
 
 /* ══════════════════════════════════════════
-   SIDEBAR
+   SIDEBAR — pegado al borde izquierdo
 ══════════════════════════════════════════ */
 .cp-sidebar {
   width: 260px;
   flex-shrink: 0;
   background: var(--cp-white);
-  border-radius: var(--cp-radius-xl);
-  border: 1px solid var(--cp-border);
-  box-shadow: var(--cp-shadow-md);
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid var(--cp-border);
+  box-shadow: 2px 0 12px rgba(26,97,99,0.06);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: sticky;
-  top: 24px;
+  top: 0;
+  height: 100vh;
 }
 
 /* Bloque de usuario */
@@ -149,6 +155,7 @@
   padding: 1.5rem 1.4rem 1.2rem;
   background: linear-gradient(135deg, var(--cp-deep-08), var(--cp-vivid-10));
   border-bottom: 1px solid var(--cp-border);
+  flex-shrink: 0;
 }
 
 .cp-sidebar__avatar {
@@ -195,7 +202,7 @@
 
 /* Nav items */
 .cp-sidebar__nav {
-  padding: 0.6rem 0.6rem;
+  padding: 0.6rem;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -247,6 +254,7 @@
   cursor: pointer;
   text-align: center;
   transition: border-color 0.2s, color 0.2s, background 0.2s;
+  flex-shrink: 0;
 }
 .cp-sidebar__logout:hover {
   border-color: #e53935;
@@ -263,6 +271,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+  padding: 2rem 2.5rem;
+  overflow-y: auto;
 }
 
 /* ══════════════════════════════════════════
@@ -490,7 +500,6 @@
 .cp-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
 .cp-btn:active:not(:disabled) { transform: scale(0.97) !important; }
 
-/* Variantes */
 .cp-btn--primary {
   background: var(--cp-vivid);
   color: #fff;
@@ -732,25 +741,31 @@
    RESPONSIVE
 ══════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .cp-layout { padding: 1.8rem; }
-  .cp-sidebar { width: 230px; }
+  .cp-sidebar { width: 220px; }
+  .cp-main { padding: 1.8rem; }
 }
 
 @media (max-width: 768px) {
   .cp-layout {
     flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
+    padding: 0;
+    gap: 0;
   }
   .cp-sidebar {
     width: 100%;
     position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--cp-border);
+    border-radius: 0;
+    overflow-y: visible;
   }
   .cp-sidebar__nav { flex-direction: row; flex-wrap: wrap; gap: 0.35rem; }
   .cp-sidebar__item { flex: 1; min-width: 100px; justify-content: center; font-size: 0.78rem; }
   .cp-hero { padding: 2.5rem 1.2rem 2rem; }
   .cp-fields { grid-template-columns: 1fr; }
   .disenos-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .cp-main { padding: 1.2rem 1rem; }
 }
 
 @media (max-width: 480px) {
@@ -759,6 +774,7 @@
   .cp-pedido-footer { flex-direction: column; gap: 0.4rem; }
   .diseno-card__actions { flex-direction: column; }
 }
+
 /* ══════════════════════════════════════════════════════
    MODAL DE CONFIRMACIÓN (logout)
 ══════════════════════════════════════════════════════ */
@@ -869,11 +885,9 @@
   to   { opacity: 1; }
 }
 
-@keyframes cpSlideUp {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-/* Modales unificados para toda la aplicación (MisDisenos, PedidosUsuario, etc.) */
+/* ══════════════════════════════════════════════════════
+   MODALES UNIFICADOS (MisDisenos, PedidosUsuario, etc.)
+══════════════════════════════════════════════════════ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -989,7 +1003,10 @@
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-/* Solicitudes de diseño */
+
+/* ══════════════════════════════════════════
+   SOLICITUDES DE DISEÑO
+══════════════════════════════════════════ */
 .solicitudes-container {
   width: 100%;
 }
@@ -1028,11 +1045,11 @@
   background: #e2e8f0;
 }
 
-.estado-pendiente { background: #fef3c7; color: #92400e; }
+.estado-pendiente  { background: #fef3c7; color: #92400e; }
 .estado-en-proceso { background: #dbeafe; color: #1e40af; }
-.estado-propuesta { background: #e0e7ff; color: #3730a3; }
-.estado-aprobado { background: #dcfce7; color: #166534; }
-.estado-rechazado { background: #fee2e2; color: #991b1b; }
+.estado-propuesta  { background: #e0e7ff; color: #3730a3; }
+.estado-aprobado   { background: #dcfce7; color: #166534; }
+.estado-rechazado  { background: #fee2e2; color: #991b1b; }
 
 .solicitud-fecha {
   font-size: 0.85rem;

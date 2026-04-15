@@ -413,3 +413,21 @@
     padding: 0.3rem 0.7rem;
   }
 }
+.ch-nav__link--button {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ch-mobile__link--button {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
