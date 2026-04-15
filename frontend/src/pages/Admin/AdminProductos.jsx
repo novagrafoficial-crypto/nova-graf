@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { supabase } from "../../supabaseClient";
 import "../../styles/admin/AdminProductos.css";
 
 const API      = "http://localhost:5000/api/admin/productos";
 const API_BASE = "http://localhost:5000/api/admin";
+const API_PROV = "http://localhost:5000/api/admin";
 const BUCKET   = "Productos";
 
 // ─── Paleta ───────────────────────────────────────────────
@@ -212,7 +214,7 @@ function ListaProductos({ productos, loading, error, onCrear, onDetalle, onEdita
                       <td style={{ ...S.td, textAlign: "center" }}>
                         <span style={{ background: "#E6F4F4", color: C.teal1, borderRadius: "20px", padding: "3px 12px", fontWeight: 700, fontSize: "0.8rem" }}>{p.num_variantes}</span>
                       </td>
-                      <td style={S.td}>{badge(p.stock_total > 0 ? "green" : "red", `${p.stock_total} uds`)}</td>
+                      <td style={S.td}>{badge(p.stock_total > 0 ? "green" : "red", `${p.stock_total} unidades`)}</td>
                       <td style={S.td}>{badge(p.activo ? "green" : "red", p.activo ? "Activo" : "Inactivo")}</td>
                       <td style={S.td}>
                         <div style={{ display: "flex", gap: "6px" }}>
@@ -372,7 +374,7 @@ function WizardCrear({ catalogos, categorias, subcategorias, marcas, onGuardado,
     setColoresSeleccionados(prev =>
       prev.find(c => c.id === color.id) ? prev.filter(c => c.id !== color.id) : [...prev, color]
     );
-  
+
   const toggleAtributo = (tipoId, valor) =>
     setAtributosSeleccionados(prev => {
       const actuales = prev[tipoId] || [];
@@ -384,7 +386,7 @@ function WizardCrear({ catalogos, categorias, subcategorias, marcas, onGuardado,
     if (!file) return;
     setImagenes(prev => ({ ...prev, [idx]: { file, preview: URL.createObjectURL(file) } }));
   };
-  
+
   const quitarImagen = (idx) => {
     setImagenes(prev => {
       const next = { ...prev };
@@ -423,7 +425,7 @@ function WizardCrear({ catalogos, categorias, subcategorias, marcas, onGuardado,
 
   const actualizarVariante = (idx, campo, valor) =>
     setVariantesGeneradas(prev => prev.map((v, i) => i === idx ? { ...v, [campo]: valor } : v));
-  
+
   const quitarVariante = (idx) => {
     quitarImagen(idx);
     setVariantesGeneradas(prev => prev.filter((_, i) => i !== idx));
@@ -437,7 +439,7 @@ function WizardCrear({ catalogos, categorias, subcategorias, marcas, onGuardado,
       return next;
     });
   };
-  
+
   const aplicarATodos = (campo, valor) =>
     setVariantesGeneradas(prev => prev.map(v => ({ ...v, [campo]: parseFloat(valor) || 0 })));
 
@@ -447,7 +449,7 @@ function WizardCrear({ catalogos, categorias, subcategorias, marcas, onGuardado,
     if (!base.categoria_id) return "Selecciona una categoría";
     return null;
   };
-  
+
   const siguientePaso = () => {
     if (paso === 1) { const err = validarPaso1(); if (err) { setError(err); return; } }
     setError("");
@@ -633,12 +635,15 @@ function WizardCrear({ catalogos, categorias, subcategorias, marcas, onGuardado,
           })}
 
           <div style={S.card}>
-            <h3 style={S.cardTitle}>⚙️ Valores por defecto</h3>
+            <h3 style={S.cardTitle}>⚙️ Valores por defecto para las variantes</h3>
             <div style={S.grid3}>
               <div><label style={S.label}>Precio adicional ($)</label><input style={S.input} type="number" step="0.01" value={precioBase} onChange={e => setPrecioBase(e.target.value)} /></div>
               <div><label style={S.label}>Stock inicial</label><input style={S.input} type="number" min="0" value={stockBase} onChange={e => setStockBase(e.target.value)} /></div>
               <div><label style={S.label}>Stock mínimo</label><input style={S.input} type="number" min="0" value={stockMinBase} onChange={e => setStockMinBase(e.target.value)} /></div>
             </div>
+            <p style={{ margin: "1rem 0 0", fontSize: "0.8rem", color: C.textoMuted }}>
+              💡 Podrás asignar proveedores al producto una vez que lo guardes.
+            </p>
           </div>
 
           <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
@@ -726,75 +731,137 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
   const [subiendoImagen, setSubiendoImagen] = useState(false);
   const [imagenPreview, setImagenPreview] = useState(null);
 
+  // ── Proveedores ──
+  const [proveedores, setProveedores]           = useState([]);
+  const [todosProveedores, setTodosProveedores] = useState([]);
+  const [provForm, setProvForm]                 = useState({ proveedor_id: "", precio_costo: "" });
+  const [provEditId, setProvEditId]             = useState(null);
+  const [provEditPrecio, setProvEditPrecio]     = useState("");
+  const [guardandoProv, setGuardandoProv]       = useState(false);
+  const [mostrarFormProv, setMostrarFormProv]   = useState(false);
+
   const recargar = async () => {
     try {
       const r = await fetch(`${API}/${productoInicial.id}`);
       const d = await r.json();
       setProducto(d);
-    } catch { 
-      setError("Error al recargar"); 
+    } catch {
+      setError("Error al recargar");
     }
   };
 
-  const mostrarExito = (msg) => { 
-    setExito(msg); 
-    setTimeout(() => setExito(""), 3000); 
-  };
-  
-  const mostrarError = (msg) => { 
-    setError(msg); 
-    setTimeout(() => setError(""), 4000); 
+  const cargarProveedores = async () => {
+    try {
+      const [rAsig, rTodos] = await Promise.all([
+        fetch(`${API_PROV}/productos/${productoInicial.id}/proveedores`).then(r => r.json()),
+        fetch(`${API_PROV}/proveedores`).then(r => r.json()),
+      ]);
+      setProveedores(Array.isArray(rAsig) ? rAsig : []);
+      setTodosProveedores(Array.isArray(rTodos) ? rTodos : []);
+    } catch {
+      setError("Error al cargar proveedores");
+    }
   };
 
-  // Stock inline
+  useEffect(() => { cargarProveedores(); }, []);
+
+  const mostrarExito = (msg) => { setExito(msg); setTimeout(() => setExito(""), 3000); };
+  const mostrarError = (msg) => { setError(msg); setTimeout(() => setError(""), 4000); };
+
+  // ── Agregar proveedor ──
+  const agregarProveedor = async () => {
+    if (!provForm.proveedor_id) { mostrarError("Selecciona un proveedor"); return; }
+    setGuardandoProv(true);
+    try {
+      const r = await fetch(`${API_PROV}/productos/${productoInicial.id}/proveedores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proveedor_id: parseInt(provForm.proveedor_id),
+          precio_costo: provForm.precio_costo ? parseFloat(provForm.precio_costo) : null,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Error al agregar");
+      setProvForm({ proveedor_id: "", precio_costo: "" });
+      setMostrarFormProv(false);
+      await cargarProveedores();
+      mostrarExito("Proveedor agregado correctamente");
+    } catch (err) {
+      mostrarError(err.message);
+    }
+    setGuardandoProv(false);
+  };
+
+  // ── Actualizar precio costo ──
+  const guardarPrecioProv = async (id) => {
+    try {
+      const r = await fetch(`${API_PROV}/proveedores-producto/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ precio_costo: provEditPrecio ? parseFloat(provEditPrecio) : null }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Error al actualizar");
+      setProvEditId(null);
+      setProvEditPrecio("");
+      await cargarProveedores();
+      mostrarExito("Precio actualizado");
+    } catch (err) {
+      mostrarError(err.message);
+    }
+  };
+
+  // ── Eliminar proveedor ──
+  const eliminarProveedor = async (id) => {
+    if (!confirm("¿Quitar este proveedor del producto?")) return;
+    try {
+      const r = await fetch(`${API_PROV}/proveedores-producto/${id}`, { method: "DELETE" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Error al eliminar");
+      await cargarProveedores();
+      mostrarExito("Proveedor eliminado");
+    } catch (err) {
+      mostrarError(err.message);
+    }
+  };
+
+  // ── Stock inline ──
   const actualizarStock = async (varianteId, cantidad) => {
     const r = await fetch(`${API}/${producto.id}/variantes/${varianteId}/stock`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cantidad: parseInt(cantidad) }),
     });
-    if (r.ok) { 
-      setStockEdit({}); 
-      await recargar(); 
-      mostrarExito("Stock actualizado"); 
+    if (r.ok) {
+      setStockEdit({});
+      await recargar();
+      mostrarExito("Stock actualizado");
     } else {
       mostrarError("Error al actualizar stock");
     }
   };
 
-  // Eliminar variante
+  // ── Eliminar variante ──
   const eliminarVariante = async (varianteId) => {
     if (!confirm("¿Eliminar esta variante?")) return;
     const r = await fetch(`${API}/${producto.id}/variantes/${varianteId}`, { method: "DELETE" });
     const d = await r.json();
-    if (!r.ok) { 
-      mostrarError(d.error || "Error al eliminar"); 
-      return; 
-    }
+    if (!r.ok) { mostrarError(d.error || "Error al eliminar"); return; }
     await recargar();
     mostrarExito("Variante eliminada");
   };
 
-  // Editar variante
+  // ── Editar variante ──
   const abrirEdicion = (v) => {
     setVarEditId(v.id);
-    setVarEditForm({ 
-      sku: v.sku, 
-      precio_adicional: v.precio_adicional || 0, 
-      color_id: v.color_id || "",
-      imagen_url: v.imagen_url || null
-    });
+    setVarEditForm({ sku: v.sku, precio_adicional: v.precio_adicional || 0, color_id: v.color_id || "", imagen_url: v.imagen_url || null });
     setImagenPreview(v.imagen_url || null);
     setError("");
   };
-  
-  const cancelarEdicion = () => { 
-    setVarEditId(null); 
-    setVarEditForm({});
-    setImagenPreview(null);
-  };
 
-  // Subir imagen para variante
+  const cancelarEdicion = () => { setVarEditId(null); setVarEditForm({}); setImagenPreview(null); };
+
   const seleccionarImagen = async (file) => {
     if (!file) return;
     setSubiendoImagen(true);
@@ -810,17 +877,10 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
     }
   };
 
-  const quitarImagen = () => {
-    setImagenPreview(null);
-    setVarEditForm(f => ({ ...f, imagen_url: null }));
-  };
+  const quitarImagen = () => { setImagenPreview(null); setVarEditForm(f => ({ ...f, imagen_url: null })); };
 
   const guardarEdicion = async (varianteId) => {
-    if (!varEditForm.sku?.trim()) { 
-      mostrarError("El SKU es requerido"); 
-      return; 
-    }
-    
+    if (!varEditForm.sku?.trim()) { mostrarError("El SKU es requerido"); return; }
     const r = await fetch(`${API}/${producto.id}/variantes/${varianteId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -832,14 +892,15 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
       }),
     });
     const d = await r.json();
-    if (!r.ok) { 
-      mostrarError(d.error || "Error al guardar"); 
-      return; 
-    }
+    if (!r.ok) { mostrarError(d.error || "Error al guardar"); return; }
     cancelarEdicion();
     await recargar();
     mostrarExito("Variante actualizada");
   };
+
+  // Proveedores ya asignados (para excluirlos del select)
+  const idsAsignados = proveedores.map(p => p.proveedor_id);
+  const proveedoresDisponibles = todosProveedores.filter(p => !idsAsignados.includes(p.proveedor_id));
 
   return (
     <>
@@ -853,6 +914,7 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
       {error && <div style={S.error}>{error}</div>}
       {exito && <div style={S.success}>{exito}</div>}
 
+      {/* Info general */}
       <div style={{ ...S.card, display: "grid", gridTemplateColumns: "auto 1fr", gap: "1.5rem", alignItems: "start" }}>
         {producto.imagen_url
           ? <img src={producto.imagen_url} alt={producto.nombre} style={{ width: "130px", height: "130px", objectFit: "cover", borderRadius: "14px" }} />
@@ -869,6 +931,7 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
         </div>
       </div>
 
+      {/* Variantes */}
       <div style={S.card}>
         <h3 style={S.cardTitle}>Variantes ({producto.variantes?.length || 0})</h3>
         {!producto.variantes?.length
@@ -888,17 +951,13 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
 
                     return (
                       <tr key={v.id} style={{ background: i % 2 === 0 ? C.blanco : "#FAFCFC" }}>
-                        {/* Imagen */}
                         <td style={S.td}>
                           {editando ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "center" }}>
                               {imagenPreview ? (
                                 <div style={{ position: "relative" }}>
                                   <img src={imagenPreview} alt="" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }} />
-                                  <button 
-                                    onClick={quitarImagen}
-                                    style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: C.rojo, color: C.blanco, border: "none", cursor: "pointer", fontSize: "10px" }}
-                                  >✕</button>
+                                  <button onClick={quitarImagen} style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: C.rojo, color: C.blanco, border: "none", cursor: "pointer", fontSize: "10px" }}>✕</button>
                                 </div>
                               ) : (
                                 <label style={{ cursor: "pointer" }}>
@@ -915,31 +974,19 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
                               : <div style={{ width: "40px", height: "40px", background: "#E6F4F4", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: C.teal2 }}>📷</div>
                           )}
                         </td>
-
-                        {/* SKU */}
                         <td style={{ ...S.td, fontFamily: "monospace", fontSize: "0.82rem" }}>
                           {editando
-                            ? <input style={{ ...S.input, padding: "5px 8px", width: "140px", fontFamily: "monospace" }}
-                                value={varEditForm.sku}
-                                onChange={e => setVarEditForm(f => ({ ...f, sku: e.target.value.toUpperCase() }))} />
-                            : v.sku
-                          }
+                            ? <input style={{ ...S.input, padding: "5px 8px", width: "140px", fontFamily: "monospace" }} value={varEditForm.sku} onChange={e => setVarEditForm(f => ({ ...f, sku: e.target.value.toUpperCase() }))} />
+                            : v.sku}
                         </td>
-
-                        {/* Color */}
                         <td style={S.td}>
                           {editando
-                            ? <select style={{ ...S.select, padding: "5px 8px", width: "130px" }}
-                                value={varEditForm.color_id}
-                                onChange={e => setVarEditForm(f => ({ ...f, color_id: e.target.value }))}>
+                            ? <select style={{ ...S.select, padding: "5px 8px", width: "130px" }} value={varEditForm.color_id} onChange={e => setVarEditForm(f => ({ ...f, color_id: e.target.value }))}>
                                 <option value="">Sin color</option>
                                 {catalogos.colores.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                               </select>
-                            : v.color_nombre || "—"
-                          }
+                            : v.color_nombre || "—"}
                         </td>
-
-                        {/* Atributos */}
                         <td style={S.td}>
                           {v.atributos?.map(a => (
                             <span key={a.tipo_atributo_id} style={{ display: "inline-block", padding: "2px 9px", borderRadius: "12px", background: "#E6F4F4", color: C.teal1, fontSize: "0.74rem", fontWeight: 700, marginRight: "4px", marginBottom: "2px" }}>
@@ -947,41 +994,25 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
                             </span>
                           ))}
                         </td>
-
-                        {/* Precio final */}
                         <td style={{ ...S.td, fontWeight: 700, color: C.teal1 }}>
                           {editando
                             ? <div>
-                                <input type="number" step="0.01" style={{ ...S.input, padding: "5px 8px", width: "90px" }}
-                                  value={varEditForm.precio_adicional}
-                                  onChange={e => setVarEditForm(f => ({ ...f, precio_adicional: e.target.value }))} />
-                                <div style={{ fontSize: "0.72rem", color: C.textoMuted, marginTop: "2px" }}>
-                                  Total: ${(parseFloat(producto.precio_base) + parseFloat(varEditForm.precio_adicional || 0)).toFixed(2)}
-                                </div>
+                                <input type="number" step="0.01" style={{ ...S.input, padding: "5px 8px", width: "90px" }} value={varEditForm.precio_adicional} onChange={e => setVarEditForm(f => ({ ...f, precio_adicional: e.target.value }))} />
+                                <div style={{ fontSize: "0.72rem", color: C.textoMuted, marginTop: "2px" }}>Total: ${(parseFloat(producto.precio_base) + parseFloat(varEditForm.precio_adicional || 0)).toFixed(2)}</div>
                               </div>
-                            : `$${precioFinal.toFixed(2)}`
-                          }
+                            : `$${precioFinal.toFixed(2)}`}
                         </td>
-
-                        {/* Stock */}
                         <td style={S.td}>
                           {stockEdit[v.id] !== undefined
                             ? <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                                <input type="number" min="0" style={{ ...S.input, width: "70px", padding: "5px 8px" }}
-                                  value={stockEdit[v.id]} onChange={e => setStockEdit(s => ({ ...s, [v.id]: e.target.value }))} />
+                                <input type="number" min="0" style={{ ...S.input, width: "70px", padding: "5px 8px" }} value={stockEdit[v.id]} onChange={e => setStockEdit(s => ({ ...s, [v.id]: e.target.value }))} />
                                 <button style={S.btnSuccess} onClick={() => actualizarStock(v.id, stockEdit[v.id])}>✓</button>
                                 <button style={S.btnDanger} onClick={() => setStockEdit(s => { const n = { ...s }; delete n[v.id]; return n; })}>✕</button>
                               </div>
-                            : <span onClick={() => setStockEdit(s => ({ ...s, [v.id]: st }))}
-                                style={{ cursor: "pointer", fontWeight: 700, color: C.teal1, textDecoration: "underline dotted" }}
-                                title="Click para editar">{st} uds</span>
+                            : <span onClick={() => setStockEdit(s => ({ ...s, [v.id]: st }))} style={{ cursor: "pointer", fontWeight: 700, color: C.teal1, textDecoration: "underline dotted" }} title="Click para editar">{st} unidades</span>
                           }
                         </td>
-
-                        {/* Estado */}
                         <td style={S.td}>{badge(st === 0 ? "red" : st <= stMin ? "yellow" : "green", st === 0 ? "Sin stock" : st <= stMin ? "Stock bajo" : "OK")}</td>
-
-                        {/* Acciones */}
                         <td style={S.td}>
                           {editando
                             ? <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -997,6 +1028,85 @@ function DetalleProducto({ producto: productoInicial, catalogos, onVolver }) {
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+      </div>
+
+      {/* ── Proveedores ── */}
+      <div style={S.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
+          <h3 style={{ ...S.cardTitle, margin: 0 }}>🏭 Proveedores ({proveedores.length})</h3>
+          {!mostrarFormProv && proveedoresDisponibles.length > 0 && (
+            <button style={S.btnPrimary} onClick={() => setMostrarFormProv(true)}>+ Agregar proveedor</button>
+          )}
+        </div>
+
+        {/* Formulario agregar */}
+        {mostrarFormProv && (
+          <div style={{ background: "#F0F8F7", border: `1px solid ${C.teal2}`, borderRadius: "12px", padding: "1.2rem", marginBottom: "1.2rem" }}>
+            <div style={{ ...S.grid2, marginBottom: "1rem" }}>
+              <div>
+                <label style={S.label}>Proveedor *</label>
+                <select style={S.select} value={provForm.proveedor_id} onChange={e => setProvForm(f => ({ ...f, proveedor_id: e.target.value }))}>
+                  <option value="">Seleccionar...</option>
+                  {proveedoresDisponibles.map(p => (
+                    <option key={p.proveedor_id} value={p.proveedor_id}>{p.nombre_proveedor}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={S.label}>Precio de costo ($)</label>
+                <input style={S.input} type="number" step="0.01" min="0" placeholder="Opcional" value={provForm.precio_costo} onChange={e => setProvForm(f => ({ ...f, precio_costo: e.target.value }))} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+              <button style={S.btnSecondary} onClick={() => { setMostrarFormProv(false); setProvForm({ proveedor_id: "", precio_costo: "" }); }}>Cancelar</button>
+              <button style={{ ...S.btnPrimary, opacity: guardandoProv ? 0.6 : 1 }} onClick={agregarProveedor} disabled={guardandoProv}>
+                {guardandoProv ? "Guardando..." : "✓ Agregar"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tabla proveedores */}
+        {proveedores.length === 0
+          ? <p style={{ color: C.textoMuted, textAlign: "center", padding: "2rem" }}>Sin proveedores asignados</p>
+          : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={S.table}>
+                <thead>
+                  <tr>{["Proveedor","Contacto","Teléfono","Correo","Precio costo","Desde","Acciones"].map(h => <th key={h} style={S.th}>{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {proveedores.map((p, i) => (
+                    <tr key={p.id} style={{ background: i % 2 === 0 ? C.blanco : "#FAFCFC" }}>
+                      <td style={{ ...S.td, fontWeight: 700 }}>{p.nombre_proveedor}</td>
+                      <td style={S.td}>{p.contacto_nombre || "—"}</td>
+                      <td style={S.td}>{p.telefono || "—"}</td>
+                      <td style={S.td}>{p.correo_electronico || "—"}</td>
+                      <td style={{ ...S.td, fontWeight: 700, color: C.teal1 }}>
+                        {provEditId === p.id
+                          ? <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                              <input type="number" step="0.01" min="0" style={{ ...S.input, width: "100px", padding: "5px 8px" }} value={provEditPrecio} onChange={e => setProvEditPrecio(e.target.value)} />
+                              <button style={S.btnSuccess} onClick={() => guardarPrecioProv(p.id)}>✓</button>
+                              <button style={S.btnDanger} onClick={() => { setProvEditId(null); setProvEditPrecio(""); }}>✕</button>
+                            </div>
+                          : <span onClick={() => { setProvEditId(p.id); setProvEditPrecio(p.precio_costo || ""); }} style={{ cursor: "pointer", textDecoration: "underline dotted" }} title="Click para editar">
+                              {p.precio_costo ? `$${parseFloat(p.precio_costo).toFixed(2)}` : "—"}
+                            </span>
+                        }
+                      </td>
+                      <td style={{ ...S.td, fontSize: "0.8rem", color: C.textoMuted }}>
+                        {new Date(p.fecha_registro).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                      </td>
+                      <td style={S.td}>
+                        <button style={S.btnDanger} onClick={() => eliminarProveedor(p.id)}>🗑️</button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

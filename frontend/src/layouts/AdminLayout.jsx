@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+
+// El resto de tu código...
 import "../styles/admin/AdminLayout.css";
 
 // ✅ Ruta corregida (relativa desde layouts hacia logo)

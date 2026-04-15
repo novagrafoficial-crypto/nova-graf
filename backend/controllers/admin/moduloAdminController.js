@@ -190,7 +190,7 @@ const exportarCSV = async (req, res) => {
   }
 };
 
-// ─── IMPORTAR CSV ─────────────────────────────────────────────────────────────
+// IMPORTAR CSV 
 const importarCSV = async (req, res) => {
   const { tabla } = req.params;
 

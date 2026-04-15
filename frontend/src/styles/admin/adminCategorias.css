@@ -1,36 +1,66 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
-/* ═══════════════════════════════════════════════════════
-   Admin Categorías — Estilo Corporativo Mejorado
-   Paleta: Teal · Rojo · Negro
-   ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Admin Categorías — NOVA GRAF (solo 4 colores)
+   #35BA99 · #1A6163 · #000000 · #FF0000
+   Diseño moderno y unificado
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
-/* Variables específicas del módulo */
-.admin-categorias-module {
-  --categoria-teal: var(--teal-2, #35BA99);
-  --categoria-teal-dark: var(--teal-1, #1A6163);
-  --categoria-red: var(--red, #FF0000);
-  --categoria-black: var(--black, #000000);
-  --categoria-border: #e2f0e0;
-  --categoria-bg-light: #f4faf7;
-  --categoria-bg-hover: rgba(53, 186, 153, 0.05);
+:root {
+  /* Paleta NOVA GRAF */
+  --teal-2: #35BA99;
+  --teal-1: #1A6163;
+  --black: #000000;
+  --red: #FF0000;
+  --white: #FFFFFF;
+  --border: #D9D9D6;
+  
+  /* Derivados */
+  --teal-2-light: rgba(53, 186, 153, 0.12);
+  --teal-2-soft: rgba(53, 186, 153, 0.08);
+  --teal-2-glow: rgba(53, 186, 153, 0.2);
+  --red-soft: rgba(255, 0, 0, 0.08);
+  
+  /* Fondos */
+  --bg-base: #F4F8F7;
+  --bg-surface: #FFFFFF;
+  --bg-hover: var(--teal-2-soft);
+  --bg-active: var(--teal-2-light);
+  
+  /* Texto */
+  --text-primary: var(--black);
+  --text-secondary: var(--teal-1);
+  --text-muted: #6B7280;
+  
+  /* Bordes y sombras */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 2px 8px rgba(26, 97, 99, 0.06);
+  --shadow-md: 0 4px 14px rgba(26, 97, 99, 0.08);
+  --shadow-lg: 0 8px 24px rgba(26, 97, 99, 0.12);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Tipografía */
+  --font: 'DM Sans', sans-serif;
+  --font-title: 'Syne', sans-serif;
 }
 
-/* Contenedor principal - Estilo premium unificado */
+/* ─── Contenedor principal ─────────────────────────────────────────────────── */
 .admin-categorias-container {
   max-width: 1000px;
   margin: 48px auto;
-  padding: 0;
-  background: var(--bg-surface, #ffffff);
-  border-radius: 28px;
-  box-shadow: 0 20px 40px -12px rgba(26, 97, 99, 0.12), 0 4px 12px rgba(0, 0, 0, 0.02);
-  font-family: var(--font, 'DM Sans', sans-serif);
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font);
   overflow: hidden;
   position: relative;
-  transition: all var(--transition, 0.2s ease);
+  transition: all var(--transition);
 }
 
-/* Header decorativo con gradiente corporativo */
+/* Header decorativo */
 .admin-categorias-container::before {
   content: '';
   position: absolute;
@@ -38,7 +68,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--teal-1, #1A6163), var(--teal-2, #35BA99), var(--teal-1, #1A6163));
+  background: linear-gradient(90deg, var(--teal-1), var(--teal-2), var(--teal-1));
   z-index: 1;
 }
 
@@ -47,12 +77,22 @@
   padding: 32px 36px;
 }
 
-/* Título con gradiente y línea decorativa */
+@media (max-width: 768px) {
+  .admin-categorias-inner {
+    padding: 24px 20px;
+  }
+  .admin-categorias-container {
+    margin: 24px 16px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* ─── Título ───────────────────────────────────────────────────────────────── */
 .admin-categorias-container h2 {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title);
   font-size: 1.75rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--teal-1, #1A6163) 0%, var(--teal-2, #35BA99) 100%);
+  background: linear-gradient(135deg, var(--teal-1) 0%, var(--teal-2) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -67,74 +107,96 @@
 .admin-categorias-container h2::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, var(--teal-1, #1A6163), var(--teal-2, #35BA99));
+  background: linear-gradient(90deg, var(--teal-1), var(--teal-2));
   border-radius: 3px;
 }
 
-/* Formulario - Estilo moderno con fondo suave */
+@media (max-width: 768px) {
+  .admin-categorias-container h2 {
+    font-size: 1.5rem;
+  }
+}
+@media (max-width: 580px) {
+  .admin-categorias-container h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* ─── Formulario ───────────────────────────────────────────────────────────── */
 .form-categorias {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 32px;
   justify-content: center;
-  background: var(--categoria-bg-light);
+  background: var(--bg-hover);
   padding: 24px;
-  border-radius: 20px;
-  border: 1px solid rgba(53, 186, 153, 0.15);
-  transition: all var(--transition, 0.2s ease);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--teal-2-light);
+  transition: all var(--transition);
 }
 
 .form-categorias:hover {
-  border-color: rgba(53, 186, 153, 0.3);
-  box-shadow: 0 4px 12px rgba(53, 186, 153, 0.08);
+  border-color: var(--teal-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .form-categorias input {
   flex: 1 1 280px;
   padding: 12px 16px;
   font-size: 0.9375rem;
-  font-family: var(--font, 'DM Sans', sans-serif);
-  border: 1.5px solid var(--categoria-border);
-  border-radius: 14px;
-  background: white;
-  transition: all var(--transition, 0.2s ease);
+  font-family: var(--font);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  transition: all var(--transition);
   outline: none;
-  color: var(--text-primary, #1e2f2a);
+  color: var(--text-primary);
 }
 
 .form-categorias input:focus {
-  border-color: var(--teal-2, #35BA99);
-  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.12);
+  border-color: var(--teal-2);
+  box-shadow: 0 0 0 3px var(--teal-2-light);
 }
 
 .form-categorias input::placeholder {
-  color: var(--text-muted, #a0aec0);
+  color: var(--text-muted);
   font-weight: 400;
 }
 
-/* Botones del formulario */
+@media (max-width: 768px) {
+  .form-categorias {
+    flex-direction: column;
+    padding: 20px;
+  }
+  .form-categorias input,
+  .form-categorias button {
+    width: 100%;
+  }
+}
+
+/* ─── Botones del formulario ───────────────────────────────────────────────── */
 .form-categorias button {
   padding: 12px 28px;
   font-size: 0.875rem;
   font-weight: 600;
-  font-family: var(--font, 'DM Sans', sans-serif);
+  font-family: var(--font);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition, 0.2s ease);
+  transition: all var(--transition);
   letter-spacing: 0.01em;
 }
 
 .form-categorias button[type="submit"] {
-  background: linear-gradient(135deg, var(--teal-1, #1A6163), var(--teal-2, #35BA99));
-  color: white;
-  box-shadow: 0 2px 8px rgba(53, 186, 153, 0.25);
+  background: linear-gradient(135deg, var(--teal-1), var(--teal-2));
+  color: var(--white);
+  box-shadow: 0 2px 8px var(--teal-2-glow);
   position: relative;
   overflow: hidden;
 }
@@ -155,9 +217,9 @@
 }
 
 .form-categorias button[type="submit"]:hover {
-  background: linear-gradient(135deg, var(--teal-1, #1A6163), #0d4a4d);
+  background: linear-gradient(135deg, var(--teal-1), #0d4a4d);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(53, 186, 153, 0.35);
+  box-shadow: 0 6px 16px var(--teal-2-glow);
 }
 
 .form-categorias button[type="submit"]:active {
@@ -167,65 +229,65 @@
 /* Botón cancelar */
 .btn-cancelar {
   background: rgba(0, 0, 0, 0.04);
-  color: var(--text-secondary, #4a5568);
-  border: 1px solid var(--categoria-border) !important;
-  box-shadow: none;
+  color: var(--teal-1);
+  border: 1.5px solid var(--border) !important;
 }
 
 .btn-cancelar:hover {
-  background: rgba(53, 186, 153, 0.1);
-  color: var(--teal-1, #1A6163);
-  border-color: var(--teal-2, #35BA99) !important;
+  background: var(--teal-2-light);
+  color: var(--teal-1);
+  border-color: var(--teal-2) !important;
   transform: translateY(-1px);
 }
 
-/* Tabla - Diseño limpio y moderno */
+/* ─── Tabla ─────────────────────────────────────────────────────────────────── */
+.tabla-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+}
+
 .tabla-categorias {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin-top: 8px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 .tabla-categorias th,
 .tabla-categorias td {
-  padding: 16px 16px;
+  padding: 16px 20px;
   text-align: left;
-  border-bottom: 1px solid rgba(53, 186, 153, 0.12);
+  border-bottom: 1px solid var(--border);
 }
 
 .tabla-categorias th {
-  background: var(--categoria-bg-light);
-  font-family: 'Syne', sans-serif;
+  background: var(--teal-2-soft);
+  font-family: var(--font-title);
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--teal-1, #1A6163);
-  border-bottom: 2px solid var(--teal-2, #35BA99);
+  color: var(--teal-1);
+  border-bottom: 2px solid var(--teal-2);
 }
 
-.tabla-categorias th:first-child {
-  border-radius: 12px 0 0 0;
-}
-
-.tabla-categorias th:last-child {
-  border-radius: 0 12px 0 0;
-}
+.tabla-categorias th:first-child { border-radius: var(--radius-md) 0 0 0; }
+.tabla-categorias th:last-child { border-radius: 0 var(--radius-md) 0 0; }
 
 .tabla-categorias td {
-  color: var(--text-primary, #1e2f2a);
+  color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .tabla-categorias tr {
-  transition: all var(--transition, 0.2s ease);
+  transition: all var(--transition);
 }
 
-.tabla-categorias tr:hover {
-  background: var(--categoria-bg-hover);
-  transform: translateX(2px);
+.tabla-categorias tr:hover td {
+  background: var(--bg-hover);
 }
 
 .tabla-categorias tr:last-child td {
@@ -233,73 +295,102 @@
 }
 
 .tabla-categorias tr:last-child td:first-child {
-  border-radius: 0 0 0 12px;
+  border-radius: 0 0 0 var(--radius-md);
 }
 
 .tabla-categorias tr:last-child td:last-child {
-  border-radius: 0 0 12px 0;
+  border-radius: 0 0 var(--radius-md) 0;
 }
 
-/* Columna de acciones - Alineación centrada */
+/* Columna de acciones centrada */
 .tabla-categorias th:last-child,
 .tabla-categorias td:last-child {
   text-align: center;
 }
 
-/* Botones de acción en tabla - Estilo refinado */
+@media (max-width: 768px) {
+  .tabla-categorias th,
+  .tabla-categorias td {
+    padding: 12px 12px;
+  }
+}
+@media (max-width: 580px) {
+  .tabla-categorias {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* ─── Botones de acción en tabla ───────────────────────────────────────────── */
 .btn-editar,
 .btn-eliminar {
   padding: 6px 16px;
   margin: 0 4px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: var(--font, 'DM Sans', sans-serif);
-  transition: all var(--transition, 0.2s ease);
+  font-family: var(--font);
+  transition: all var(--transition);
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .btn-editar {
-  background: rgba(53, 186, 153, 0.1);
-  color: var(--teal-2, #35BA99);
-  border: 1px solid rgba(53, 186, 153, 0.2);
+  background: var(--teal-2-light);
+  color: var(--teal-2);
+  border: 1px solid var(--teal-2-light);
 }
 
 .btn-editar:hover {
-  background: var(--teal-2, #35BA99);
-  color: white;
+  background: var(--teal-2);
+  color: var(--white);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(53, 186, 153, 0.3);
+  box-shadow: 0 4px 12px var(--teal-2-glow);
 }
 
 .btn-eliminar {
-  background: rgba(255, 0, 0, 0.08);
-  color: var(--red, #FF0000);
-  border: 1px solid rgba(255, 0, 0, 0.15);
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid var(--red-soft);
 }
 
 .btn-eliminar:hover {
-  background: var(--red, #FF0000);
-  color: white;
+  background: var(--red);
+  color: var(--white);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 0, 0, 0.25);
 }
 
-/* Error message - Estilo refinado */
+@media (max-width: 768px) {
+  .btn-editar,
+  .btn-eliminar {
+    padding: 5px 12px;
+  }
+  .btn-editar::before {
+    content: '✏️';
+    font-size: 11px;
+  }
+  .btn-eliminar::before {
+    content: '🗑️';
+    font-size: 11px;
+  }
+}
+
+/* ─── Mensajes ──────────────────────────────────────────────────────────────── */
 .admin-error {
-  background: rgba(255, 0, 0, 0.05);
-  color: var(--red, #FF0000);
+  background: var(--red-soft);
+  color: var(--red);
   text-align: center;
   margin-bottom: 24px;
   padding: 14px 20px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   font-weight: 500;
   font-size: 0.8125rem;
-  border-left: 3px solid var(--red, #FF0000);
+  border-left: 3px solid var(--red);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,17 +409,16 @@
   font-size: 1rem;
 }
 
-/* Success message */
 .admin-success {
-  background: rgba(53, 186, 153, 0.1);
-  color: var(--teal-1, #1A6163);
+  background: var(--teal-2-light);
+  color: var(--teal-1);
   text-align: center;
   margin-bottom: 24px;
   padding: 14px 20px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   font-weight: 500;
   font-size: 0.8125rem;
-  border-left: 3px solid var(--teal-2, #35BA99);
+  border-left: 3px solid var(--teal-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,14 +427,8 @@
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .admin-success::before {
@@ -352,11 +436,20 @@
   font-size: 1rem;
 }
 
-/* Estado vacío mejorado */
+.error-mensaje {
+  color: var(--red);
+  font-size: 14px;
+  margin-bottom: 15px;
+  padding: 8px;
+  background: var(--red-soft);
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Estado vacío ─────────────────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: var(--text-muted, #a0aec0);
+  color: var(--text-muted);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -372,27 +465,33 @@
 .empty-state button {
   margin-top: 16px;
   padding: 8px 20px;
-  background: var(--teal-2, #35BA99);
-  color: white;
+  background: var(--teal-2);
+  color: var(--white);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.8125rem;
-  transition: all var(--transition, 0.2s ease);
+  transition: all var(--transition);
 }
 
 .empty-state button:hover {
-  background: var(--teal-1, #1A6163);
+  background: var(--teal-1);
   transform: translateY(-2px);
 }
 
-/* Contador de categorías - Badge sutil */
+.sin-datos {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px;
+}
+
+/* ─── Badges y contadores ───────────────────────────────────────────────────── */
 .categorias-counter {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(53, 186, 153, 0.12);
-  color: var(--teal-2, #35BA99);
+  background: var(--teal-2-light);
+  color: var(--teal-2);
   font-size: 0.6875rem;
   font-weight: 700;
   padding: 3px 10px;
@@ -401,13 +500,12 @@
   vertical-align: middle;
 }
 
-/* Indicador de categoría padre */
 .parent-category-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(53, 186, 153, 0.1);
-  color: var(--teal-1, #1A6163);
+  background: var(--teal-2-light);
+  color: var(--teal-1);
   font-size: 0.6875rem;
   font-weight: 500;
   padding: 3px 10px;
@@ -420,29 +518,7 @@
   font-weight: bold;
 }
 
-/* Loading spinner */
-.loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 60px;
-}
-
-.loading-spinner::after {
-  content: '';
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(53, 186, 153, 0.2);
-  border-top-color: var(--teal-2, #35BA99);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Header con acciones */
+/* ─── Header con acciones ───────────────────────────────────────────────────── */
 .categorias-header {
   display: flex;
   justify-content: space-between;
@@ -455,176 +531,64 @@
 .categorias-header h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary, #1e2f2a);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Botón de exportar/importar (opcional) */
-.btn-export {
-  background: transparent;
-  border: 1px solid var(--categoria-border);
-  padding: 8px 16px;
-  border-radius: 10px;
-  color: var(--text-secondary, #4a5568);
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition, 0.2s ease);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-export:hover {
-  border-color: var(--teal-2, #35BA99);
-  color: var(--teal-2, #35BA99);
-  background: rgba(53, 186, 153, 0.05);
-}
-
-/* Tooltip para acciones */
-[data-tooltip] {
-  position: relative;
-}
-
-[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 8px;
-  background: var(--teal-1, #1A6163);
-  color: white;
-  font-size: 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  margin-bottom: 5px;
-  z-index: 10;
-}
-
-/* Responsive mejorado */
 @media (max-width: 768px) {
-  .admin-categorias-inner {
-    padding: 24px 20px;
-  }
-  
-  .admin-categorias-container {
-    margin: 24px 16px;
-    border-radius: 20px;
-  }
-  
-  .admin-categorias-container h2 {
-    font-size: 1.5rem;
-  }
-  
-  .form-categorias {
-    flex-direction: column;
-    padding: 20px;
-  }
-  
-  .form-categorias input,
-  .form-categorias button {
-    width: 100%;
-  }
-  
-  .tabla-categorias th,
-  .tabla-categorias td {
-    padding: 12px 12px;
-  }
-  
-  .btn-editar,
-  .btn-eliminar {
-    padding: 5px 12px;
-  }
-  
-  .btn-editar::before {
-    content: '✏️';
-    font-size: 11px;
-  }
-  
-  .btn-eliminar::before {
-    content: '🗑️';
-    font-size: 11px;
-  }
-  
   .categorias-header {
     flex-direction: column;
     align-items: flex-start;
   }
 }
 
-@media (max-width: 580px) {
-  .tabla-categorias {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  
-  .admin-categorias-container h2 {
-    font-size: 1.25rem;
-  }
-  
-  .admin-categorias-container {
-    margin: 16px 12px;
-  }
+/* ─── Botón exportar (opcional) ────────────────────────────────────────────── */
+.btn-export {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Animaciones adicionales */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+.btn-export:hover {
+  border-color: var(--teal-2);
+  color: var(--teal-2);
+  background: var(--teal-2-light);
 }
 
-.loading {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-.admin-categorias-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.admin-categorias-container h2 {
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.form-categorias {
-  background: #f5f5f5;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
+/* ─── Formulario interno (compatibilidad) ───────────────────────────────────── */
 .form-group {
   margin-bottom: 15px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font);
+  transition: all var(--transition);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--teal-2);
+  box-shadow: 0 0 0 3px var(--teal-2-light);
 }
 
 .form-group input.input-error {
-  border-color: #dc3545;
-}
-
-.error-mensaje {
-  color: #dc3545;
-  font-size: 14px;
-  margin-bottom: 15px;
-  padding: 8px;
-  background: #ffe6e6;
-  border-radius: 4px;
+  border-color: var(--red);
 }
 
 .form-buttons {
@@ -635,98 +599,34 @@
 .form-buttons button {
   padding: 10px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all var(--transition);
 }
 
 .form-buttons button[type="submit"] {
-  background-color: #007bff;
-  color: white;
+  background: var(--teal-1);
+  color: var(--white);
 }
 
 .form-buttons button[type="submit"]:hover:not(:disabled) {
-  background-color: #0056b3;
+  background: var(--teal-2);
+  transform: translateY(-1px);
 }
 
-.btn-cancelar {
-  background-color: #6c757d;
-  color: white;
+@media (max-width: 768px) {
+  .form-buttons {
+    flex-direction: column;
+  }
 }
 
-.btn-cancelar:hover:not(:disabled) {
-  background-color: #5a6268;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.tabla-container {
-  overflow-x: auto;
-}
-
-.tabla-categorias {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.tabla-categorias th,
-.tabla-categorias td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.tabla-categorias th {
-  background-color: #007bff;
-  color: white;
-  font-weight: 600;
-}
-
-.tabla-categorias tr:hover {
-  background-color: #f5f5f5;
-}
-
-.sin-datos {
-  text-align: center;
-  color: #666;
-  padding: 40px;
-}
-
+/* ─── Botones de acción en tabla (estilo acciones) ─────────────────────────── */
 .acciones {
   display: flex;
   gap: 10px;
-}
-
-.btn-editar,
-.btn-eliminar {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-editar {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-editar:hover {
-  background-color: #218838;
-}
-
-.btn-eliminar {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-eliminar:hover {
-  background-color: #c82333;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {
@@ -734,13 +634,84 @@ button:disabled {
     flex-direction: column;
     gap: 5px;
   }
-  
-  .form-buttons {
-    flex-direction: column;
-  }
-  
-  .tabla-categorias th,
-  .tabla-categorias td {
-    padding: 8px;
-  }
+}
+
+/* ─── Loading spinner ──────────────────────────────────────────────────────── */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+}
+
+.loading-spinner::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--teal-2-light);
+  border-top-color: var(--teal-2);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ─── Tooltip ───────────────────────────────────────────────────────────────── */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: var(--teal-1);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  margin-bottom: 8px;
+  z-index: 100;
+}
+
+/* ─── Estados de botones ────────────────────────────────────────────────────── */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Scrollbar personalizada ──────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--teal-2-soft);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--teal-2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--teal-1);
 }

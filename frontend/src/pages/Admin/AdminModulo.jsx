@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import "../../styles/admin/AdminModulo.css";
 
 const API_MODULO    = "http://localhost:5000/api/admin/modulo";
@@ -80,6 +80,44 @@ const TIPO_META = {
   WITH:   { bg:"#f4ecf7", fg:"#6c3483" },
   OTRO:   { bg:"#f2f3f4", fg:"#566573" },
 };
+
+// ─── Helpers de scheduler ─────────────────────────────────────────────────────
+const TIPO_SCHED_META = {
+  respaldo_completo: { label:"Respaldo completo", bg:"#e8f4fd", fg:"#1a5f8a" },
+  respaldo_tabla:    { label:"Respaldo tabla",    bg:"#f4ecf7", fg:"#6c3483" },
+  exportar_csv:      { label:"Exportar CSV",      bg:"#eafaf1", fg:"#1a6b3c" },
+};
+
+const FRECUENCIAS = [
+  { val:"diario",   label:"Diario" },
+  { val:"semanal",  label:"Semanal" },
+  { val:"mensual",  label:"Mensual" },
+  { val:"manual",   label:"Solo manual" },
+];
+
+const buildCron = (frecuencia, hora, diaSemana) => {
+  const [h, m] = (hora || "02:00").split(":");
+  if (frecuencia === "diario")   return `${+m} ${+h} * * *`;
+  if (frecuencia === "semanal")  return `${+m} ${+h} * * ${diaSemana ?? 1}`;
+  if (frecuencia === "mensual")  return `${+m} ${+h} 1 * *`;
+  return null;
+};
+
+const fmtFecha = (iso) => {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("es-MX", { dateStyle:"short", timeStyle:"short" });
+};
+
+// ─── Pill de tipo de scheduler ────────────────────────────────────────────────
+function TipoSchedPill({ tipo }) {
+  const m = TIPO_SCHED_META[tipo] || { label: tipo, bg:"#f2f3f4", fg:"#566573" };
+  return (
+    <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:3,
+      background:m.bg, color:m.fg, letterSpacing:".04em", whiteSpace:"nowrap" }}>
+      {m.label}
+    </span>
+  );
+}
 
 function TipoPill({ query }) {
   const q = (query || "").trimStart().toUpperCase();
@@ -392,7 +430,7 @@ function TopTablasTarjetas({ data }) {
   );
 }
 
-// ─── NUEVO: Análisis de operaciones por tabla ─────────────────────────────────
+// ─── Análisis de operaciones por tabla ───────────────────────────────────────
 const OP_COLS = {
   select: { label:"SEQ+IDX", bg:"#e8f4fd", fg:"#1a5f8a", bar:"#2f80ed" },
   insert: { label:"INSERT",  bg:"#eafaf1", fg:"#1a6b3c", bar:"#27ae60" },
@@ -478,7 +516,6 @@ function AnalisisOperaciones({ data }) {
 
   if (!data?.length) return <Empty icon="📭" text="Sin datos de operaciones"/>;
 
-  // Enriquecer con campos calculados
   const enriquecido = data.map(r => ({
     ...r,
     seq_scan:  +r.seq_scan  || 0,
@@ -498,20 +535,17 @@ function AnalisisOperaciones({ data }) {
   const sorted = [...enriquecido].sort((a, b) => b[sortBy] - a[sortBy]);
   const maxTotal = Math.max(...sorted.map(r => r.total_operaciones), 1);
 
-  // Métricas resumen
   const totalOps      = enriquecido.reduce((s, r) => s + r.total_operaciones, 0);
   const hottestTable  = sorted[0];
   const idxNeeded     = enriquecido.filter(r => r.pct_seq > 60 && r.seq_scan > 200).length;
   const highWrite     = enriquecido.filter(r => r.total_escrituras_calc > 500).length;
 
-  // Candidatos a índice
   const candidatos = enriquecido
     .filter(r => r.pct_seq > 50 && r.seq_scan > 100)
     .sort((a, b) => b.seq_scan - a.seq_scan);
 
   return (
     <div>
-      {/* Métricas resumen */}
       <div className="adm-kpi-grid" style={{ marginBottom:16 }}>
         <KpiCard icon="📊" label="Total operaciones"  color="blue"
           value={fmt(totalOps)} sub="SEQ + IDX + INS + UPD + DEL"/>
@@ -526,7 +560,6 @@ function AnalisisOperaciones({ data }) {
           sub=">500 INS+UPD+DEL"/>
       </div>
 
-      {/* Selector de orden */}
       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
         <span style={{ fontSize:12, color:P.slate }}>Ordenar por</span>
         {[
@@ -549,7 +582,6 @@ function AnalisisOperaciones({ data }) {
         ))}
       </div>
 
-      {/* Leyenda de mini barras */}
       <div style={{ display:"flex", gap:14, marginBottom:8, flexWrap:"wrap" }}>
         {[
           { color:"rgba(47,128,237,.5)", label:"SEQ scan" },
@@ -565,7 +597,6 @@ function AnalisisOperaciones({ data }) {
         ))}
       </div>
 
-      {/* Tabla principal */}
       <div className="adm-tbl-wrap" style={{ marginBottom:24 }}>
         <table className="adm-tbl">
           <thead>
@@ -613,7 +644,6 @@ function AnalisisOperaciones({ data }) {
         </table>
       </div>
 
-      {/* Recomendaciones de índices */}
       {candidatos.length > 0 && (
         <div>
           <div className="adm-section-mini-title" style={{ marginBottom:10 }}>
@@ -639,6 +669,363 @@ function AnalisisOperaciones({ data }) {
 
       {candidatos.length === 0 && (
         <Empty icon="✅" text="Todos los índices parecen suficientes — sin candidatos detectados"/>
+      )}
+    </div>
+  );
+}
+
+// ─── Componente de Automatización ─────────────────────────────────────────────
+function TabScheduler({ tablas }) {
+  const [subTab,       setSubTab]       = useState("nueva");
+  const [tareas,       setTareas]       = useState([]);
+  const [histSched,    setHistSched]    = useState([]);
+  const [cargando,     setCargando]     = useState(false);
+  const [msg,          setMsg]          = useState({ texto:"", tipo:"ok" });
+
+  // Formulario nueva tarea
+  const [tipo,         setTipo]         = useState("respaldo_completo");
+  const [tabla,        setTabla]        = useState("");
+  const [frecuencia,   setFrecuencia]   = useState("diario");
+  const [hora,         setHora]         = useState("02:00");
+  const [diaSemana,    setDiaSemana]    = useState("1");
+  const [nombre,       setNombre]       = useState("");
+
+  const cronPreview = buildCron(frecuencia, hora, diaSemana);
+
+  const mostrarMsg = (texto, tipo = "ok") => {
+    setMsg({ texto, tipo });
+    setTimeout(() => setMsg({ texto:"", tipo:"ok" }), 3500);
+  };
+
+  const cargarTareas = useCallback(async () => {
+    try {
+      const [t, h] = await Promise.all([
+        fetchJSON(`${API_MODULO}/scheduler`),
+        fetchJSON(`${API_MODULO}/scheduler/historial`),
+      ]);
+      setTareas(t);
+      setHistSched(h);
+    } catch { /* silencioso */ }
+  }, []);
+
+  useEffect(() => { cargarTareas(); }, [cargarTareas]);
+
+  const crearTarea = async () => {
+    if (tipo !== "respaldo_completo" && !tabla) {
+      mostrarMsg("Selecciona una tabla.", "error"); return;
+    }
+    setCargando(true);
+    try {
+      const body = {
+        tipo,
+        tabla: tipo === "respaldo_completo" ? undefined : tabla,
+        frecuencia,
+        cron: frecuencia !== "manual" ? cronPreview : null,
+        nombre: nombre.trim() || undefined,
+      };
+      const res = await fetch(`${API_MODULO}/scheduler`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const d = await res.json();
+      if (!res.ok) mostrarMsg(d.error || "Error al crear tarea", "error");
+      else { mostrarMsg("Tarea programada correctamente."); setNombre(""); cargarTareas(); setSubTab("programadas"); }
+    } catch { mostrarMsg("Error de red", "error"); }
+    finally { setCargando(false); }
+  };
+
+  const eliminarTarea = async (id) => {
+    if (!window.confirm("¿Eliminar esta tarea programada?")) return;
+    try {
+      await fetch(`${API_MODULO}/scheduler/${id}`, { method:"DELETE" });
+      mostrarMsg("Tarea eliminada.");
+      cargarTareas();
+    } catch { mostrarMsg("Error al eliminar", "error"); }
+  };
+
+  const toggleActiva = async (id) => {
+    try {
+      await fetch(`${API_MODULO}/scheduler/${id}/toggle`, { method:"PATCH" });
+      cargarTareas();
+    } catch { mostrarMsg("Error al cambiar estado", "error"); }
+  };
+
+  // ─── FUNCIÓN CORREGIDA: descarga el archivo directamente ──────────────────
+  const ejecutarAhora = async (id, nombre) => {
+    mostrarMsg(`Ejecutando "${nombre}"…`, "ok");
+    try {
+      const url = `${API_MODULO}/scheduler/${id}/ejecutar`;
+      const res = await fetch(url, { method: "POST" });
+
+      const contentType       = res.headers.get("content-type") || "";
+      const contentDisposition = res.headers.get("content-disposition") || "";
+
+      // Si el servidor responde con un archivo adjunto → descargar
+      if (
+        contentDisposition.includes("attachment") ||
+        contentType.includes("application/octet-stream") ||
+        contentType.includes("text/csv")
+      ) {
+        const blob  = await res.blob();
+        const bUrl  = window.URL.createObjectURL(blob);
+
+        // Extraer nombre del archivo del header
+        let fileName = nombre;
+        const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (match?.[1]) fileName = match[1].replace(/['"]/g, "").trim();
+
+        // Crear enlace temporal y disparar descarga
+        const a = document.createElement("a");
+        a.href     = bUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(bUrl);
+
+        mostrarMsg(`✅ "${nombre}" ejecutada. Descargando: ${fileName}`);
+      } else {
+        // Respuesta JSON (tabla vacía, error, etc.)
+        const d = await res.json();
+        if (d.resultado === "ok") mostrarMsg(`✅ "${nombre}" ejecutada.`);
+        else mostrarMsg(`❌ Error en "${nombre}": ${d.error}`, "error");
+      }
+
+      cargarTareas();
+    } catch {
+      mostrarMsg("Error de red", "error");
+    }
+  };
+
+  const badgeHistorial = histSched.filter(h => h.resultado === "error").length;
+
+  return (
+    <div>
+      {/* Sub-tabs */}
+      <div className="adm-subtabs" style={{ marginBottom:16 }}>
+        {[
+          { id:"nueva",       label:"Nueva tarea" },
+          { id:"programadas", label:"Programadas", badge: tareas.length },
+          { id:"historial",   label:"Historial",   badge: badgeHistorial, warn: badgeHistorial > 0 },
+        ].map(s => (
+          <button key={s.id}
+            className={`adm-subtab ${subTab===s.id?"adm-subtab--on":""}`}
+            onClick={() => setSubTab(s.id)}>
+            {s.label}
+            {s.badge > 0 && (
+              <span className={`adm-badge ${s.warn?"adm-badge--warn":""}`} style={{marginLeft:6}}>{s.badge}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Mensaje global */}
+      {msg.texto && (
+        <div className={`adm-alert ${msg.tipo==="error"?"adm-alert--error":"adm-alert--ok"}`} style={{marginBottom:12}}>
+          {msg.texto}
+        </div>
+      )}
+
+      {/* ── Nueva tarea ── */}
+      {subTab === "nueva" && (
+        <div className="adm-card" style={{ maxWidth:620 }}>
+          <div className="adm-card__head">
+            <span className="adm-card__ico">⏱️</span>
+            <div>
+              <div className="adm-card__title">Crear tarea programada</div>
+              <div className="adm-card__desc">Configura respaldos o exportaciones automáticas</div>
+            </div>
+          </div>
+
+          {/* Nombre opcional */}
+          <div style={{ marginBottom:12 }}>
+            <div style={{ fontSize:12, color:P.slate, marginBottom:4 }}>Nombre (opcional)</div>
+            <input
+              type="text"
+              className="adm-select"
+              placeholder="Ej: Respaldo nocturno producción"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              style={{ width:"100%" }}
+            />
+          </div>
+
+          {/* Tipo */}
+          <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:12 }}>
+            <div style={{ flex:2, minWidth:180 }}>
+              <div style={{ fontSize:12, color:P.slate, marginBottom:4 }}>Tipo de tarea</div>
+              <select className="adm-select" style={{ width:"100%" }}
+                value={tipo} onChange={e => { setTipo(e.target.value); setTabla(""); }}>
+                <option value="respaldo_completo">Respaldo completo (.dump)</option>
+                <option value="respaldo_tabla">Respaldo por tabla (.dump)</option>
+                <option value="exportar_csv">Exportar tabla a CSV</option>
+              </select>
+            </div>
+            {tipo !== "respaldo_completo" && (
+              <div style={{ flex:2, minWidth:180 }}>
+                <div style={{ fontSize:12, color:P.slate, marginBottom:4 }}>Tabla</div>
+                <select className="adm-select" style={{ width:"100%" }}
+                  value={tabla} onChange={e => setTabla(e.target.value)}>
+                  <option value="">Seleccionar tabla…</option>
+                  {tablas.map((t, i) => <option key={i} value={t}>{t}</option>)}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Frecuencia + hora */}
+          <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:12 }}>
+            <div style={{ flex:1, minWidth:140 }}>
+              <div style={{ fontSize:12, color:P.slate, marginBottom:4 }}>Frecuencia</div>
+              <select className="adm-select" style={{ width:"100%" }}
+                value={frecuencia} onChange={e => setFrecuencia(e.target.value)}>
+                {FRECUENCIAS.map(f => <option key={f.val} value={f.val}>{f.label}</option>)}
+              </select>
+            </div>
+            {frecuencia === "semanal" && (
+              <div style={{ flex:1, minWidth:140 }}>
+                <div style={{ fontSize:12, color:P.slate, marginBottom:4 }}>Día</div>
+                <select className="adm-select" style={{ width:"100%" }}
+                  value={diaSemana} onChange={e => setDiaSemana(e.target.value)}>
+                  {["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"].map((d,i) => (
+                    <option key={i} value={i+1}>{d}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {frecuencia !== "manual" && (
+              <div style={{ flex:1, minWidth:100 }}>
+                <div style={{ fontSize:12, color:P.slate, marginBottom:4 }}>Hora</div>
+                <input type="time" className="adm-select" style={{ width:"100%" }}
+                  value={hora} onChange={e => setHora(e.target.value)} />
+              </div>
+            )}
+          </div>
+
+          {/* Cron preview */}
+          {frecuencia !== "manual" && cronPreview && (
+            <div style={{
+              background:"#f8f9fa", border:"1px solid #e9ecef",
+              borderRadius:4, padding:"8px 12px",
+              fontFamily:"monospace", fontSize:12,
+              color:P.slate, marginBottom:14
+            }}>
+              Expresión cron: <strong style={{ color:"#333" }}>{cronPreview}</strong>
+              &nbsp;·&nbsp;
+              {frecuencia === "diario"  && `Todos los días a las ${hora}`}
+              {frecuencia === "semanal" && `Cada semana el día seleccionado a las ${hora}`}
+              {frecuencia === "mensual" && `El 1er día de cada mes a las ${hora}`}
+            </div>
+          )}
+
+          <button
+            className="adm-btn adm-btn--primary"
+            disabled={cargando || (tipo !== "respaldo_completo" && !tabla)}
+            onClick={crearTarea}>
+            {cargando ? <><span className="adm-spin"/> Creando…</> : "+ Programar tarea"}
+          </button>
+        </div>
+      )}
+
+      {/* ── Tareas programadas ── */}
+      {subTab === "programadas" && (
+        tareas.length === 0
+          ? <Empty icon="📭" text="Sin tareas programadas aún"/>
+          : <div className="adm-tbl-wrap">
+              <table className="adm-tbl">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Tabla</th>
+                    <th>Frecuencia</th>
+                    <th>Cron</th>
+                    <th>Última ejecución</th>
+                    <th>Estado</th>
+                    <th style={{ textAlign:"right" }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tareas.map((t) => (
+                    <tr key={t.id} className={!t.activa ? "adm-tr--dim" : ""}>
+                      <td><strong>{t.nombre}</strong></td>
+                      <td><TipoSchedPill tipo={t.tipo}/></td>
+                      <td className="mono" style={{ fontSize:11, color:P.slate }}>{t.tabla || "—"}</td>
+                      <td style={{ fontSize:12 }}>{FRECUENCIAS.find(f=>f.val===t.frecuencia)?.label || t.frecuencia}</td>
+                      <td className="mono" style={{ fontSize:11 }}>{t.cron || "—"}</td>
+                      <td style={{ fontSize:12, color:P.slate }}>{fmtFecha(t.ultimaEjecucion)}</td>
+                      <td>
+                        <span style={{
+                          fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:3,
+                          background: t.activa ? "#eafaf1" : "#f2f3f4",
+                          color:      t.activa ? "#1a6b3c" : "#566573",
+                        }}>{t.activa ? "activa" : "inactiva"}</span>
+                      </td>
+                      <td>
+                        <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
+                          <button className="adm-btn adm-btn--sm"
+                            title="Ejecutar ahora y descargar"
+                            onClick={() => ejecutarAhora(t.id, t.nombre)}>
+                            ▶ Ahora
+                          </button>
+                          <button className="adm-btn adm-btn--sm"
+                            title={t.activa ? "Desactivar" : "Activar"}
+                            onClick={() => toggleActiva(t.id)}>
+                            {t.activa ? "⏸ Pausar" : "▶ Activar"}
+                          </button>
+                          <button className="adm-kill adm-kill--label"
+                            onClick={() => eliminarTarea(t.id)}>
+                            ✕
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+      )}
+
+      {/* ── Historial ── */}
+      {subTab === "historial" && (
+        histSched.length === 0
+          ? <Empty icon="📋" text="Sin ejecuciones registradas aún"/>
+          : <div className="adm-tbl-wrap">
+              <table className="adm-tbl">
+                <thead>
+                  <tr>
+                    <th>Tarea</th>
+                    <th>Tipo</th>
+                    <th>Tabla</th>
+                    <th>Inicio</th>
+                    <th>Duración</th>
+                    <th>Resultado</th>
+                    <th>Archivo generado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {histSched.map((h, i) => (
+                    <tr key={i} className={h.resultado === "error" ? "adm-tr--error" : ""}>
+                      <td><strong>{h.nombre}</strong></td>
+                      <td><TipoSchedPill tipo={h.tipo}/></td>
+                      <td className="mono" style={{ fontSize:11, color:P.slate }}>{h.tabla || "—"}</td>
+                      <td style={{ fontSize:12, color:P.slate }}>{fmtFecha(h.inicio)}</td>
+                      <td className="mono">{h.duracion}</td>
+                      <td>
+                        {h.resultado === "ok"
+                          ? <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:3, background:"#eafaf1", color:"#1a6b3c" }}>ok</span>
+                          : <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:3, background:"#fdedec", color:"#922b21" }} title={h.error}>error</span>
+                        }
+                      </td>
+                      <td className="mono" style={{ fontSize:11, color: h.archivo ? P.blue : P.slate }}>
+                        {h.archivo || (h.error ? <span className="adm-dim" title={h.error}>ver error</span> : "—")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
       )}
     </div>
   );
@@ -793,9 +1180,12 @@ export default function AdminModulo() {
           <span>Administración</span>
         </div>
         <nav className="adm-tabs">
-          {[{id:"respaldo",label:"Respaldos",icon:"💾"},
-            {id:"csv",label:"CSV",icon:"📄"},
-            {id:"monitoreo",label:"Monitoreo",icon:"📊"}].map(t=>(
+          {[
+            { id:"respaldo",    label:"Respaldos",      icon:"💾" },
+            { id:"csv",         label:"CSV",             icon:"📄" },
+            { id:"scheduler",   label:"Automatización",  icon:"⏱️" },
+            { id:"monitoreo",   label:"Monitoreo",       icon:"📊" },
+          ].map(t=>(
             <button key={t.id} className={`adm-tab ${tab===t.id?"adm-tab--on":""}`} onClick={()=>setTab(t.id)}>
               <span>{t.icon}</span>{t.label}
             </button>
@@ -875,6 +1265,11 @@ export default function AdminModulo() {
           </div>
         )}
 
+        {/* ════════ AUTOMATIZACIÓN ════════ */}
+        {tab==="scheduler" && (
+          <TabScheduler tablas={tablas}/>
+        )}
+
         {/* ════════ MONITOREO ════════ */}
         {tab==="monitoreo" && (
           <>
@@ -926,7 +1321,7 @@ export default function AdminModulo() {
                 </div>
               </Block>
 
-              {/* *** NUEVO: Análisis de operaciones por tabla *** */}
+              {/* 3. Análisis de operaciones */}
               <Block
                 title="Análisis de operaciones por tabla"
                 sub="Desglose por tipo de operación y recomendaciones de índices"
@@ -942,12 +1337,12 @@ export default function AdminModulo() {
                 <AnalisisOperaciones data={tablasUsadas}/>
               </Block>
 
-              {/* 3. Estado esquema empresa */}
+              {/* 4. Estado esquema empresa */}
               <Block title="Estado del esquema empresa" sub="Salud de tablas: vacuums, bloat y scans">
                 <TablaEmpresa tablas={tablasMon}/>
               </Block>
 
-              {/* 4. Consultas por tipo */}
+              {/* 5. Consultas por tipo */}
               <Block title="Consultas generadas por tipo">
                 {!consultasTipo?<Empty icon="📭" text="Sin datos"/>
                   :!consultasTipo.disponible
@@ -981,7 +1376,7 @@ export default function AdminModulo() {
                 }
               </Block>
 
-              {/* 5. Usuarios activos */}
+              {/* 6. Usuarios activos */}
               <Block title="Usuarios con más actividad">
                 {!usuariosActivos?<Empty icon="👤" text="Sin datos"/>
                   :<div className="adm-user-layout">
@@ -1006,7 +1401,7 @@ export default function AdminModulo() {
                 }
               </Block>
 
-              {/* 6. Últimas consultas */}
+              {/* 7. Últimas consultas */}
               <Block title="Últimas consultas ejecutadas">
                 {!ultimasConsultas?<Empty icon="📋" text="Sin datos"/>
                   :<>
@@ -1056,7 +1451,7 @@ export default function AdminModulo() {
                 }
               </Block>
 
-              {/* 7. Sesiones activas */}
+              {/* 8. Sesiones activas */}
               <Block title="Sesiones activas" badge={actividad.length} badgeWarn={actividad.some(r=>r.wait_event_type)}>
                 {actividad.length===0?<Empty icon="🟢" text="Sin sesiones activas"/>
                   :<div className="adm-tbl-wrap"><table className="adm-tbl">
@@ -1076,7 +1471,7 @@ export default function AdminModulo() {
                 }
               </Block>
 
-              {/* 8. Bloqueos */}
+              {/* 9. Bloqueos */}
               <Block title="Bloqueos activos" badge={bloqueos.length} badgeWarn={bloqueos.length>0}>
                 {bloqueos.length===0?<Empty icon="🔓" text="Sin bloqueos detectados"/>
                   :<div className="adm-tbl-wrap"><table className="adm-tbl">
@@ -1095,7 +1490,7 @@ export default function AdminModulo() {
                 }
               </Block>
 
-              {/* 9. Consultas lentas */}
+              {/* 10. Consultas lentas */}
               <Block title="Top 10 consultas más costosas">
                 {!lentas.disponible
                   ?<div className="adm-alert adm-alert--info"><strong>pg_stat_statements no instalada.</strong><code style={{display:"block",marginTop:6}}>CREATE EXTENSION pg_stat_statements;</code></div>
@@ -1116,7 +1511,7 @@ export default function AdminModulo() {
                 }
               </Block>
 
-              {/* 10. Salud general */}
+              {/* 11. Salud general */}
               <Block title="Salud general del servidor" sub="Score 0–100 basado en métricas clave">
                 {!salud ? <Empty icon="❤️" text="Sin datos de salud" /> : (
                   <>
@@ -1177,7 +1572,7 @@ export default function AdminModulo() {
                 )}
               </Block>
 
-              {/* 11. Análisis de índices */}
+              {/* 12. Análisis de índices */}
               <Block title="Análisis de índices" sub="Candidatos faltantes, inutilizados y duplicados">
                 {!indices ? <Empty icon="🔍" text="Sin datos de índices" /> : (
                   <>
@@ -1253,7 +1648,7 @@ export default function AdminModulo() {
                 )}
               </Block>
 
-              {/* 12. Espacio por esquema */}
+              {/* 13. Espacio por esquema */}
               <Block title="Uso de espacio en disco" sub="Por esquema y top 20 tablas más grandes">
                 {!espacio ? <Empty icon="💽" text="Sin datos de espacio" /> : (
                   <>
@@ -1284,7 +1679,7 @@ export default function AdminModulo() {
                 )}
               </Block>
 
-              {/* 13. Ejecutor de queries */}
+              {/* 14. Ejecutor de queries */}
               <Block title="Ejecutor de queries" sub="Solo SELECT / WITH — máx. 500 filas, timeout 10 s" defaultOpen={false}>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   <textarea
@@ -1338,7 +1733,7 @@ export default function AdminModulo() {
                 </div>
               </Block>
 
-              {/* 14. EXPLAIN ANALYZE */}
+              {/* 15. EXPLAIN ANALYZE */}
               <Block title="EXPLAIN ANALYZE" sub="Analiza el plan de ejecución de cualquier SELECT" defaultOpen={false}>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   <textarea

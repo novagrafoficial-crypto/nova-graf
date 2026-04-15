@@ -8,6 +8,7 @@ function AdminCategorias() {
   const [editando, setEditando] = useState(false);
   const [idEditar, setIdEditar] = useState(null);
   const [error, setError] = useState("");
+  const [exito, setExito] = useState("");
   const [cargando, setCargando] = useState(false);
 
   const API = "http://localhost:5000/api/admin/categorias";
@@ -28,13 +29,24 @@ function AdminCategorias() {
     obtenerCategorias();
   }, []);
 
+  const mostrarExito = (msg) => {
+    setExito(msg);
+    setTimeout(() => setExito(""), 3000);
+  };
+
+  const mostrarError = (msg) => {
+    setError(msg);
+    setTimeout(() => setError(""), 4000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setExito("");
     
     const nombreTrim = nombre.trim();
     if (!nombreTrim) {
-      setError("El nombre de la categoría es requerido");
+      mostrarError("El nombre de la categoría es requerido");
       return;
     }
 
@@ -45,7 +57,7 @@ function AdminCategorias() {
       );
       
       if (existe) {
-        setError(`La categoría "${nombreTrim}" ya existe`);
+        mostrarError(`La categoría "${nombreTrim}" ya existe`);
         return;
       }
     }
@@ -69,7 +81,7 @@ function AdminCategorias() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        setError(errorData.error || "Error al guardar");
+        mostrarError(errorData.error || "Error al guardar");
         return;
       }
 
@@ -78,37 +90,36 @@ function AdminCategorias() {
       setDescripcion("");
       setEditando(false);
       setIdEditar(null);
-      setError("");
       
       // Recargar lista
       await obtenerCategorias();
       
       // Mensaje de éxito
-      alert(editando ? "✅ Categoría actualizada" : "✅ Categoría agregada");
+      mostrarExito(editando ? "Categoría actualizada correctamente" : "Categoría agregada correctamente");
       
     } catch (err) {
       console.error("Error:", err);
-      setError("Ocurrió un error inesperado");
+      mostrarError("Ocurrió un error inesperado");
     } finally {
       setCargando(false);
     }
   };
 
-  const handleEliminar = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar esta categoría?")) return;
+  const handleEliminar = async (id, nombreCat) => {
+    if (!window.confirm(`¿Seguro que quieres eliminar la categoría "${nombreCat}"?`)) return;
 
     try {
       const res = await fetch(`${API}/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const error = await res.json();
-        alert(error.error || "No se pudo eliminar");
+        mostrarError(error.error || "No se pudo eliminar");
         return;
       }
       await obtenerCategorias();
-      alert("✅ Categoría eliminada");
+      mostrarExito("Categoría eliminada correctamente");
     } catch (err) {
       console.error(err);
-      alert("Error al eliminar");
+      mostrarError("Error al eliminar");
     }
   };
 
@@ -118,6 +129,7 @@ function AdminCategorias() {
     setEditando(true);
     setIdEditar(cat.id);
     setError("");
+    setExito("");
   };
 
   const handleCancelar = () => {
@@ -126,14 +138,18 @@ function AdminCategorias() {
     setEditando(false);
     setIdEditar(null);
     setError("");
+    setExito("");
   };
 
   return (
     <div className="admin-categorias-container">
-      <h2>Administrar Categorías</h2>
+      <div className="admin-categorias-inner">
+        <h2>Administrar Categorías</h2>
 
-      <form onSubmit={handleSubmit} className="form-categorias">
-        <div className="form-group">
+        {error && <div className="admin-error">{error}</div>}
+        {exito && <div className="admin-success">{exito}</div>}
+
+        <form onSubmit={handleSubmit} className="form-categorias">
           <input
             type="text"
             placeholder="Nombre de la categoría *"
@@ -142,22 +158,15 @@ function AdminCategorias() {
               setNombre(e.target.value);
               setError("");
             }}
-            className={error ? "input-error" : ""}
           />
-        </div>
-        
-        <div className="form-group">
+          
           <input
             type="text"
             placeholder="Descripción (opcional)"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
           />
-        </div>
 
-        {error && <div className="error-mensaje">{error}</div>}
-        
-        <div className="form-buttons">
           <button type="submit" disabled={cargando}>
             {cargando ? "Guardando..." : (editando ? "Actualizar" : "Agregar")}
           </button>
@@ -172,53 +181,55 @@ function AdminCategorias() {
               Cancelar
             </button>
           )}
-        </div>
-      </form>
+        </form>
 
-      <div className="tabla-container">
-        <table className="tabla-categorias">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categorias.length === 0 ? (
+        <div className="tabla-container">
+          <table className="tabla-categorias">
+            <thead>
               <tr>
-                <td colSpan="4" className="sin-datos">
-                  No hay categorías registradas
-                </td>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
               </tr>
-            ) : (
-              categorias.map((cat) => (
-                <tr key={cat.id}>
-                  <td>{cat.id}</td>
-                  <td>{cat.nombre}</td>
-                  <td>{cat.descripcion || "-"}</td>
-                  <td className="acciones">
-                    <button
-                      type="button"
-                      className="btn-editar"
-                      onClick={() => handleEditar(cat)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-eliminar"
-                      onClick={() => handleEliminar(cat.id)}
-                    >
-                      Eliminar
-                    </button>
-                  </td>
+            </thead>
+            <tbody>
+              {categorias.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="sin-datos">
+                    No hay categorías registradas
+                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                categorias.map((cat) => (
+                  <tr key={cat.id}>
+                    <td>#{cat.id}</td>
+                    <td>
+                      <span className="categorias-counter">{cat.nombre}</span>
+                    </td>
+                    <td>{cat.descripcion || "—"}</td>
+                    <td className="acciones">
+                      <button
+                        type="button"
+                        className="btn-editar"
+                        onClick={() => handleEditar(cat)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-eliminar"
+                        onClick={() => handleEliminar(cat.id, cat.nombre)}
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
