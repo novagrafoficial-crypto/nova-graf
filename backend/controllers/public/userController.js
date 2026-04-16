@@ -85,7 +85,7 @@ const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: 'Cuenta no activada.' });
 
     const otp = await userModel.saveRecoveryOTP(user.id_usuario);
-    await sendOTPEmail(user.correo_electronico, otp);
+    await sendRecoveryEmail(user.correo_electronico, otp);
 
     return res.status(200).json({
       message: 'Código enviado a tu correo',

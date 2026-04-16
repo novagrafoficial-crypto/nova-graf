@@ -67,7 +67,7 @@ function FilaVenta({ row, index }) {
       </td>
       <td className="vp-td">{row.producto}</td>
       <td className="vp-td">
-        <span className="vp-color-dot" style={{ backgroundColor: row.color_hex || "#4f7cff" }} />
+        <span className="vp-color-dot" style={{ backgroundColor: row.color_hex || "#1A6163" }} />
         {row.color}
       </td>
       <td className="vp-td vp-td--desc">
@@ -129,7 +129,7 @@ function TopProductoCard({ detalle, periodo }) {
           <h3 className="vp-top-card__nombre">{top.producto}</h3>
           <div className="vp-top-card__meta">
             <span className="vp-top-card__meta-item">
-              <span className="vp-color-dot" style={{ backgroundColor: top.color_hex || "#4f7cff" }} />
+              <span className="vp-color-dot" style={{ backgroundColor: top.color_hex || "#1A6163" }} />
               {top.color}
             </span>
             {top.atributos && (

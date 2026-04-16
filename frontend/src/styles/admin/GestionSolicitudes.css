@@ -1,0 +1,101 @@
+.admin-solicitudes-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.solicitud-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.solicitud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.estado {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+.estado-pendiente_diseno { background: #ffc107; color: #333; }
+.estado-propuesta_enviada { background: #17a2b8; color: white; }
+.estado-aprobado { background: #28a745; color: white; }
+.estado-rechazado { background: #dc3545; color: white; }
+
+.imagenes-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.imagenes-grid img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.propuestas-list {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.propuesta-item {
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 8px;
+  width: 200px;
+}
+.propuesta-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+.aprobada { color: green; font-weight: bold; }
+.no-aprobada { color: orange; }
+
+.nueva-propuesta {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #ccc;
+}
+.form-propuesta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 10px;
+}
+.form-propuesta input, .form-propuesta button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.acciones-estado {
+  margin-top: 1rem;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.btn-rechazar {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}

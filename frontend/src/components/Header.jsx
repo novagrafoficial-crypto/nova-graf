@@ -1,4 +1,3 @@
-// frontend/src/components/public/Header.js
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/public/Header.css';
@@ -66,6 +65,7 @@ const Header = ({
 
       <div className="navbar-inner">
 
+        {/* Logo dinámico */}
         <div className="navbar-logo">
           <Link to="/">
             {loadingEmpresa ? (
@@ -85,6 +85,7 @@ const Header = ({
           </Link>
         </div>
 
+        {/* Menú escritorio */}
         <div className="navbar-center">
           <ul className="navbar-menu">
             <li><Link to="/" className="nav-link">Inicio</Link></li>
@@ -94,6 +95,7 @@ const Header = ({
           </ul>
         </div>
 
+        {/* Acciones derecha */}
         <div className="navbar-actions">
           <div className={`search-wrapper ${searchActive ? 'active' : ''}`} ref={searchWrapperRef}>
             <form className="search-form" onSubmit={handleSearchSubmit}>
@@ -147,6 +149,7 @@ const Header = ({
         </div>
       </div>
 
+      {/* Menú móvil */}
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <div className="mobile-search-bar">
           <form onSubmit={handleSearchSubmit}>

@@ -11,8 +11,13 @@ const obtenerCategorias = async (req, res) => {
 
 const crearCategoria = async (req, res) => {
   try {
-    const { nombre } = req.body;
-    const nueva = await categoriasModel.crear(nombre);
+    const { nombre, descripcion } = req.body;  // ← AGREGAR descripcion
+    
+    if (!nombre?.trim()) {
+      return res.status(400).json({ error: 'El nombre es requerido' });
+    }
+    
+    const nueva = await categoriasModel.crear(nombre, descripcion || null);  // ← Enviar descripcion
     res.status(201).json(nueva);
   } catch (err) {
     if (err.code === '23505')
@@ -25,8 +30,13 @@ const crearCategoria = async (req, res) => {
 const actualizarCategoria = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre } = req.body;
-    const actualizada = await categoriasModel.actualizar(id, nombre);
+    const { nombre, descripcion } = req.body;  // ← AGREGAR descripcion
+    
+    if (!nombre?.trim()) {
+      return res.status(400).json({ error: 'El nombre es requerido' });
+    }
+    
+    const actualizada = await categoriasModel.actualizar(id, nombre, descripcion || null);  // ← Enviar descripcion
     res.json(actualizada);
   } catch (err) {
     if (err.code === '23505')

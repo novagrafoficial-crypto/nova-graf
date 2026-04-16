@@ -203,34 +203,34 @@ export default function VentasGrafica() {
                       data={serieConPadding}
                       margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2f4a" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1A6163" />
                       <XAxis
                         dataKey="fecha"
                         tickFormatter={(v) => formatFechaEje(v, periodo)}
-                        stroke="#64748b"
+                        stroke="#1A6163"
                         tick={{ fontSize: 12 }}
                         angle={-45}
                         textAnchor="end"
                         height={60}
                       >
-                        <Label value="Fecha" position="insideBottom" offset={-5} style={{ fill: '#64748b', fontSize: 12 }} />
+                        <Label value="Fecha" position="insideBottom" offset={-5} style={{ fill: '#1A6163', fontSize: 12 }} />
                       </XAxis>
                       <YAxis
-                        stroke="#64748b"
+                        stroke="#1A6163"
                         tick={{ fontSize: 12 }}
                         allowDecimals={false}
                         width={40}
                       >
-                        <Label value="Unidades vendidas" angle={-90} position="insideLeft" style={{ fill: '#64748b', fontSize: 12 }} />
+                        <Label value="Unidades vendidas" angle={-90} position="insideLeft" style={{ fill: '#1A6163', fontSize: 12 }} />
                       </YAxis>
                       <Tooltip content={<CustomTooltip />} />
                       <Line
                         type="monotone"
                         dataKey="total_vendido"
                         name="Unidades vendidas"
-                        stroke="#4f7cff"
+                        stroke="#1A6163"
                         strokeWidth={2.5}
-                        dot={{ r: 4, fill: "#4f7cff" }}
+                        dot={{ r: 4, fill: "#1A6163" }}
                         activeDot={{ r: 6 }}
                         isAnimationActive={false}
                       />
@@ -244,31 +244,31 @@ export default function VentasGrafica() {
                       data={data.serie}
                       margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2f4a" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1A6163" />
                       <XAxis
                         dataKey="fecha"
                         tickFormatter={(v) => formatFechaEje(v, periodo)}
-                        stroke="#64748b"
+                        stroke="#1A6163"
                         tick={{ fontSize: 12 }}
                         angle={-45}
                         textAnchor="end"
                         height={60}
                       >
-                        <Label value="Fecha" position="insideBottom" offset={-5} style={{ fill: '#64748b', fontSize: 12 }} />
+                        <Label value="Fecha" position="insideBottom" offset={-5} style={{ fill: '#1A6163', fontSize: 12 }} />
                       </XAxis>
                       <YAxis
-                        stroke="#64748b"
+                        stroke="#1A6163"
                         tick={{ fontSize: 12 }}
                         allowDecimals={false}
                         width={40}
                       >
-                        <Label value="Unidades vendidas" angle={-90} position="insideLeft" style={{ fill: '#64748b', fontSize: 12 }} />
+                        <Label value="Unidades vendidas" angle={-90} position="insideLeft" style={{ fill: '#1A6163', fontSize: 12 }} />
                       </YAxis>
                       <Tooltip content={<CustomTooltip />} />
                       <Bar
                         dataKey="total_vendido"
                         name="Unidades vendidas"
-                        fill="#4f7cff"
+                        fill="#1A6163"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>

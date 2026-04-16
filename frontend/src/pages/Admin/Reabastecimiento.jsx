@@ -4,6 +4,7 @@ import "../../styles/admin/AdminReabastecimiento.css";
 
 const API = import.meta.env.VITE_API_URL;
 
+// ── ProductoCard ──────────────────────────────────────────────────────────────
 function ProductoCard({ producto, estadoProducto }) {
   const navigate = useNavigate();
 
@@ -26,76 +27,87 @@ function ProductoCard({ producto, estadoProducto }) {
       state: { producto_nombre: producto.producto_nombre },
     });
 
-  // Determinar clase y texto según el estado del producto (el más crítico de sus variantes)
-  let estadoClase = "";
-  let estadoTexto = "";
-  if (estadoProducto === "critico") {
-    estadoClase = "rb-estado--critico";
-    estadoTexto = "Crítico";
-  } else if (estadoProducto === "proximo") {
-    estadoClase = "rb-estado--proximo";
-    estadoTexto = "Próximo";
-  } else {
-    estadoClase = "rb-estado--abastecido";
-    estadoTexto = "Abastecido";
-  }
+  // Badge según estado
+  const badge = {
+    critico:    { cls: "rb-badge--critico",    txt: "Crítico"    },
+    proximo:    { cls: "rb-badge--proximo",    txt: "Próximo"    },
+    abastecido: { cls: "rb-badge--abastecido", txt: "Abastecido" },
+  }[estadoProducto] ?? { cls: "rb-badge--abastecido", txt: "Abastecido" };
+
+  // Color del número de stock
+  const stockNum = Number(producto.stock_total);
+  const stockCls =
+    stockNum === 0  ? "rb-stock-num--danger" :
+    stockNum < 10   ? "rb-stock-num--warn"   :
+                      "rb-stock-num--ok";
 
   return (
-    <div className="rb-list-item">
-      <div className="rb-list-item__main">
-        <h3 className="rb-list-item__nombre">{producto.producto_nombre}</h3>
-        <div className="rb-list-item__cats">
+    <tr>
+      {/* Producto */}
+      <td>
+        <p className="rb-cell-nombre">{producto.producto_nombre}</p>
+        <div className="rb-cell-tags">
           <span className="rb-tag">{producto.categoria}</span>
           {producto.subcategoria && (
             <span className="rb-tag rb-tag--sub">{producto.subcategoria}</span>
           )}
         </div>
-      </div>
+      </td>
 
-      <div className="rb-list-item__stats">
-        <span
-          className="rb-list-item__stock"
-          style={{
-            color:
-              Number(producto.stock_total) === 0 ? "var(--rb-danger)"
-              : Number(producto.stock_total) < 10 ? "var(--rb-warn)"
-              : "var(--rb-ok)",
-          }}
-        >
-          {Number(producto.stock_total)} uds.
-        </span>
-        <span className="rb-list-item__vars">
-          {producto.total_variantes} variante{producto.total_variantes !== "1" ? "s" : ""}
-        </span>
-      </div>
+      {/* Stock */}
+      <td className="center">
+        <div className="rb-cell-stock">
+          <span className={`rb-stock-num ${stockCls}`}>{stockNum}</span>
+          <span className="rb-stock-vars">
+            {producto.total_variantes} var.
+          </span>
+        </div>
+      </td>
 
-      {/* Nueva columna de estado */}
-      <div className="rb-list-item__estado">
-        <span className={`rb-estado-badge ${estadoClase}`}>{estadoTexto}</span>
-      </div>
+      {/* Estado */}
+      <td className="center">
+        <span className={`rb-badge ${badge.cls}`}>{badge.txt}</span>
+      </td>
 
-      <div className="rb-list-item__actions">
-        <button className="rb-btn rb-btn--primary"   onClick={handleVariantes}>📋 Detalles Producto</button>
-        <button className="rb-btn rb-btn--secondary" onClick={handleVentas}>📊Detalles Venta</button>
-        <button className="rb-btn rb-btn--accent"    onClick={handlePrediccion}>🔮Predecir Abastecimiento</button>
-      </div>
-    </div>
+      {/* Acciones */}
+      <td>
+        <div className="rb-cell-actions">
+          <button className="rb-btn rb-btn--primary"   onClick={handleVariantes}>
+            📋 Detalles
+          </button>
+          <button className="rb-btn rb-btn--secondary" onClick={handleVentas}>
+            📊 Ventas
+          </button>
+          <button className="rb-btn rb-btn--accent"    onClick={handlePrediccion}>
+            🔮 Predecir
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 }
 
+// ── Reabastecimiento ──────────────────────────────────────────────────────────
 export default function Reabastecimiento() {
-  const [productos,     setProductos]     = useState([]);
-  const [categorias,    setCategorias]    = useState([]);
-  const [subcategorias, setSubcategorias] = useState([]);
-  const [loading,       setLoading]       = useState(false);
-  const [error,         setError]         = useState(null);
-  const [filtros, setFiltros] = useState({ categoria_id: "", subcategoria_id: "", search: "" });
-  const [estadosProductos, setEstadosProductos] = useState({}); // mapa: producto_id -> estado
+  const [productos,      setProductos]      = useState([]);
+  const [categorias,     setCategorias]     = useState([]);
+  const [subcategorias,  setSubcategorias]  = useState([]);
+  const [loading,        setLoading]        = useState(false);
+  const [error,          setError]          = useState(null);
+  const [filtros,        setFiltros]        = useState({
+    categoria_id: "", subcategoria_id: "", search: "",
+  });
+  const [estadosProductos, setEstadosProductos] = useState({});
+
+  // ── Paginación ──
+  const [paginaActual, setPaginaActual] = useState(1);
+  const PRODUCTOS_POR_PAGINA = 10;
 
   // Cargar categorías
   useEffect(() => {
     fetch(`${API}/api/admin/reabastecimiento/categorias`)
-      .then((r) => r.json()).then(setCategorias)
+      .then((r) => r.json())
+      .then(setCategorias)
       .catch(() => setError("No se pudieron cargar las categorías."));
   }, []);
 
@@ -104,12 +116,16 @@ export default function Reabastecimiento() {
     const url = filtros.categoria_id
       ? `${API}/api/admin/reabastecimiento/subcategorias?categoria_id=${filtros.categoria_id}`
       : `${API}/api/admin/reabastecimiento/subcategorias`;
-    fetch(url).then((r) => r.json()).then(setSubcategorias).catch(() => setSubcategorias([]));
+    fetch(url)
+      .then((r) => r.json())
+      .then(setSubcategorias)
+      .catch(() => setSubcategorias([]));
   }, [filtros.categoria_id]);
 
   // Cargar productos filtrados
   const fetchProductos = useCallback(() => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     const params = new URLSearchParams();
     if (filtros.categoria_id)    params.set("categoria_id",    filtros.categoria_id);
     if (filtros.subcategoria_id) params.set("subcategoria_id", filtros.subcategoria_id);
@@ -125,46 +141,62 @@ export default function Reabastecimiento() {
     return () => clearTimeout(t);
   }, [fetchProductos]);
 
-  // Cargar predicciones para obtener el estado más crítico por producto
+  // Resetear página al cambiar filtros
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [filtros]);
+
+  // Cargar predicciones para obtener estado más crítico por producto
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/api/admin/reabastecimiento/productos`).then(r => r.json()), // productos actuales (con stock_total)
-      fetch(`${API}/api/admin/reabastecimiento/prediccion`).then(r => r.json())
+      fetch(`${API}/api/admin/reabastecimiento/productos`).then((r) => r.json()),
+      fetch(`${API}/api/admin/reabastecimiento/prediccion`).then((r) => r.json()),
     ])
       .then(([productosList, variantes]) => {
         const estadoPorProducto = {};
-        // Inicializar todos los productos con un estado basado en stock_total (por si no tienen variantes)
-        productosList.forEach(p => {
-          if (Number(p.stock_total) === 0) {
-            estadoPorProducto[p.producto_id] = "critico";
-          } else if (Number(p.stock_total) < 10) {
-            estadoPorProducto[p.producto_id] = "proximo";
-          } else {
-            estadoPorProducto[p.producto_id] = "abastecido";
-          }
+
+        productosList.forEach((p) => {
+          const s = Number(p.stock_total);
+          estadoPorProducto[p.producto_id] =
+            s === 0 ? "critico" : s < 10 ? "proximo" : "abastecido";
         });
-        // Luego sobreescribir con los estados reales de las variantes (prioridad crítico > próximo > abastecido)
-        variantes.forEach(v => {
-          const pid = v.producto_id;
-          const nuevoEstado = v.estado;
+
+        variantes.forEach((v) => {
+          const pid    = v.producto_id;
+          const nuevo  = v.estado;
           const actual = estadoPorProducto[pid];
-          if (nuevoEstado === "critico") {
+          if (nuevo === "critico") {
             estadoPorProducto[pid] = "critico";
-          } else if (nuevoEstado === "proximo" && actual !== "critico") {
+          } else if (nuevo === "proximo" && actual !== "critico") {
             estadoPorProducto[pid] = "proximo";
-          } else if (nuevoEstado === "abastecido" && actual !== "critico" && actual !== "proximo") {
+          } else if (
+            nuevo === "abastecido" &&
+            actual !== "critico" &&
+            actual !== "proximo"
+          ) {
             estadoPorProducto[pid] = "abastecido";
           }
         });
+
         setEstadosProductos(estadoPorProducto);
       })
-      .catch(err => console.error("Error cargando datos:", err));
+      .catch((err) => console.error("Error cargando datos:", err));
   }, []);
 
-  const hayFiltros = filtros.categoria_id || filtros.subcategoria_id || filtros.search;
+  // ── Lógica de paginación ──
+  const totalPaginas       = Math.ceil(productos.length / PRODUCTOS_POR_PAGINA);
+  const productosPaginados = productos.slice(
+    (paginaActual - 1) * PRODUCTOS_POR_PAGINA,
+    paginaActual * PRODUCTOS_POR_PAGINA
+  );
+
+  const hayFiltros =
+    filtros.categoria_id || filtros.subcategoria_id || filtros.search;
 
   return (
     <div className="rb-page">
+
+      {/* ── Header ── */}
       <header className="rb-header">
         <div>
           <h1 className="rb-title">Predicción de Reabastecimiento</h1>
@@ -172,10 +204,13 @@ export default function Reabastecimiento() {
         </div>
         <div className="rb-counter">
           <span className="rb-counter__num">{productos.length}</span>
-          <span className="rb-counter__label">producto{productos.length !== 1 ? "s" : ""}</span>
+          <span className="rb-counter__label">
+            producto{productos.length !== 1 ? "s" : ""}
+          </span>
         </div>
       </header>
 
+      {/* ── Filtros ── */}
       <div className="rb-filters">
         <div className="rb-search">
           <svg viewBox="0 0 20 20" fill="none" className="rb-search__icon">
@@ -186,61 +221,143 @@ export default function Reabastecimiento() {
             type="text"
             placeholder="Buscar por nombre o marca…"
             value={filtros.search}
-            onChange={(e) => setFiltros((f) => ({ ...f, search: e.target.value }))}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, search: e.target.value }))
+            }
           />
           {filtros.search && (
-            <button className="rb-search__clear"
-              onClick={() => setFiltros((f) => ({ ...f, search: "" }))}>✕</button>
+            <button
+              className="rb-search__clear"
+              onClick={() => setFiltros((f) => ({ ...f, search: "" }))}
+            >
+              ✕
+            </button>
           )}
         </div>
 
-        <select value={filtros.categoria_id}
-          onChange={(e) => setFiltros({ categoria_id: e.target.value, subcategoria_id: "", search: filtros.search })}>
+        <select
+          value={filtros.categoria_id}
+          onChange={(e) =>
+            setFiltros({
+              categoria_id:    e.target.value,
+              subcategoria_id: "",
+              search:          filtros.search,
+            })
+          }
+        >
           <option value="">Todas las categorías</option>
-          {categorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+          {categorias.map((c) => (
+            <option key={c.id} value={c.id}>{c.nombre}</option>
+          ))}
         </select>
 
-        <select value={filtros.subcategoria_id} disabled={!subcategorias.length}
-          onChange={(e) => setFiltros((f) => ({ ...f, subcategoria_id: e.target.value }))}>
+        <select
+          value={filtros.subcategoria_id}
+          disabled={!subcategorias.length}
+          onChange={(e) =>
+            setFiltros((f) => ({ ...f, subcategoria_id: e.target.value }))
+          }
+        >
           <option value="">Todas las subcategorías</option>
-          {subcategorias.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+          {subcategorias.map((s) => (
+            <option key={s.id} value={s.id}>{s.nombre}</option>
+          ))}
         </select>
 
         {hayFiltros && (
-          <button className="rb-clear-btn"
-            onClick={() => setFiltros({ categoria_id: "", subcategoria_id: "", search: "" })}>
+          <button
+            className="rb-clear-btn"
+            onClick={() =>
+              setFiltros({ categoria_id: "", subcategoria_id: "", search: "" })
+            }
+          >
             ✕ Limpiar
           </button>
         )}
       </div>
 
-      {loading && <div className="rb-state"><span className="rb-spinner" />Cargando productos…</div>}
-      {!loading && error && <div className="rb-state rb-state--error">⚠️ {error}</div>}
+      {/* ── Estados ── */}
+      {loading && (
+        <div className="rb-state">
+          <span className="rb-spinner" />Cargando productos…
+        </div>
+      )}
+      {!loading && error && (
+        <div className="rb-state rb-state--error">⚠️ {error}</div>
+      )}
       {!loading && !error && productos.length === 0 && (
         <div className="rb-state rb-state--empty">
-          <span>📭</span><p>No hay productos con los filtros aplicados.</p>
+          <span>📭</span>
+          <p>No hay productos con los filtros aplicados.</p>
         </div>
       )}
 
+      {/* ── Tabla ── */}
       {!loading && !error && productos.length > 0 && (
-        <>
-          <div className="rb-list-header">
-            <div className="rb-list-header__producto">Producto</div>
-            <div className="rb-list-header__stock">Stock disponible</div>
-            <div className="rb-list-header__estado">Estado Productos</div>
-            <div className="rb-list-header__operaciones">Operaciones</div>
-          </div>
-          <div className="rb-grid">
-            {productos.map((p) => (
-              <ProductoCard
-                key={p.producto_id}
-                producto={p}
-                estadoProducto={estadosProductos[p.producto_id] || "abastecido"}
-              />
+        <div className="rb-table-wrap">
+          <table className="rb-table">
+            <colgroup>
+              <col className="col-producto" />
+              <col className="col-stock"    />
+              <col className="col-estado"   />
+              <col className="col-acciones" />
+            </colgroup>
+
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th className="center">Stock</th>
+                <th className="center">Estado</th>
+                <th>Operaciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {productosPaginados.map((p) => (
+                <ProductoCard
+                  key={p.producto_id}
+                  producto={p}
+                  estadoProducto={estadosProductos[p.producto_id] ?? "abastecido"}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ── Paginación ── */}
+      {!loading && !error && totalPaginas > 1 && (
+        <div className="rb-pagination">
+          <button
+            className="rb-pg-btn"
+            disabled={paginaActual === 1}
+            onClick={() => setPaginaActual((p) => p - 1)}
+          >
+            ← Anterior
+          </button>
+
+          <div className="rb-pg-nums">
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
+              <button
+                key={num}
+                className={`rb-pg-num ${num === paginaActual ? "rb-pg-num--active" : ""}`}
+                onClick={() => setPaginaActual(num)}
+              >
+                {num}
+              </button>
             ))}
           </div>
-        </>
+
+          <button
+            className="rb-pg-btn"
+            disabled={paginaActual === totalPaginas}
+            onClick={() => setPaginaActual((p) => p + 1)}
+          >
+            Siguiente →
+          </button>
+        </div>
       )}
+
     </div>
   );
 }

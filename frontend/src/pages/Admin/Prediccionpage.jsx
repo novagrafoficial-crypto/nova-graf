@@ -127,9 +127,6 @@ export default function PrediccionProducto() {
 
       {filtroEstado !== "todos" && (
         <div className="pp-clear-state">
-          <button className="pp-clear-filters" onClick={() => { setFiltroEstado("todos"); setPaginaActual(1); }}>
-            ✕ Mostrar todos los estados
-          </button>
         </div>
       )}
 

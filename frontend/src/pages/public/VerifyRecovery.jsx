@@ -11,10 +11,23 @@ function VerifyRecovery() {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
+  // Validación: solo dígitos y longitud 6
+  const handleOtpChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setOtp(value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    if (otp.length !== 6) {
+      setMsgColor("#ef4444");
+      setMessage("El código debe tener exactamente 6 dígitos");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:5000/api/users/verify-recovery-otp", {
@@ -48,7 +61,7 @@ function VerifyRecovery() {
         body: JSON.stringify({ id_usuario }),
       });
       const data = await res.json();
-      setMsgColor("#16a34a");
+      setMsgColor("#35BA99"); // color empresa éxito
       setMessage(data.message || "Código reenviado");
       setOtp(""); // limpiar el input
     } catch {
@@ -59,52 +72,165 @@ function VerifyRecovery() {
     }
   };
 
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 16px" }}>
-        <div style={{ background: "white", borderRadius: "16px", padding: "40px", width: "100%", maxWidth: "420px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+  // Estilos con colores corporativos y margin-top para separar del header
+  const styles = {
+    container: {
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: "#F5F7FA",
+      marginTop: "90px", // separación del header
+    },
+    main: {
+      flex: 1,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "40px 16px",
+    },
+    card: {
+      background: "white",
+      borderRadius: "24px",
+      padding: "40px",
+      width: "100%",
+      maxWidth: "420px",
+      boxShadow: "0 8px 28px rgba(0, 0, 0, 0.08)",
+      border: `1px solid #DBDBDB`,
+    },
+    title: {
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "1.75rem",
+      fontWeight: "600",
+      marginBottom: "8px",
+      color: "#1A6163", // PANTONE 7721 CP
+    },
+    description: {
+      color: "#565653",
+      marginBottom: "28px",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.95rem",
+    },
+    label: {
+      display: "block",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.85rem",
+      fontWeight: "500",
+      color: "#1A6163",
+      marginBottom: "6px",
+    },
+    input: {
+      width: "100%",
+      padding: "14px",
+      borderRadius: "14px",
+      border: `2px solid #DBDBDB`,
+      fontFamily: "monospace",
+      fontSize: "1.8rem",
+      letterSpacing: "10px",
+      textAlign: "center",
+      boxSizing: "border-box",
+      outline: "none",
+      transition: "all 0.2s",
+    },
+    inputFocus: {
+      borderColor: "#35BA99",
+      boxShadow: "0 0 0 3px rgba(53, 186, 153, 0.2)",
+    },
+    button: {
+      width: "100%",
+      padding: "12px",
+      background: "#35BA99", // PANTONE 7465 CP
+      color: "white",
+      border: "none",
+      borderRadius: "40px",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "1rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "background 0.2s",
+    },
+    buttonHover: {
+      background: "#1A6163",
+    },
+    buttonDisabled: {
+      background: "#B0BEC5",
+      cursor: "not-allowed",
+    },
+    message: {
+      marginTop: "16px",
+      textAlign: "center",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.9rem",
+      fontWeight: "500",
+    },
+    resendContainer: {
+      textAlign: "center",
+      marginTop: "20px",
+      borderTop: `1px solid #DBDBDB`,
+      paddingTop: "20px",
+    },
+    resendText: {
+      color: "#565653",
+      fontSize: "0.85rem",
+      marginBottom: "8px",
+    },
+    resendButton: {
+      background: "none",
+      border: "none",
+      color: "#1A6163",
+      fontWeight: "600",
+      fontSize: "0.9rem",
+      textDecoration: "underline",
+      cursor: "pointer",
+    },
+  };
 
-          <h2 style={{ fontFamily: "Arial", marginBottom: "8px", color: "#1e293b" }}>
-            Verifica tu código
-          </h2>
-          <p style={{ color: "#64748b", marginBottom: "28px", fontFamily: "Arial" }}>
+  return (
+    <div style={styles.container}>
+      <div style={styles.main}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>Verifica tu código</h2>
+          <p style={styles.description}>
             Ingresa el código de 6 dígitos que enviamos a tu correo.
           </p>
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: "24px" }}>
-              <label style={labelStyle}>Código OTP</label>
+              <label style={styles.label}>Código OTP</label>
               <input
                 type="text"
                 placeholder="000000"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={handleOtpChange}
                 maxLength={6}
                 required
-                style={{ ...inputStyle, textAlign: "center", fontSize: "1.8rem", letterSpacing: "10px" }}
+                style={styles.input}
+                onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
+                onBlur={(e) => (e.target.style.borderColor = "#DBDBDB")}
               />
             </div>
 
-            <button type="submit" disabled={loading} style={btnStyle}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...styles.button,
+                ...(loading ? styles.buttonDisabled : {}),
+              }}
+              onMouseEnter={(e) => !loading && (e.target.style.background = styles.buttonHover.background)}
+              onMouseLeave={(e) => !loading && (e.target.style.background = styles.button.background)}
+            >
               {loading ? "Verificando..." : "Verificar código"}
             </button>
           </form>
 
-          {message && (
-            <p style={{ marginTop: "16px", textAlign: "center", fontFamily: "Arial", color: msgColor }}>
-              {message}
-            </p>
-          )}
+          {message && <p style={{ ...styles.message, color: msgColor }}>{message}</p>}
 
-          {/* Botón reenviar */}
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <p style={{ color: "#64748b", fontFamily: "Arial", fontSize: "0.9rem", marginBottom: "8px" }}>
-              ¿No recibiste el código o expiró?
-            </p>
+          <div style={styles.resendContainer}>
+            <p style={styles.resendText}>¿No recibiste el código o expiró?</p>
             <button
               onClick={handleResend}
               disabled={resendLoading}
-              style={{ background: "none", border: "none", color: "#4f46e5", cursor: "pointer", fontFamily: "Arial", fontSize: "0.95rem", textDecoration: "underline" }}
+              style={styles.resendButton}
             >
               {resendLoading ? "Reenviando..." : "Reenviar código"}
             </button>
@@ -116,9 +242,5 @@ function VerifyRecovery() {
     </div>
   );
 }
-
-const labelStyle = { display: "block", fontFamily: "Arial", fontSize: "0.85rem", color: "#475569", marginBottom: "6px" };
-const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #e2e8f0", fontFamily: "Arial", fontSize: "0.95rem", boxSizing: "border-box" };
-const btnStyle = { width: "100%", padding: "12px", background: "#4f46e5", color: "white", border: "none", borderRadius: "8px", fontFamily: "Arial", fontSize: "1rem", cursor: "pointer" };
 
 export default VerifyRecovery;

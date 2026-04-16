@@ -23,13 +23,11 @@ const TEXT_COLORS = [
 
 let nextId = 1;
 
-// ─── MODAL DE NOTIFICACIÓN (estilo AdminPublicacion) ────────────────────────
+// Modal de notificación
 const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
   if (!visible) return null;
-
   const esExito = tipo === 'exito';
   const icono = esExito ? '✅' : '❌';
-  const colorIcono = esExito ? '#16a34a' : '#dc2626';
   const fondoIcono = esExito ? '#dcfce7' : '#fee2e2';
 
   return (
@@ -44,9 +42,39 @@ const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
           <span>ℹ️</span>
           <span>{esExito ? 'La acción se completó correctamente.' : 'Por favor, intenta de nuevo.'}</span>
         </div>
-        <button className="pers-modal-boton" onClick={onCerrar}>
-          Aceptar
-        </button>
+        <button className="pers-modal-boton" onClick={onCerrar}>Aceptar</button>
+      </div>
+    </div>
+  );
+};
+
+// Modal de confirmación
+const ModalConfirmacion = ({ visible, tipo, onConfirm, onCancel }) => {
+  if (!visible) return null;
+  
+  const config = {
+    guardar: { titulo: 'Guardar diseño', mensaje: '¿Guardar este diseño en tu lista de diseños?' },
+    cancelar: { titulo: 'Cancelar diseño', mensaje: '¿Estás seguro de que deseas salir? Los cambios no guardados se perderán.' }
+  };
+  
+  const { titulo, mensaje } = config[tipo] || config.cancelar;
+  
+  return (
+    <div className="pers-modal-overlay" onClick={onCancel}>
+      <div className="pers-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="pers-modal-icon" style={{ background: '#fef9e7' }}>
+          <span style={{ fontSize: '28px' }}>⚠️</span>
+        </div>
+        <h2 className="pers-modal-titulo">{titulo}</h2>
+        <p className="pers-modal-mensaje">{mensaje}</p>
+        <div className="pers-modal-aviso">
+          <span>ℹ️</span>
+          <span>Esta acción no se puede deshacer.</span>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>
+          <button className="pers-modal-boton secundario" onClick={onCancel}>Cancelar</button>
+          <button className="pers-modal-boton" onClick={onConfirm}>Confirmar</button>
+        </div>
       </div>
     </div>
   );
@@ -63,203 +91,37 @@ const ProductoPersonalizador = () => {
     elementosGuardados
   } = location.state || {};
 
-// ─── CONFIGURACIÓN DE MODALES ────────────────────────────────────────────────
-const MODALES = {
-  guardar: {
-    iconoBg: '#dcfce7', iconoColor: '#16a34a', Icono: IconGuardar,
-    titulo: (esEdicion) => esEdicion ? 'Actualizar diseño' : 'Guardar diseño',
-    mensaje: (esEdicion) => esEdicion
-      ? 'Se actualizará tu diseño guardado con los cambios actuales.'
-      : 'Tu diseño se guardará en "Mis diseños" y podrás editarlo cuando quieras.',
-    aviso: (esEdicion) => esEdicion
-      ? 'El diseño anterior será reemplazado.'
-      : 'No se agregará al carrito todavía.',
-    avisoBg: '#f0fdf4', avisoBorder: '#bbf7d0', avisoColor: '#166534',
-    confirmBg: '#16a34a', confirmShadow: 'rgba(22,163,74,0.3)',
-    confirmLabel: (esEdicion) => esEdicion ? 'Sí, actualizar' : 'Sí, guardar',
-  },
-  carrito: {
-    iconoBg: '#dbeafe', iconoColor: '#2563eb', Icono: IconCarrito,
-    titulo: () => 'Agregar al carrito',
-    mensaje: () => 'Se añadirá este producto con tu diseño personalizado al carrito de compras.',
-    aviso: () => 'Podrás ajustar la cantidad desde el carrito.',
-    avisoBg: '#eff6ff', avisoBorder: '#bfdbfe', avisoColor: '#1e40af',
-    confirmBg: '#2563eb', confirmShadow: 'rgba(37,99,235,0.3)',
-    confirmLabel: () => 'Agregar al carrito',
-  },
-  cancelar: {
-    iconoBg: '#fef9c3', iconoColor: '#ca8a04', Icono: IconCancelar,
-    titulo: () => 'Salir sin guardar',
-    mensaje: () => 'Si sales ahora perderás todos los cambios que no hayas guardado en tu diseño.',
-    aviso: () => 'Guarda primero si no quieres perder tu trabajo.',
-    avisoBg: '#fffbeb', avisoBorder: '#fde68a', avisoColor: '#92400e',
-    confirmBg: '#d97706', confirmShadow: 'rgba(217,119,6,0.3)',
-    confirmLabel: () => 'Salir sin guardar',
-  },
-};
-
-// ─── MODAL DE CONFIRMACIÓN ───────────────────────────────────────────────────
-const ModalConfirmacion = ({ visible, tipo, esEdicion, onConfirmar, onCancelar }) => {
-  if (!visible || !tipo) return null;
-  const v = MODALES[tipo];
-  const { Icono } = v;
-
-  return (
-    <div style={ms.overlay} onClick={onCancelar}>
-      <div style={ms.card} onClick={e => e.stopPropagation()}>
-
-        <div style={{ ...ms.iconWrap, background: v.iconoBg, color: v.iconoColor }}>
-          <Icono />
-        </div>
-
-        <h2 style={ms.titulo}>{v.titulo(esEdicion)}</h2>
-        <p style={ms.mensaje}>{v.mensaje(esEdicion)}</p>
-
-        <div style={{ ...ms.aviso, background: v.avisoBg, border: `1px solid ${v.avisoBorder}` }}>
-          <span style={{ color: v.avisoColor, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-            <IconInfo /> {v.aviso(esEdicion)}
-          </span>
-        </div>
-
-        <div style={ms.botones}>
-          <button style={ms.btnCancelar} onClick={onCancelar}>Cancelar</button>
-          <button
-            style={{ ...ms.btnConfirmar, background: v.confirmBg, boxShadow: `0 4px 14px ${v.confirmShadow}` }}
-            onClick={onConfirmar}
-          >
-            {v.confirmLabel(esEdicion)}
-          </button>
-        </div>
+  // ========== VALIDACIÓN CRÍTICA: evita página en blanco ==========
+  if (!productoId || !variante) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>⚠️ Información del producto no disponible</h2>
+        <p>Por favor, regresa al catálogo y selecciona una variante antes de personalizar.</p>
+        <button onClick={() => navigate(-1)}>Volver</button>
       </div>
-    </div>
-  );
-};
+    );
+  }
+  // ================================================================
 
-// ─── MODAL DE RESULTADO (éxito / error) ─────────────────────────────────────
-const ModalResultado = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
-  if (!visible) return null;
+  const [elementos, setElementos] = useState([]);
+  const [seleccionado, setSelec] = useState(null);
+  const [textoInput, setTextoInput] = useState('');
+  const [colorTexto, setColor] = useState('#ffffff');
+  const [fontSize, setFontSize] = useState(32);
+  const [fontFamily, setFontFamily] = useState('Poppins');
+  const [fontWeight, setFontWeight] = useState('bold');
+  const [fontStyle, setFontStyle] = useState('normal');
+  const [textDecoration, setTextDecoration] = useState('none');
+  const [textAlign, setTextAlign] = useState('center');
+  const [shadowBlur, setShadowBlur] = useState(4);
+  const [guardando, setGuardando] = useState(false);
+  const [tab, setTab] = useState('texto');
+  const [imgError, setImgError] = useState(false);
+  const [editandoBorradorId, setEditandoBorradorId] = useState(borradorId || null);
+  const [imgSrc, setImgSrc] = useState(null);
 
-  const esExito = tipo === 'exito';
-  const cfg = esExito
-    ? { iconoBg: '#dcfce7', iconoColor: '#16a34a', Icono: IconCheck,  btnBg: '#16a34a', btnShadow: 'rgba(22,163,74,0.3)' }
-    : { iconoBg: '#fee2e2', iconoColor: '#dc2626', Icono: IconError, btnBg: '#dc2626', btnShadow: 'rgba(220,38,38,0.3)' };
-
-  const { Icono } = cfg;
-
-  return (
-    <div style={ms.overlay} onClick={onCerrar}>
-      <div style={ms.card} onClick={e => e.stopPropagation()}>
-
-        <div style={{ ...ms.iconWrap, background: cfg.iconoBg, color: cfg.iconoColor }}>
-          <Icono />
-        </div>
-
-        <h2 style={ms.titulo}>{titulo}</h2>
-        <p style={ms.mensaje}>{mensaje}</p>
-
-        <div style={{ width: '100%', marginTop: 8 }}>
-          <button
-            style={{ ...ms.btnConfirmar, background: cfg.btnBg, boxShadow: `0 4px 14px ${cfg.btnShadow}`, width: '100%' }}
-            onClick={onCerrar}
-          >
-            Aceptar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── ESTILOS MODALES ─────────────────────────────────────────────────────────
-const ms = {
-  overlay: {
-    position: 'fixed', inset: 0,
-    background: 'rgba(15,23,42,0.55)',
-    backdropFilter: 'blur(5px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 9999,
-    animation: 'mFadeIn .15s ease',
-  },
-  card: {
-    background: '#ffffff', borderRadius: 20,
-    padding: '36px 32px', width: '100%', maxWidth: 400,
-    boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-    animation: 'mSlideUp .2s ease',
-    fontFamily: '"Inter", system-ui, sans-serif',
-  },
-  iconWrap: {
-    width: 64, height: 64, borderRadius: '50%',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  },
-  titulo: { fontSize: 20, fontWeight: 700, color: '#0f172a', margin: 0, textAlign: 'center' },
-  mensaje: { fontSize: 15, color: '#475569', margin: 0, textAlign: 'center', lineHeight: 1.65 },
-  aviso: {
-    padding: '10px 14px', borderRadius: 10,
-    width: '100%', boxSizing: 'border-box',
-  },
-  botones: { display: 'flex', gap: 12, width: '100%', marginTop: 8 },
-  btnCancelar: {
-    flex: 1, padding: '11px 0',
-    background: '#f1f5f9', color: '#334155',
-    border: '1px solid #e2e8f0', borderRadius: 12,
-    fontSize: 14, fontWeight: 600, cursor: 'pointer',
-  },
-  btnConfirmar: {
-    flex: 1, padding: '11px 0',
-    color: '#ffffff', border: 'none', borderRadius: 12,
-    fontSize: 14, fontWeight: 600, cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-  },
-};
-
-// Animaciones — inyectadas una sola vez
-if (!document.getElementById('modal-pers-keyframes')) {
-  const st = document.createElement('style');
-  st.id = 'modal-pers-keyframes';
-  st.textContent = `
-    @keyframes mFadeIn  { from { opacity:0 } to { opacity:1 } }
-    @keyframes mSlideUp { from { opacity:0; transform:translateY(18px) scale(.96) }
-                          to   { opacity:1; transform:translateY(0)      scale(1)  } }
-  `;
-  document.head.appendChild(st);
-}
-
-// ─── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────
-const ProductoPersonalizador = () => {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const { imagenProducto, productoId, variante, borradorId, elementosGuardados } = location.state || {};
-
-  const [elementos,      setElementos]  = useState([]);
-  const [seleccionado,   setSelec]      = useState(null);
-  const [textoInput,     setTextoInput] = useState('');
-  const [colorTexto,     setColor]      = useState('#ffffff');
-  const [fontSize,       setFontSize]   = useState(32);
-  const [fontFamily,     setFontFamily] = useState('Poppins');
-  const [fontWeight,     setFontWeight] = useState('bold');
-  const [fontStyle,      setFontStyle]  = useState('normal');
-  const [textDecoration, setTextDeco]   = useState('none');
-  const [textAlign,      setTextAlign]  = useState('center');
-  const [shadowBlur,     setShadow]     = useState(4);
-  const [guardando,      setGuardando]  = useState(false);
-  const [tab,            setTab]        = useState('texto');
-  const [imgError,       setImgError]   = useState(false);
-  const [imgSrc,         setImgSrc]     = useState(null);
-  const [editandoBorradorId] = useState(borradorId || null);
-
-  // ── Estado de modales ──
+  const [modal, setModal] = useState({ visible: false, tipo: 'exito', titulo: '', mensaje: '', onCerrar: null });
   const [modalConfirm, setModalConfirm] = useState({ visible: false, tipo: null });
-  const [modalResult,  setModalResult]  = useState({ visible: false, tipo: null, titulo: '', mensaje: '', onCerrar: null });
-
-  // Estado del modal
-  const [modal, setModal] = useState({
-    visible: false,
-    tipo: 'exito',
-    titulo: '',
-    mensaje: '',
-  });
-
   const escenaRef = useRef(null);
   const fileRef   = useRef(null);
 
@@ -276,13 +138,8 @@ const ProductoPersonalizador = () => {
     return `${API_URL}${url}`;
   }, []);
 
-  const mostrarModal = (tipo, titulo, mensaje) => {
-    setModal({ visible: true, tipo, titulo, mensaje });
-  };
-
-  const cerrarModal = () => {
-    setModal({ ...modal, visible: false });
-  };
+  const mostrarModal = (tipo, titulo, mensaje, onCerrar = null) => setModal({ visible: true, tipo, titulo, mensaje, onCerrar });
+  const cerrarModal = () => setModal({ ...modal, visible: false, onCerrar: null });
 
   useEffect(() => {
     if (!imagenProducto) { setImgError(true); return; }
@@ -314,7 +171,7 @@ const ProductoPersonalizador = () => {
     setTextDecoration(elemento.textDecoration || 'none');
     setTextAlign(elemento.textAlign || 'center');
     setShadowBlur(elemento.shadowBlur || 4);
-  }, [seleccionado]);
+  }, [seleccionado, elementos]);
 
   useEffect(() => {
     if (!seleccionado) return;
@@ -366,24 +223,30 @@ const ProductoPersonalizador = () => {
     if (seleccionado === id) setSelec(null);
   };
 
-  const actualizarEl = (id, cambios) =>
-    setElementos(prev => prev.map(el => el.id === id ? { ...el, ...cambios } : el));
-
   const iniciarDrag = (e, id, x, y) => {
     e.stopPropagation(); setDragging(id);
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     elementStartPos.current = { x, y };
   };
+  
   const onMouseMoveDrag = useCallback((e) => {
     if (!dragging) return;
     const dx = e.clientX - dragStartPos.current.x;
     const dy = e.clientY - dragStartPos.current.y;
     actualizarEl(dragging, { x: elementStartPos.current.x + dx, y: elementStartPos.current.y + dy });
   }, [dragging]);
+  
   const onMouseUpDrag = useCallback(() => setDragging(null), []);
+  
   useEffect(() => {
-    if (dragging) { window.addEventListener('mousemove', onMouseMoveDrag); window.addEventListener('mouseup', onMouseUpDrag); }
-    return () => { window.removeEventListener('mousemove', onMouseMoveDrag); window.removeEventListener('mouseup', onMouseUpDrag); };
+    if (dragging) { 
+      window.addEventListener('mousemove', onMouseMoveDrag); 
+      window.addEventListener('mouseup', onMouseUpDrag); 
+    }
+    return () => { 
+      window.removeEventListener('mousemove', onMouseMoveDrag); 
+      window.removeEventListener('mouseup', onMouseUpDrag); 
+    };
   }, [dragging, onMouseMoveDrag, onMouseUpDrag]);
 
   // ── Resize ──
@@ -391,6 +254,7 @@ const ProductoPersonalizador = () => {
     e.stopPropagation(); setResizing(id);
     resizeStart.current = { x: e.clientX, y: e.clientY, w, h };
   };
+  
   const onMouseMoveResize = useCallback((e) => {
     if (!resizing) return;
     const dx = e.clientX - resizeStart.current.x;
@@ -402,10 +266,18 @@ const ProductoPersonalizador = () => {
     if (elemento?.tipo === 'texto') cambios.fontSize = Math.max(12, Math.round(newH * 0.55));
     actualizarEl(resizing, cambios);
   }, [resizing, elementos]);
+  
   const onMouseUpResize = useCallback(() => setResizing(null), []);
+  
   useEffect(() => {
-    if (resizing) { window.addEventListener('mousemove', onMouseMoveResize); window.addEventListener('mouseup', onMouseUpResize); }
-    return () => { window.removeEventListener('mousemove', onMouseMoveResize); window.removeEventListener('mouseup', onMouseUpResize); };
+    if (resizing) { 
+      window.addEventListener('mousemove', onMouseMoveResize); 
+      window.addEventListener('mouseup', onMouseUpResize); 
+    }
+    return () => { 
+      window.removeEventListener('mousemove', onMouseMoveResize); 
+      window.removeEventListener('mouseup', onMouseUpResize); 
+    };
   }, [resizing, onMouseMoveResize, onMouseUpResize]);
 
   // ── Generar imagen ──
@@ -420,10 +292,18 @@ const ProductoPersonalizador = () => {
     return canvas.toDataURL('image/png');
   };
 
-  // ── ACCIONES CON MODAL DE CONFIRMACIÓN ──────────────────────────────────────
+  // ── Navegación ──
+  const navegarAtras = () => {
+    if (editandoBorradorId) navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
+    else navigate(`/cliente/producto/${productoId}`);
+  };
 
-  // Guardar — abre confirmación
+  // ── ACCIONES CON MODAL DE CONFIRMACIÓN ──────────────────────────────────────
   const pedirConfirmGuardar = () => setModalConfirm({ visible: true, tipo: 'guardar' });
+  const pedirConfirmCancelar = () => {
+    if (elementos.length === 0) { navegarAtras(); return; }
+    setModalConfirm({ visible: true, tipo: 'cancelar' });
+  };
 
   const ejecutarGuardar = async () => {
     setModalConfirm({ visible: false, tipo: null });
@@ -443,6 +323,7 @@ const ProductoPersonalizador = () => {
       const { error: uploadError } = await supabase.storage.from('borradores').upload(filePath, blob, { contentType: 'image/png' });
       if (uploadError) throw new Error('Error al subir la imagen');
       const { data: { publicUrl } } = supabase.storage.from('borradores').getPublicUrl(filePath);
+      
       if (editandoBorradorId) {
         try {
           const { data: borradorActual } = await axios.get(`${API_BORRADORES}/${editandoBorradorId}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -453,6 +334,7 @@ const ProductoPersonalizador = () => {
           }
         } catch(e) { console.warn('No se pudo limpiar imagen previa'); }
       }
+      
       const varianteId = variante?.variante_id || variante?.id;
       const borradorData = {
         producto_id: productoId, variante_id: varianteId,
@@ -461,19 +343,18 @@ const ProductoPersonalizador = () => {
         elementos,
       };
       const config = { headers: { Authorization: `Bearer ${token}` } };
+      
       if (editandoBorradorId) {
         await axios.put(`${API_BORRADORES}/${editandoBorradorId}`, borradorData, config);
-        mostrarModal('exito', '¡Diseño actualizado!', 'Tu diseño ha sido actualizado correctamente.');
+        mostrarModal('exito', '¡Diseño actualizado!', 'Tu diseño ha sido actualizado correctamente.', () => {
+          navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
+        });
       } else {
         await axios.post(API_BORRADORES, borradorData, config);
-        mostrarModal('exito', '¡Diseño guardado!', 'Tu diseño se ha guardado en "Mis diseños".');
+        mostrarModal('exito', '¡Diseño guardado!', 'Tu diseño se ha guardado en "Mis diseños".', () => {
+          navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
+        });
       }
-      // Cerrar modal y redirigir después de que el usuario cierre el modal
-      const cerrarYRedirigir = () => {
-        setModal({ ...modal, visible: false });
-        navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
-      };
-      setModal(prev => ({ ...prev, onCerrar: cerrarYRedirigir }));
     } catch (err) {
       console.error(err);
       mostrarModal('error', 'Error al guardar', 'No se pudo guardar el diseño. Intenta de nuevo.');
@@ -482,77 +363,49 @@ const ProductoPersonalizador = () => {
     }
   };
 
-  // Carrito — abre confirmación
-  const pedirConfirmCarrito = () => setModalConfirm({ visible: true, tipo: 'carrito' });
-
-  const ejecutarCarrito = async () => {
+  const ejecutarCancelar = () => {
     setModalConfirm({ visible: false, tipo: null });
+    navegarAtras();
+  };
+
+  const solicitarCotizacion = async () => {
     setGuardando(true);
     try {
       const token = getToken();
       if (!token) {
-        mostrarModal('error', 'Sesión no iniciada', 'Debes iniciar sesión para agregar al carrito.');
+        mostrarModal('error', 'Sesión no iniciada', 'Debes iniciar sesión para solicitar cotización.');
         setGuardando(false);
         return;
       }
-      const imagenUrl = await generarImagenDiseno();
-      const blob = await (await fetch(imagenUrl)).blob();
+      const imageData = await generarImagenDiseno();
+      const blob = await (await fetch(imageData)).blob();
       const user = JSON.parse(localStorage.getItem('user'));
-      const fileName = `carrito-${Date.now()}.png`;
+      const fileName = `cotizacion-${Date.now()}.png`;
       const filePath = `usuario_${user.id_usuario}/${fileName}`;
       const { error: uploadError } = await supabase.storage.from('borradores').upload(filePath, blob, { contentType: 'image/png' });
       if (uploadError) throw new Error('Error al subir imagen');
       const { data: { publicUrl } } = supabase.storage.from('borradores').getPublicUrl(filePath);
+      
       const varianteId = variante?.variante_id || variante?.id;
-      const textoPersonalizado = elementos.filter(el => el.tipo === 'texto').map(t => t.contenido).join(' | ');
-      const precioAdicionalPersonalizacion = 50;
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data: productoPersonalizado } = await axios.post(
-        API_PRODUCTOS_PERS,
-        { variante_id: varianteId, texto_personalizado: textoPersonalizado, imagen_personalizada_url: publicUrl, precio_adicional: precioAdicionalPersonalizacion },
-        config
-      );
-      const precioBase = parseFloat(variante?.precio_base || 0);
-      const precioAdicionalVariante = parseFloat(variante?.precio_adicional || 0);
-      const precioUnitario = precioBase + precioAdicionalVariante + precioAdicionalPersonalizacion;
-      const response = await axios.post(
-        API_CARRITO,
-        { producto_personalizado_id: productoPersonalizado.id, cantidad: 1, precio_unitario: precioUnitario },
-        config
-      );
-      const mensaje = response.data.message?.includes('Cantidad actualizada') 
-        ? 'Cantidad actualizada en el carrito.' 
-        : 'Producto agregado al carrito.';
-      mostrarModal('exito', '¡Agregado al carrito!', mensaje);
-      // Cerrar modal y redirigir
-      const cerrarYRedirigir = () => {
-        setModal({ ...modal, visible: false });
-        navigate('/cliente/carrito');
-      };
-      setModal(prev => ({ ...prev, onCerrar: cerrarYRedirigir }));
+      await axios.post(`${API_URL}/api/client/solicitudes-diseno`, {
+        variante_id: varianteId,
+        descripcion_cliente: "Diseño realizado con el editor interactivo",
+        archivos_referencia: [publicUrl]
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      mostrarModal('exito', 'Solicitud enviada', 'Recibirás los previos y el precio por correo electrónico.', () => {
+        navigate('/cliente/perfil', { state: { activeTab: 'pedidos' } });
+      });
     } catch (err) {
       console.error(err);
-      mostrarModal('error', 'Error', 'No se pudo agregar al carrito. Intenta de nuevo.');
+      mostrarModal('error', 'Error', 'No se pudo enviar la solicitud. Intenta de nuevo.');
     } finally {
       setGuardando(false);
     }
   };
 
-  // Cancelar — abre confirmación solo si hay elementos, si no navega directo
-  const pedirConfirmCancelar = () => {
-    if (elementos.length === 0) { navegarAtras(); return; }
-    setModalConfirm({ visible: true, tipo: 'cancelar' });
-  };
-
-  const navegarAtras = () => {
-    if (editandoBorradorId) navigate('/cliente/perfil', { state: { activeTab: 'mis-disenos' } });
-    else navigate(`/cliente/producto/${productoId}`);
-  };
-
   return (
     <div className="personalizador-page">
-
-      {/* Modal de notificación */}
       <ModalNotificacion
         visible={modal.visible}
         tipo={modal.tipo}
@@ -563,99 +416,63 @@ const ProductoPersonalizador = () => {
           else cerrarModal();
         }}
       />
+      
+      <ModalConfirmacion
+        visible={modalConfirm.visible}
+        tipo={modalConfirm.tipo}
+        onConfirm={modalConfirm.tipo === 'guardar' ? ejecutarGuardar : ejecutarCancelar}
+        onCancel={() => setModalConfirm({ visible: false, tipo: null })}
+      />
 
-      {/* ══ HERO HEADER ══════════════════════════════════ */}
       <div className="personalizador-header">
-        <button className="personalizador-back" onClick={cancelar}>
-          ← Volver
-        </button>
+        <button className="personalizador-back" onClick={pedirConfirmCancelar}>← Volver</button>
         <h1 className="personalizador-header__titulo">
           {editandoBorradorId ? 'Edita tu diseño' : 'Crea tu diseño único'}
         </h1>
-        <p className="personalizador-header__subtitulo">
-          Añade texto, imágenes y colores — tu estilo, tu producto.
-        </p>
+        <p className="personalizador-header__subtitulo">Añade texto, imágenes y colores — tu estilo, tu producto.</p>
       </div>
 
-      {/* ══ CONTENIDO PRINCIPAL ══════════════════════════ */}
       <div className="personalizador-contenido">
-
-        {/* ── LIENZO ── */}
         <div className="pers-scene-wrap">
-          <div
-            className="pers-scene"
-            ref={escenaRef}
-            onClick={() => setSelec(null)}
-          >
+          <div className="pers-scene" ref={escenaRef} onClick={() => setSelec(null)}>
             {!imgError && imgSrc ? (
-              <img
-                src={imgSrc}
-                alt="producto"
-                className="pers-producto-img"
-                draggable={false}
-                crossOrigin="anonymous"
-              />
+              <img src={imgSrc} alt="producto" className="pers-producto-img" draggable={false} crossOrigin="anonymous" />
             ) : (
               <div className="pers-fallback-bg">🖼️ Vista previa no disponible</div>
             )}
-
             {elementos.map(el => (
               <div
                 key={el.id}
                 className={`pers-elem ${seleccionado === el.id ? 'selected' : ''}`}
-                style={{ position: 'absolute', left: el.x, top: el.y, width: el.w, height: el.h, cursor: 'grab', zIndex: seleccionado === el.id ? 50 : 10 }}
-                onClick={e => { e.stopPropagation(); setSelec(el.id); }}
-                onMouseDown={e => iniciarDrag(e, el.id, el.x, el.y)}
+                style={{
+                  position: 'absolute',
+                  left: el.x, top: el.y, width: el.w, height: el.h,
+                  cursor: 'grab', zIndex: seleccionado === el.id ? 50 : 10,
+                }}
+                onClick={(e) => { e.stopPropagation(); setSelec(el.id); }}
+                onMouseDown={(e) => iniciarDrag(e, el.id, el.x, el.y)}
               >
-                {seleccionado === el.id && (
-                  <button className="pers-del-btn" onClick={e => eliminar(el.id, e)}>✕</button>
-                )}
-
+                {seleccionado === el.id && <button className="pers-del-btn" onClick={(e) => eliminar(el.id, e)}>✕</button>}
                 {el.tipo === 'texto' ? (
                   <div style={{
-                    fontSize: el.fontSize,
-                    color: el.color,
-                    fontFamily: el.fontFamily,
-                    fontWeight: el.fontWeight,
-                    fontStyle: el.fontStyle,
-                    textDecoration: el.textDecoration,
-                    textAlign: el.textAlign,
-                    textShadow: `0 ${el.shadowBlur / 2}px ${el.shadowBlur}px rgba(0,0,0,0.5)`,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                    whiteSpace: 'nowrap',
-                    display: 'inline-block',
-                    lineHeight: 1.2,
-                    width: '100%',
-                  }}>
-                    {el.contenido}
-                  </div>
+                    fontSize: el.fontSize, color: el.color, fontFamily: el.fontFamily,
+                    fontWeight: el.fontWeight, fontStyle: el.fontStyle, textDecoration: el.textDecoration,
+                    textAlign: el.textAlign, textShadow: `0 ${el.shadowBlur / 2}px ${el.shadowBlur}px rgba(0,0,0,0.5)`,
+                    pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap', display: 'inline-block', lineHeight: 1.2, width: '100%',
+                  }}>{el.contenido}</div>
                 ) : (
-                  <img
-                    src={el.src}
-                    alt="elemento"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
-                    draggable={false}
-                  />
+                  <img src={el.src} alt="elemento" style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} draggable={false} />
                 )}
-
-                {seleccionado === el.id && (
-                  <div
-                    className="pers-resize-handle"
-                    onMouseDown={(e) => iniciarResize(e, el.id, el.w, el.h)}
-                  />
-                )}
+                {seleccionado === el.id && <div className="pers-resize-handle" onMouseDown={(e) => iniciarResize(e, el.id, el.w, el.h)} />}
               </div>
             ))}
           </div>
           <p className="pers-hint">✨ Arrastra para mover · Esquina ↘️ para redimensionar</p>
         </div>
 
-        {/* ── PANEL DE HERRAMIENTAS ── */}
         <div className="pers-tools">
-
           <div className="pers-tabs">
-            <button className={`pers-tab ${tab === 'texto'  ? 'active' : ''}`} onClick={() => setTab('texto')}>📝 Texto</button>
+            <button className={`pers-tab ${tab === 'texto' ? 'active' : ''}`} onClick={() => setTab('texto')}>📝 Texto</button>
             <button className={`pers-tab ${tab === 'imagen' ? 'active' : ''}`} onClick={() => setTab('imagen')}>🖼️ Imagen</button>
             <button className={`pers-tab ${tab === 'estilo' ? 'active' : ''}`} onClick={() => setTab('estilo')}>✨ Estilo</button>
           </div>
@@ -663,14 +480,7 @@ const ProductoPersonalizador = () => {
           {tab === 'texto' && (
             <div className="tool-section">
               <label className="tool-label">📝 Escribe tu texto</label>
-              <input
-                type="text"
-                className="tool-input"
-                placeholder="Ej: Familia García"
-                value={textoInput}
-                onChange={e => setTextoInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && agregarTexto()}
-              />
+              <input type="text" className="tool-input" placeholder="Ej: Familia García" value={textoInput} onChange={e => setTextoInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && agregarTexto()} />
               <button className="btn-agregar" onClick={agregarTexto}>+ Agregar texto</button>
             </div>
           )}
@@ -687,35 +497,24 @@ const ProductoPersonalizador = () => {
             <div className="tool-section">
               <label className="tool-label">🎨 Color</label>
               <div className="color-row">
-                {TEXT_COLORS.map(c => (
-                  <button
-                    key={c}
-                    className={`color-dot ${colorTexto === c ? 'active' : ''}`}
-                    style={{ background: c }}
-                    onClick={() => setColor(c)}
-                  />
-                ))}
+                {TEXT_COLORS.map(c => <button key={c} className={`color-dot ${colorTexto === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setColor(c)} />)}
               </div>
-
               <label className="tool-label">🔠 Fuente</label>
               <select className="tool-input" value={fontFamily} onChange={e => setFontFamily(e.target.value)}>
                 {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
-
               <label className="tool-label">📏 Tamaño: {fontSize}px</label>
               <input type="range" min="14" max="100" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} />
-
               <div className="style-buttons">
-                <button className={`style-btn ${fontWeight     === 'bold'      ? 'active' : ''}`} onClick={() => setFontWeight(fontWeight === 'bold' ? 'normal' : 'bold')}>B</button>
-                <button className={`style-btn ${fontStyle      === 'italic'    ? 'active' : ''}`} onClick={() => setFontStyle(fontStyle === 'italic' ? 'normal' : 'italic')}>I</button>
-                <button className={`style-btn ${textDecoration === 'underline' ? 'active' : ''}`} onClick={() => setTextDeco(textDecoration === 'underline' ? 'none' : 'underline')}>U</button>
+                <button className={`style-btn ${fontWeight === 'bold' ? 'active' : ''}`} onClick={() => setFontWeight(fontWeight === 'bold' ? 'normal' : 'bold')}>B</button>
+                <button className={`style-btn ${fontStyle === 'italic' ? 'active' : ''}`} onClick={() => setFontStyle(fontStyle === 'italic' ? 'normal' : 'italic')}>I</button>
+                <button className={`style-btn ${textDecoration === 'underline' ? 'active' : ''}`} onClick={() => setTextDecoration(textDecoration === 'underline' ? 'none' : 'underline')}>U</button>
                 <button className="style-btn" onClick={() => setTextAlign('left')}>←</button>
                 <button className="style-btn" onClick={() => setTextAlign('center')}>↔</button>
                 <button className="style-btn" onClick={() => setTextAlign('right')}>→</button>
               </div>
-
               <label className="tool-label">💨 Sombra: {shadowBlur}px</label>
-              <input type="range" min="0" max="12" value={shadowBlur} onChange={e => setShadow(Number(e.target.value))} />
+              <input type="range" min="0" max="12" value={shadowBlur} onChange={e => setShadowBlur(Number(e.target.value))} />
             </div>
           )}
 
@@ -723,11 +522,7 @@ const ProductoPersonalizador = () => {
             <div className="tool-section">
               <label className="tool-label">📚 Capas ({elementos.length})</label>
               {[...elementos].reverse().map(el => (
-                <div
-                  key={el.id}
-                  className={`capa-item ${seleccionado === el.id ? 'active' : ''}`}
-                  onClick={() => setSelec(el.id)}
-                >
+                <div key={el.id} className={`capa-item ${seleccionado === el.id ? 'active' : ''}`} onClick={() => setSelec(el.id)}>
                   <span>{el.tipo === 'texto' ? `📝 ${el.contenido.slice(0, 16)}` : '🖼️ Imagen'}</span>
                   <button className="capa-del" onClick={e => { e.stopPropagation(); eliminar(el.id, e); }}>✕</button>
                 </div>
@@ -740,16 +535,10 @@ const ProductoPersonalizador = () => {
             <button className="btn-lista" onClick={pedirConfirmGuardar} disabled={guardando}>
               {editandoBorradorId ? '💾 Actualizar borrador' : '📋 Guardar en lista'}
             </button>
-            {!editandoBorradorId && (
-              <button className="btn-carrito" onClick={pedirConfirmCarrito} disabled={guardando}>
-                🛒 Agregar al carrito
-              </button>
-            )}
             <button className="btn-cancelar" onClick={pedirConfirmCancelar}>Cancelar</button>
           </div>
-
-        </div>{/* fin pers-tools */}
-      </div>{/* fin personalizador-contenido */}
+        </div>
+      </div>
     </div>
   );
 };

@@ -2,15 +2,19 @@ import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import "../../styles/public/Login.css";
 
+const API = "http://localhost:5000";
+
 function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);       // ← nuevo
-  const [resendMessage, setResendMessage] = useState("");   // ← nuevo
-  const [cuentaInactiva, setCuentaInactiva] = useState(false); // ← nuevo
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const [cuentaInactiva, setCuentaInactiva] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const errorMessages = {
     email_local: 'Este correo ya está registrado manualmente. Usa tu contraseña para iniciar sesión.',
@@ -29,11 +33,23 @@ function Login() {
     e.preventDefault();
     setMessage("");
     setLoading(true);
-    setCuentaInactiva(false); // ← resetear
+    setCuentaInactiva(false);
     setResendMessage("");
+    setErrors({});
+
+    // Validaciones básicas
+    const newErrors = {};
+    if (!email.trim()) newErrors.email = "El correo es requerido";
+    if (!password.trim()) newErrors.password = "La contraseña es requerida";
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/login", {
+      const response = await fetch(`${API}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -50,8 +66,6 @@ function Login() {
         }
       } else {
         setMessage(data.message || "Error al iniciar sesión");
-
-        // ← Si la cuenta no está activada, mostrar botón de reenvío
         if (data.message?.includes("no activada")) {
           setCuentaInactiva(true);
         }
@@ -64,45 +78,48 @@ function Login() {
   };
 
   const handleResendActivation = async () => {
-  setResending(true);
-  setResendMessage("");
+    setResending(true);
+    setResendMessage("");
 
-  try {
-    // ← Usar la nueva ruta en vez de forgot-password
-    const res = await fetch("http://localhost:5000/api/users/get-user-id", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API}/api/users/get-user-id`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
 
-    if (!res.ok || !data.id_usuario) {
-      setResendMessage("❌ No se encontró el usuario");
-      return;
+      if (!res.ok || !data.id_usuario) {
+        setResendMessage("❌ No se encontró el usuario");
+        return;
+      }
+
+      const resend = await fetch(`${API}/api/users/resend-activation-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: data.id_usuario }),
+      });
+      const resendData = await resend.json();
+
+      if (resend.ok) {
+        setResendMessage("✅ Se ha enviado un nuevo código de activación a tu correo");
+      } else {
+        setResendMessage(resendData.message || "❌ Error al reenviar el código");
+      }
+    } catch (error) {
+      setResendMessage("❌ Error de conexión al reenviar");
+    } finally {
+      setResending(false);
     }
+  };
 
-    // Reenviar OTP de activación
-    const resend = await fetch("http://localhost:5000/api/users/resend-activation-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_usuario: data.id_usuario }),
-    });
-    const resendData = await resend.json();
+  const handleGoogleLogin = () => {
+    window.location.href = `${API}/api/auth/google`;
+  };
 
-    if (resend.ok) {
-      setResendMessage("✅ Código enviado. Revisa tu correo.");
-      setTimeout(() => navigate(`/verify-account/${data.id_usuario}`), 2000);
-    } else {
-      setResendMessage("❌ " + (resendData.message || "Error al reenviar"));
-    }
-  } catch {
-    setResendMessage("❌ Error de conexión");
-  } finally {
-    setResending(false);
-  }
-};
-
-  const handleGoogleLogin = () => window.location.href = "http://localhost:5000/api/auth/google";
+  const handleFacebookLogin = () => {
+    window.location.href = `${API}/api/auth/facebook`;
+  };
 
   return (
     <div className="login-page">
@@ -120,15 +137,34 @@ function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {errors.email && (
+                <span style={{ color: "#ef4444", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                  {errors.email}
+                </span>
+              )}
             </div>
-            <div className="input-group">
+
+            <div className="input-group password-group">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+              </button>
+              {errors.password && (
+                <span style={{ color: "#ef4444", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                  {errors.password}
+                </span>
+              )}
             </div>
 
             <button type="submit" className="login-btn" disabled={loading}>
@@ -142,7 +178,6 @@ function Login() {
             </p>
           )}
 
-          {/* ← Aparece solo cuando la cuenta no está activada */}
           {cuentaInactiva && (
             <div style={{ textAlign: "center", marginTop: "8px" }}>
               <button
@@ -172,8 +207,21 @@ function Login() {
 
           <div className="social-login" style={{ marginTop: "16px" }}>
             <p style={{ textAlign: "center", color: "#888", marginBottom: "8px" }}>O inicia con</p>
+
             <button
               onClick={handleGoogleLogin}
+              style={{
+                width: "100%", padding: "10px", background: "#fff",
+                border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                gap: "8px", fontSize: "0.95rem", marginBottom: "8px"
+              }}
+            >
+              <i className="fab fa-google" style={{ color: "#EA4335" }}></i> Google
+            </button>
+
+            <button
+              onClick={handleFacebookLogin}
               style={{
                 width: "100%", padding: "10px", background: "#fff",
                 border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer",
@@ -181,7 +229,7 @@ function Login() {
                 gap: "8px", fontSize: "0.95rem"
               }}
             >
-              <i className="fab fa-google" style={{ color: "#EA4335" }}></i> Google
+              <i className="fab fa-facebook-f" style={{ color: "#1877F2" }}></i> Facebook
             </button>
           </div>
 

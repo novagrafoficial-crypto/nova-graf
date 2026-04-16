@@ -14,7 +14,6 @@ const ORDEN_OPCIONES = [
 
 const CatalogoCliente = () => {
   const navigate  = useNavigate();
-  const precioRef = useRef(null);
 
   // ── DATOS ─────────────────────────────────────
   const [productos,     setProductos]     = useState([]);
@@ -29,7 +28,6 @@ const CatalogoCliente = () => {
   const [precioMin,      setPrecioMin]      = useState('');
   const [precioMax,      setPrecioMax]      = useState('');
   const [orden,          setOrden]          = useState('reciente');
-  const [precioAbierto,  setPrecioAbierto]  = useState(false);
 
   // ── COLOR ACTIVO POR TARJETA ──────────────────
   const [coloresSeleccionados, setColoresSeleccionados] = useState({});
@@ -109,16 +107,6 @@ const CatalogoCliente = () => {
       state: { colorSeleccionado: coloresSeleccionados[productoId] || '' }
     });
 
-  // Cerrar popover al clic fuera
-  useEffect(() => {
-    const fn = (e) => {
-      if (precioRef.current && !precioRef.current.contains(e.target))
-        setPrecioAbierto(false);
-    };
-    document.addEventListener('mousedown', fn);
-    return () => document.removeEventListener('mousedown', fn);
-  }, []);
-
   // ── RENDER ────────────────────────────────────
   if (loading) return <div className="catalogo-loading">Cargando productos…</div>;
 
@@ -136,6 +124,7 @@ const CatalogoCliente = () => {
       {/* ── FILTROS STICKY ── */}
       <div className="catalogo-filtros">
 
+        {/* Búsqueda */}
         <div className="catalogo-busqueda">
           <span className="catalogo-busqueda__icon">🔍</span>
           <input
@@ -146,6 +135,7 @@ const CatalogoCliente = () => {
           />
         </div>
 
+        {/* Categoría */}
         <select
           value={categoriaId}
           onChange={e => setCategoriaId(e.target.value)}
@@ -157,18 +147,20 @@ const CatalogoCliente = () => {
           ))}
         </select>
 
+        {/* Subcategoría */}
         <select
           value={subcategoriaId}
           onChange={e => setSubcategoriaId(e.target.value)}
           disabled={!categoriaId || subcategoriasFiltradas.length === 0}
           className="catalogo-select"
         >
-          <option value="">Todas las subcategorías</option>
+          <option value="">Subcategorías</option>
           {subcategoriasFiltradas.map(s => (
             <option key={s.id} value={s.id}>{s.nombre}</option>
           ))}
         </select>
 
+        {/* Orden */}
         <select
           value={orden}
           onChange={e => setOrden(e.target.value)}
@@ -179,36 +171,27 @@ const CatalogoCliente = () => {
           ))}
         </select>
 
-        <div className="precio-wrapper" ref={precioRef}>
-          <button
-            className={`btn-precio ${(precioMin || precioMax) ? 'activo' : ''}`}
-            onClick={() => setPrecioAbierto(v => !v)}
-          >
-            Rango de precio
-            <span className={`arrow ${precioAbierto ? 'open' : ''}`}>▼</span>
-          </button>
-          {precioAbierto && (
-            <div className="precio-popover">
-              <div className="precio-popover__campos">
-                <input
-                  type="number"
-                  placeholder="Mín $"
-                  value={precioMin}
-                  onChange={e => setPrecioMin(e.target.value)}
-                />
-                <span>—</span>
-                <input
-                  type="number"
-                  placeholder="Máx $"
-                  value={precioMax}
-                  onChange={e => setPrecioMax(e.target.value)}
-                />
-              </div>
-              <p className="precio-popover__max">Hasta ${precioMaxCatalogo.toFixed(2)}</p>
-            </div>
-          )}
+        {/* ── Rango de precio INLINE — siempre visible a la derecha ── */}
+        <div className="precio-inline">
+          <span className="precio-inline__label">Precio</span>
+          <input
+            type="number"
+            className="precio-inline__input"
+            placeholder={`Mín`}
+            value={precioMin}
+            onChange={e => setPrecioMin(e.target.value)}
+          />
+          <span className="precio-inline__sep">—</span>
+          <input
+            type="number"
+            className="precio-inline__input"
+            placeholder={`Máx`}
+            value={precioMax}
+            onChange={e => setPrecioMax(e.target.value)}
+          />
         </div>
 
+        {/* Limpiar */}
         {hayFiltros && (
           <button className="btn-limpiar" onClick={limpiarFiltros}>
             ✕ Limpiar
@@ -235,7 +218,6 @@ const CatalogoCliente = () => {
 
               return (
                 <div key={prod.producto_id} className="producto-card">
-
                   <div className="producto-card__img-wrapper">
                     <img src={imagenSrc} alt={prod.producto_nombre} />
                   </div>
@@ -269,7 +251,6 @@ const CatalogoCliente = () => {
                       Ver detalles →
                     </button>
                   </div>
-
                 </div>
               );
             })}

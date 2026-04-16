@@ -25,6 +25,13 @@ import Redes from './pages/public/RedesSociales';
 // Páginas cliente
 import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
+import CatalogoCliente from "./pages/Client/CatalogoCliente";
+import ProductoDetalle from "./pages/Client/ProductoDetalle";
+import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
+import CarritoCliente from './pages/Client/CarritoCliente';
+import Checkout from './pages/Client/Checkout';
+import PedidosCliente from './pages/Client/PedidosCliente';
+import SolicitarDiseno from './pages/Client/SolicitarDiseno';
 
 // Páginas admin
 import AdminMarcas from "./pages/Admin/AdminMarcas";
@@ -37,9 +44,13 @@ import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminInventario from './pages/Admin/AdminInventario';
-import AdminProveedores from './pages/Admin/AdminProveedores';
-import AdminAtributosproduc from './pages/Admin/AdminAtributosproduc';
-import AdminPedidos from './pages/Admin/AdminPedidos';
+import Reabastecimiento from './pages/Admin/Reabastecimiento';
+import Ventasproducto from "./pages/Admin/Ventasproducto";
+import Variantesmodal from "./pages/Admin/Variantesmodal";
+import Prediccionpage from "./pages/Admin/Prediccionpage";
+import DetallePrediccion from './pages/Admin/DetallePrediccion';
+import VentasGrafica from "./pages/Admin/VentasGrafica";
+import GestionSolicitudes from './pages/Admin/GestionSolicitudes';
 
 function App() {
   return (
@@ -66,15 +77,48 @@ function App() {
           <Route path="/contactos" element={<Contactos />} />
         </Route>
 
-        {/* Rutas cliente */}
+        {/* Rutas cliente - PROTEGIDAS */}
         <Route element={<ClientLayout />}>
-          <Route path="/cliente/home" element={<ClienteHome />} />
-          <Route path="/cliente/perfil" element={<ClientProfile />} />
-          <Route path="/cliente/pedidos" element={<div>Mis Pedidos</div>} />
-          <Route path="/cliente/carrito" element={<div>Mi Carrito</div>} />
+          <Route path="/cliente/home" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <ClienteHome />
+            </ProtectedRoute>
+          } />
+          <Route path="/cliente/perfil" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <ClientProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/cliente/pedidos" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <PedidosCliente />
+            </ProtectedRoute>
+          } />
+          <Route path="/cliente/carrito" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <CarritoCliente />
+            </ProtectedRoute>
+          } />
+          <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
+          <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
+          <Route path="/cliente/producto/:id/personalizar" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <ProductoPersonalizador />
+            </ProtectedRoute>
+          } />
+          <Route path="/cliente/checkout" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <Checkout />
+            </ProtectedRoute>
+          } />
+          <Route path="/cliente/producto/:id/solicitar" element={
+            <ProtectedRoute rolRequerido="cliente">
+              <SolicitarDiseno />
+            </ProtectedRoute>
+          } />
         </Route>
 
-        {/* Rutas admin - PROTEGIDAS */}
+        {/* Rutas admin - PROTEGIDAS con rol administrador */}
         <Route 
           path="/admin/*" 
           element={

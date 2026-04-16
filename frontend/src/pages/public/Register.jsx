@@ -4,29 +4,86 @@ import "../../styles/public/Register.css";
 import Footer from "../../components/Footer";
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+// Funciones de validación
+const validateName = (value) => /^[A-Za-záéíóúüñÁÉÍÓÚÜÑ\s]+$/.test(value.trim());
+const validateUsername = (value) => /^[A-Za-z0-9_]+$/.test(value.trim());
+const validatePhone = (value) => /^\d{7,15}$/.test(value.trim());
+const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validatePassword = (pwd) => pwd.length >= 6;
+
 function Register() {
   const [form, setForm] = useState({
     name: "", lastNameP: "", lastNameM: "", username: "", birthDate: "",
     address: "", phone: "", email: "", password: "", confirmPassword: "",
   });
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const navigate = useNavigate();
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    // Validar en tiempo real (opcional)
+    validateField(name, value);
+  };
+
+  const validateField = (name, value) => {
+    let error = "";
+    switch (name) {
+      case "name":
+      case "lastNameP":
+      case "lastNameM":
+        if (!value.trim()) error = "Campo obligatorio";
+        else if (!validateName(value)) error = "Solo letras y espacios";
+        break;
+      case "username":
+        if (!value.trim()) error = "Campo obligatorio";
+        else if (!validateUsername(value)) error = "Solo letras, números y _";
+        break;
+      case "birthDate":
+        if (!value) error = "Campo obligatorio";
+        break;
+      case "phone":
+        if (!value.trim()) error = "Campo obligatorio";
+        else if (!validatePhone(value)) error = "Debe tener entre 7 y 15 dígitos";
+        break;
+      case "email":
+        if (!value.trim()) error = "Campo obligatorio";
+        else if (!validateEmail(value)) error = "Correo inválido";
+        break;
+      case "password":
+        if (!value) error = "Campo obligatorio";
+        else if (!validatePassword(value)) error = "Mínimo 6 caracteres";
+        else if (form.confirmPassword && value !== form.confirmPassword) {
+          setErrors(prev => ({ ...prev, confirmPassword: "Las contraseñas no coinciden" }));
+        } else {
+          setErrors(prev => ({ ...prev, confirmPassword: "" }));
+        }
+        break;
+      case "confirmPassword":
+        if (!value) error = "Campo obligatorio";
+        else if (value !== form.password) error = "Las contraseñas no coinciden";
+        break;
+      default: break;
+    }
+    setErrors(prev => ({ ...prev, [name]: error }));
+    return error === "";
+  };
 
   const validateStep1 = () => {
-    const required = ["name", "lastNameP", "lastNameM", "username", "birthDate"];
-    const missing = required.filter(field => !form[field].trim());
-    if (missing.length > 0) {
-      setMessage("Por favor completa todos los campos antes de continuar.");
-      return false;
-    }
-    setMessage("");
-    return true;
+    const fields = ["name", "lastNameP", "lastNameM", "username", "birthDate"];
+    let valid = true;
+    fields.forEach(field => {
+      if (!validateField(field, form[field])) valid = false;
+    });
+    if (!valid) setMessage("Corrige los errores antes de continuar.");
+    else setMessage("");
+    return valid;
   };
 
   const handleNext = () => {
@@ -38,22 +95,20 @@ function Register() {
     setMessage("");
   };
 
-  const validatePasswords = () => {
-    if (form.password !== form.confirmPassword) {
-      setMessage("Las contraseñas no coinciden");
-      return false;
-    }
-    if (form.password.length < 6) {
-      setMessage("La contraseña debe tener al menos 6 caracteres");
-      return false;
-    }
-    return true;
+  const validateStep2 = () => {
+    const fields = ["address", "phone", "email", "password", "confirmPassword"];
+    let valid = true;
+    fields.forEach(field => {
+      if (!validateField(field, form[field])) valid = false;
+    });
+    if (!valid) setMessage("Corrige los errores antes de registrarte.");
+    else setMessage("");
+    return valid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validatePasswords()) return;
-
+    if (!validateStep2()) return;
     try {
       const res = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
@@ -61,7 +116,6 @@ function Register() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-
       if (res.ok) {
         navigate(`/verify-account/${data.id_usuario}`);
       } else {
@@ -83,50 +137,117 @@ function Register() {
           <p className="register-subtitle">Completa tus datos para registrarte</p>
 
           <form onSubmit={handleSubmit} className="register-form">
-            <input type="text" name="name" placeholder="Nombre" value={form.name} onChange={handleChange} required />
-            <input type="text" name="lastNameP" placeholder="Apellido paterno" value={form.lastNameP} onChange={handleChange} required />
-            <input type="text" name="lastNameM" placeholder="Apellido materno" value={form.lastNameM} onChange={handleChange} required />
-            <input type="text" name="username" placeholder="Nombre de usuario" value={form.username} onChange={handleChange} required />
-            <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} required />
-            <input type="text" name="address" placeholder="Domicilio" value={form.address} onChange={handleChange} required />
-            <input type="text" name="phone" placeholder="Teléfono" value={form.phone} onChange={handleChange} required />
-            <input type="email" name="email" placeholder="Correo electrónico" value={form.email} onChange={handleChange} required />
-            <input type="password" name="password" placeholder="Contraseña" value={form.password} onChange={handleChange} required />
-            <input type="password" name="confirmPassword" placeholder="Repetir contraseña" value={form.confirmPassword} onChange={handleChange} required />
+            {step === 1 && (
+              <>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Nombre"
+                    value={form.name}
+                    onChange={handleChange}
+                    onBlur={() => validateField("name", form.name)}
+                    required
+                  />
+                  {errors.name && <span className="field-error">{errors.name}</span>}
+                </div>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    name="lastNameP"
+                    placeholder="Apellido paterno"
+                    value={form.lastNameP}
+                    onChange={handleChange}
+                    onBlur={() => validateField("lastNameP", form.lastNameP)}
+                    required
+                  />
+                  {errors.lastNameP && <span className="field-error">{errors.lastNameP}</span>}
+                </div>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    name="lastNameM"
+                    placeholder="Apellido materno"
+                    value={form.lastNameM}
+                    onChange={handleChange}
+                    onBlur={() => validateField("lastNameM", form.lastNameM)}
+                    required
+                  />
+                  {errors.lastNameM && <span className="field-error">{errors.lastNameM}</span>}
+                </div>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Nombre de usuario"
+                    value={form.username}
+                    onChange={handleChange}
+                    onBlur={() => validateField("username", form.username)}
+                    required
+                  />
+                  {errors.username && <span className="field-error">{errors.username}</span>}
+                </div>
+                <div className="input-group">
+                  <input
+                    type="date"
+                    name="birthDate"
+                    value={form.birthDate}
+                    onChange={handleChange}
+                    onBlur={() => validateField("birthDate", form.birthDate)}
+                    required
+                  />
+                  {errors.birthDate && <span className="field-error">{errors.birthDate}</span>}
+                </div>
+                <button type="button" className="btn-next" onClick={handleNext}>
+                  Siguiente
+                </button>
+              </>
+            )}
 
             {step === 2 && (
               <>
-                <input
-                  type="text"
-                  name="address"
-                  placeholder="Domicilio"
-                  value={form.address}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  type="text"
-                  name="phone"
-                  placeholder="Teléfono"
-                  value={form.phone}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Correo electrónico"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                />
-                <div className="password-field">
+                <div className="input-group">
+                  <input
+                    type="text"
+                    name="address"
+                    placeholder="Domicilio"
+                    value={form.address}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Teléfono"
+                    value={form.phone}
+                    onChange={handleChange}
+                    onBlur={() => validateField("phone", form.phone)}
+                    required
+                  />
+                  {errors.phone && <span className="field-error">{errors.phone}</span>}
+                </div>
+                <div className="input-group">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Correo electrónico"
+                    value={form.email}
+                    onChange={handleChange}
+                    onBlur={() => validateField("email", form.email)}
+                    required
+                  />
+                  {errors.email && <span className="field-error">{errors.email}</span>}
+                </div>
+                <div className="password-field input-group">
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Contraseña"
                     value={form.password}
                     onChange={handleChange}
+                    onBlur={() => validateField("password", form.password)}
                     required
                   />
                   <button
@@ -136,14 +257,16 @@ function Register() {
                   >
                     {showPassword ? "🙈" : "👁️"}
                   </button>
+                  {errors.password && <span className="field-error">{errors.password}</span>}
                 </div>
-                <div className="password-field">
+                <div className="password-field input-group">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     placeholder="Repetir contraseña"
                     value={form.confirmPassword}
                     onChange={handleChange}
+                    onBlur={() => validateField("confirmPassword", form.confirmPassword)}
                     required
                   />
                   <button
@@ -153,6 +276,7 @@ function Register() {
                   >
                     {showConfirmPassword ? "🙈" : "👁️"}
                   </button>
+                  {errors.confirmPassword && <span className="field-error">{errors.confirmPassword}</span>}
                 </div>
                 <div className="step-buttons">
                   <button type="button" className="btn-back" onClick={handleBack}>

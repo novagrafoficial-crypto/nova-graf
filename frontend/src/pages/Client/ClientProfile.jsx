@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getToken } from "../../utils/auth";
 import PedidosUsuario from "../../components/client/PedidosUsuario";
 import MisDisenos from "../../components/client/MisDisenos";
+import SolicitudesDiseno from "../../components/client/SolicitudesDiseno"; // ← NUEVO IMPORT
 import "../../styles/client/Clientprofile.css";
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -21,13 +22,13 @@ const MENU = [
   { id: "mi-perfil",     icon: "👤", label: "Mi perfil"     },
   { id: "mis-disenos",   icon: "🎨", label: "Mis diseños"   },
   { id: "compras",       icon: "🛒", label: "Compras"       },
-  { id: "ventas",        icon: "💰", label: "Ventas"        },
+  { id: "Solicitud",     icon: "💰", label: "Solicitud"     }, // ← ya existe
   { id: "facturacion",   icon: "🧾", label: "Facturación"   },
   { id: "historial",     icon: "📜", label: "Historial"     },
   { id: "configuracion", icon: "⚙️",  label: "Configuración" },
 ];
 
-// ─── MODAL DE CONFIRMACIÓN (logout) ─────────────────────────────────────────
+// ModalConfirmacion (sin cambios)...
 const ModalConfirmacion = ({ visible, mensaje, onConfirmar, onCancelar }) => {
   if (!visible) return null;
 
@@ -80,7 +81,6 @@ function ClientProfile() {
   const [showNueva,    setShowNueva]    = useState(false);
   const [showConfirmar,setShowConfirmar]= useState(false);
 
-  // Estado para modal de confirmación de logout
   const [confirmModal, setConfirmModal] = useState({ visible: false, mensaje: "" });
 
   const mostrarConfirmacion = (mensaje) => {
@@ -91,7 +91,6 @@ function ClientProfile() {
     setConfirmModal({ visible: false, mensaje: "" });
   };
 
-  /* ── Carga del perfil ───────────────────────────────────────── */
   useEffect(() => {
     fetch(`http://localhost:5000/api/users/profile/${user.id_usuario}`)
       .then(res => res.json())
@@ -102,7 +101,6 @@ function ClientProfile() {
       });
   }, [user.id_usuario]);
 
-  /* ── Helpers ────────────────────────────────────────────────── */
   const notify = (text, ok = true) => {
     setMessage({ text, ok });
     setTimeout(() => setMessage({ text: "", ok: true }), 3500);
@@ -164,16 +162,13 @@ function ClientProfile() {
     cerrarConfirmacion();
   };
 
-  /* ── Guards ─────────────────────────────────────────────────── */
   if (loading)  return <div className="cp-loading">Cargando perfil…</div>;
   if (!profile) return <div className="cp-loading">No se pudo cargar el perfil.</div>;
 
   const esGoogle = profile.proveedor === "google";
 
-  /* ── Vistas ─────────────────────────────────────────────────── */
   const renderDashboard = () => (
     <>
-      {/* Banner de dirección */}
       {profile.domicilio && (
         <div className="cp-address-banner">
           <span className="cp-address-icon">📍</span>
@@ -184,7 +179,6 @@ function ClientProfile() {
         </div>
       )}
 
-      {/* Cambiar contraseña */}
       {!esGoogle && (
         <div className="cp-card cp-card--simple">
           <div className="cp-card__header-simple">
@@ -226,7 +220,6 @@ function ClientProfile() {
         </div>
       )}
 
-      {/* Información personal */}
       <div className="cp-card cp-card--simple">
         <div className="cp-card__header-simple">
           <span>📋 Tu información</span>
@@ -294,13 +287,21 @@ function ClientProfile() {
   const renderContent = () => {
     if (selectedOption === "mi-perfil" && editing) return renderEditProfile();
     switch (selectedOption) {
-      case "mi-perfil":  return renderDashboard();
-      case "mis-disenos":return <MisDisenos />;
+      case "mi-perfil":
+        return renderDashboard();
+      case "mis-disenos":
+        return <MisDisenos />;
       case "compras":
         return (
           <div className="cp-card">
             <h2 className="cp-card__title">Mis compras</h2>
             <PedidosUsuario />
+          </div>
+        );
+      case "Solicitud": // ← NUEVO CASE
+        return (
+          <div className="cp-card">
+            <SolicitudesDiseno />
           </div>
         );
       case "historial":
@@ -323,10 +324,8 @@ function ClientProfile() {
     }
   };
 
-  /* ── Render principal ───────────────────────────────────────── */
   return (
     <div className="cp-wrapper">
-      {/* Modal de confirmación para logout */}
       <ModalConfirmacion
         visible={confirmModal.visible}
         mensaje={confirmModal.mensaje}
@@ -334,7 +333,6 @@ function ClientProfile() {
         onCancelar={cerrarConfirmacion}
       />
 
-      {/* ── HERO HEADER ── */}
       <div className="cp-hero">
         <h2 className="cp-hero__titulo">Mi cuenta</h2>
         <p className="cp-hero__subtitulo">
@@ -342,7 +340,6 @@ function ClientProfile() {
         </p>
       </div>
 
-      {/* ── LAYOUT SIDEBAR + MAIN ── */}
       <div className="cp-layout">
         <aside className="cp-sidebar">
           <div className="cp-sidebar__user">
