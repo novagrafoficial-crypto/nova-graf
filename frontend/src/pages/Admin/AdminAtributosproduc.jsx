@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const BASE = 'http://localhost:5000/api/admin/Atributosproduc';
+
+const API_URL = import.meta.env.VITE_API_URL;
+const BASE = `${API_URL}/api/admin/Atributosproduc`;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const api = {

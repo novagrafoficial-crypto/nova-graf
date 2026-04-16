@@ -11,8 +11,8 @@ function AdminSubcategorias() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = "http://localhost:5000/api/admin/subcategorias";
-  const API_CATS = "http://localhost:5000/api/admin/categorias";
+  const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/subcategorias`;
+  const API_CATS = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/categorias`;
 
   const obtenerSubcategorias = async () => {
     setLoading(true);
@@ -160,7 +160,10 @@ function AdminSubcategorias() {
                 <td>{sub.id}</td>
                 <td>{sub.nombre}</td>
                 <td>{sub.categoria_nombre}</td>
-                <td><button type="button" className="btn-editar" onClick={() => handleEditar(sub)}>Editar</button><button type="button" className="btn-eliminar" onClick={() => handleEliminar(sub.id)}>Eliminar</button></td>
+                <td>
+                  <button type="button" className="btn-editar" onClick={() => handleEditar(sub)}>Editar</button>
+                  <button type="button" className="btn-eliminar" onClick={() => handleEliminar(sub.id)}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>

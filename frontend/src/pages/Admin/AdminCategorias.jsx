@@ -6,8 +6,9 @@ function AdminCategorias() {
   const [nombre, setNombre] = useState("");
   const [editando, setEditando] = useState(false);
   const [idEditar, setIdEditar] = useState(null);
+const API_URL = import.meta.env.VITE_API_URL;
 
-  const API = "http://localhost:5000/api/admin/categorias";
+const API = `${API_URL}/api/admin/categorias`;
 
   const obtenerCategorias = async () => {
     try {

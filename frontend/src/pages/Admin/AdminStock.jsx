@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import '../../styles/admin/AdminStock.css'; // Opcional: puedes usar el mismo CSS de la versión HTML o modularizado
+import '../../styles/admin/AdminStock.css';
+
+const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin`;
 
 // --- Datos Mock (simulan la respuesta de tu API) ---
-const AdminStock = [
+const ventasData = [
   { id: 1001, fecha: "2025-02-18", producto: "Laptop Gamer XT", cantidad: 2, total: 2799.98 },
   { id: 1002, fecha: "2025-02-19", producto: "Mouse Inalámbrico", cantidad: 5, total: 149.95 },
   { id: 1003, fecha: "2025-02-20", producto: "Monitor 24'' 4K", cantidad: 1, total: 389.99 },
@@ -161,4 +163,4 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminStock;
+export default AdminPanel;

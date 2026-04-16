@@ -3,7 +3,7 @@ import "../../styles/admin/AdminUsuarios.css";
 
 function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
-  const API = "http://localhost:5000/api/admin/usuarios";
+  const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/usuarios`;
 
   useEffect(() => {
     obtenerUsuarios();

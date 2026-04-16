@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function CategoriesAdmin(){
 
   const [nombre, setNombre] = useState("");
@@ -7,7 +9,7 @@ function CategoriesAdmin(){
 
   // Obtener categorías
   const loadCategories = async () => {
-    const res = await fetch("http://localhost:3000/api/catalog/categories");
+    const res = await fetch(`${API}/api/catalog/categories`);
     const data = await res.json();
     setCategories(data);
   };
@@ -20,7 +22,7 @@ function CategoriesAdmin(){
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await fetch("http://localhost:3000/api/catalog/categories", {
+    await fetch(`${API}/api/catalog/categories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre })

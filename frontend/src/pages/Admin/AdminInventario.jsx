@@ -2,8 +2,10 @@ import { useEffect, useState, useCallback } from "react";
 import "../../styles/admin/AdminInventario.css";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-const API      = "http://localhost:5000/api/admin/inventario";
-const API_PROD = "http://localhost:5000/api/admin/productos";
+const API_URL = import.meta.env.VITE_API_URL;
+
+const API      = `${API_URL}/api/admin/inventario`;
+const API_PROD = `${API_URL}/api/admin/productos`;
 
 // ─── Fórmulas (internas, el usuario nunca las ve directamente) ────────────────
 const calcEOQ = (D, S, H) =>

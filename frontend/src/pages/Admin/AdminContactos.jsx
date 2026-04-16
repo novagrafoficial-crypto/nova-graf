@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
-const API = "http://localhost:5000/api/admin/contactos";
+const API_URL = import.meta.env.VITE_API_URL;
+
+const API = `${API_URL}/api/admin/contactos`;
 
 export default function AdminContactos() {
   const [contactos, setContactos] = useState([]);

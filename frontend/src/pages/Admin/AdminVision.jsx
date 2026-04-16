@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API = "http://localhost:5000/api/admin/vision";
+const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/vision`;
 
 export default function AdminVision() {
   const [visiones, setVisiones] = useState([]);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-const API = "http://localhost:5000/api/admin/mision";
+const API_URL = import.meta.env.VITE_API_URL;
+const API = `${API_URL}/api/admin/mision`;
 
 export default function AdminMision() {
   const [misiones, setMisiones] = useState([]);
