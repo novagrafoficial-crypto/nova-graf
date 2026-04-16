@@ -1,87 +1,75 @@
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
+const express        = require('express');
+const router         = express.Router();
+const multer         = require('multer');
+const ctrl           = require('../../controllers/admin/productosController');
+const detectarAtaque = require('../../src/middlewares/rasp');
 
-const ctrl = require('../../controllers/admin/productosController');
+const upload = multer({ storage: multer.memoryStorage() });
 
-// ─── CONFIGURACIÓN DE MULTER ─────────────────────────────
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const nombre = Date.now() + path.extname(file.originalname);
-    cb(null, nombre);
-  }
-});
-
-const upload = multer({ storage });
-
-// ─── MIDDLEWARE VALIDAR ID ─────────────────────────────
+// ── Validadores de IDs ────────────────────────────────────
 
 const validarId = (req, res, next) => {
-  const { id } = req.params;
-
-  if (isNaN(id)) {
-    return res.status(400).json({
-      error: "ID inválido"
-    });
-  }
-
+  if (isNaN(req.params.id))
+    return res.status(400).json({ error: 'ID inválido' });
   next();
 };
 
-// ─── RUTAS ─────────────────────────────────────────────
+const validarVarianteId = (req, res, next) => {
+  if (isNaN(req.params.varianteId))
+    return res.status(400).json({ error: 'ID de variante inválido' });
+  next();
+};
 
-// Catálogos auxiliares
+// ── Catálogos ─────────────────────────────────────────────
+
 router.get('/catalogos', ctrl.obtenerCatalogos);
 
-// Productos
-router.get('/', ctrl.obtenerProductos);
+// ── Productos ─────────────────────────────────────────────
+
+router.get('/',    ctrl.obtenerProductos);
 router.get('/:id', validarId, ctrl.obtenerProductoDetalle);
 
-// Crear producto
-router.post(
-  '/',
-  upload.single('imagen'),
+// 🔒 RASP va antes de multer para analizar el body JSON
+router.post('/',
+  detectarAtaque,
+  upload.any(),
   ctrl.crearProducto
 );
 
-// Actualizar producto
-router.put(
-  '/:id',
+router.put('/:id',
   validarId,
-  upload.single('imagen'),
+  detectarAtaque,   // 🔒 RASP antes de multer
+  upload.any(),
   ctrl.actualizarProducto
 );
 
-// Eliminar producto
-router.delete(
-  '/:id',
-  validarId,
-  ctrl.eliminarProducto
-);
+router.delete('/:id', validarId, ctrl.eliminarProducto);
 
-// ─── VARIANTES ─────────────────────────────────────────
+// ── Variantes ─────────────────────────────────────────────
 
-// Crear variante
-router.post(
-  '/:id/variantes',
+router.post('/:id/variantes',
   validarId,
+  detectarAtaque,   // 🔒 RASP también en variantes
   ctrl.agregarVariante
 );
 
-// Eliminar variante
-router.delete(
-  '/:id/variantes/:varianteId',
+router.put('/:id/variantes/:varianteId',
+  validarId,
+  validarVarianteId,
+  detectarAtaque,
+  ctrl.actualizarVariante
+);
+
+router.delete('/:id/variantes/:varianteId',
+  validarId,
+  validarVarianteId,
   ctrl.eliminarVariante
 );
 
-// Actualizar stock
-router.patch(
-  '/:id/variantes/:varianteId/stock',
+router.patch('/:id/variantes/:varianteId/stock',
+  validarId,
+  validarVarianteId,
+  detectarAtaque,
   ctrl.actualizarStock
 );
 
