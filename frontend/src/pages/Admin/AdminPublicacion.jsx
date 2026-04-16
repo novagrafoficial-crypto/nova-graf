@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Eye, EyeOff, Package, Briefcase, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, Package, Briefcase, RefreshCw, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -13,8 +13,6 @@ const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) 
   return (
     <div style={modalStyles.overlay}>
       <div style={modalStyles.card}>
-
-        {/* Ícono */}
         <div style={{
           ...modalStyles.iconWrap,
           background: esPublicar ? '#dbeafe' : '#fee2e2',
@@ -24,21 +22,15 @@ const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) 
             : <EyeOff size={28} color="#dc2626" />
           }
         </div>
-
-        {/* Título */}
         <h2 style={modalStyles.titulo}>
           {esPublicar ? `Publicar ${entidad}` : `Ocultar ${entidad}`}
         </h2>
-
-        {/* Mensaje */}
         <p style={modalStyles.mensaje}>
           {esPublicar
             ? `Este ${entidad} será visible para todos los clientes en el sitio.`
             : `Este ${entidad} dejará de ser visible para los clientes.`
           }
         </p>
-
-        {/* Aviso */}
         <div style={{
           ...modalStyles.aviso,
           background: esPublicar ? '#eff6ff' : '#fff7ed',
@@ -52,8 +44,6 @@ const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) 
             }
           </span>
         </div>
-
-        {/* Botones */}
         <div style={modalStyles.botones}>
           <button style={modalStyles.btnCancelar} onClick={onCancelar}>
             Cancelar
@@ -68,18 +58,91 @@ const ModalConfirmacion = ({ visible, tipo, entidad, onConfirmar, onCancelar }) 
             }
           </button>
         </div>
-
       </div>
+    </div>
+  );
+};
+
+// ─── COMPONENTE DE PAGINACIÓN ─────────────────────────────────────────────────
+const Paginacion = ({ currentPage, totalPages, onPageChange }) => {
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div style={paginationStyles.container}>
+      <button
+        style={{ ...paginationStyles.button, ...(currentPage === 1 && paginationStyles.disabled) }}
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <ChevronLeft size={16} /> Anterior
+      </button>
+      
+      <div style={paginationStyles.pages}>
+        {getPageNumbers().map((page, index) => (
+          page === '...' ? (
+            <span key={index} style={paginationStyles.dots}>...</span>
+          ) : (
+            <button
+              key={index}
+              style={{
+                ...paginationStyles.pageButton,
+                ...(currentPage === page && paginationStyles.activePage)
+              }}
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </button>
+          )
+        ))}
+      </div>
+      
+      <button
+        style={{ ...paginationStyles.button, ...(currentPage === totalPages && paginationStyles.disabled) }}
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Siguiente <ChevronRight size={16} />
+      </button>
     </div>
   );
 };
 
 // ─── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────
 const AdminPublicacion = () => {
-  const [items, setItems]     = useState([]);
-  const [tab, setTab]         = useState('productos');
+  const [items, setItems] = useState([]);
+  const [tab, setTab] = useState('productos');
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
+  
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const [modal, setModal] = useState({
     visible: false,
@@ -95,6 +158,7 @@ const AdminPublicacion = () => {
     try {
       const res = await axios.get(`${API}/api/admin/listado/${tab}`);
       setItems(res.data);
+      setCurrentPage(1); // Resetear a primera página al cambiar de tab
     } catch (err) {
       setError('No se pudieron cargar los datos. Verifica la conexión.');
       console.error(err);
@@ -105,7 +169,20 @@ const AdminPublicacion = () => {
 
   useEffect(() => { fetchData(); }, [tab, fetchData]);
 
-  // Abre el modal con la info del item
+  // Calcular items de la página actual
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  // Cambiar de página
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // Scroll al inicio de la tabla
+    const tableWrapper = document.querySelector('.table-wrapper-scroll');
+    if (tableWrapper) tableWrapper.scrollTop = 0;
+  };
+
   const handleToggle = (id, estadoActual) => {
     setModal({
       visible: true,
@@ -116,7 +193,6 @@ const AdminPublicacion = () => {
     });
   };
 
-  // Confirmar — ejecuta el cambio
   const handleConfirmar = async () => {
     const { id, estadoActual } = modal;
     const nuevoEstado = !estadoActual;
@@ -130,7 +206,6 @@ const AdminPublicacion = () => {
     }
   };
 
-  // Cancelar — cierra sin hacer nada
   const handleCancelar = () => {
     setModal(m => ({ ...m, visible: false }));
   };
@@ -216,7 +291,6 @@ const AdminPublicacion = () => {
 
   return (
     <div style={styles.container}>
-
       <ModalConfirmacion
         visible={modal.visible}
         tipo={modal.tipo}
@@ -271,24 +345,33 @@ const AdminPublicacion = () => {
             <span style={styles.statItem}>
               <strong>{items.length}</strong> totales
             </span>
+            <span style={styles.statItem}>
+              Mostrando {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, items.length)} de {items.length}
+            </span>
           </div>
 
-          <div style={styles.tableWrapper}>
+          <div style={styles.tableWrapper} className="table-wrapper-scroll">
             <table style={styles.table}>
               <thead style={styles.thead}>{renderHeaders()}</thead>
               <tbody>
-                {items.length === 0 ? (
+                {currentItems.length === 0 ? (
                   <tr>
                     <td colSpan={tab === 'productos' ? 10 : 6} style={styles.emptyMessage}>
                       No hay registros para mostrar
                     </td>
                   </tr>
                 ) : (
-                  items.map(renderRow)
+                  currentItems.map(renderRow)
                 )}
               </tbody>
             </table>
           </div>
+
+          <Paginacion
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>
@@ -370,6 +453,67 @@ const styles = {
   errorClose: { background: 'transparent', border: 'none', color: '#991b1b', fontSize: '16px', cursor: 'pointer', padding: '0 4px' },
   loader: { textAlign: 'center', padding: '60px', color: '#64748b', fontSize: '16px', background: '#ffffff', borderRadius: '16px', border: '1px solid #e9eef2' },
   emptyMessage: { textAlign: 'center', padding: '48px', color: '#94a3b8', fontSize: '15px', fontStyle: 'italic' },
+};
+
+// ─── ESTILOS PAGINACIÓN ──────────────────────────────────────────────────────
+const paginationStyles = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '24px',
+    padding: '16px',
+    flexWrap: 'wrap',
+  },
+  button: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '10px',
+    color: '#334155',
+    fontSize: '14px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  disabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  pages: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    flexWrap: 'wrap',
+  },
+  pageButton: {
+    minWidth: '36px',
+    height: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    color: '#334155',
+    fontSize: '14px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  activePage: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+    color: '#ffffff',
+  },
+  dots: {
+    padding: '0 4px',
+    color: '#94a3b8',
+  },
 };
 
 // ─── ESTILOS MODAL ───────────────────────────────────────────────────────────
