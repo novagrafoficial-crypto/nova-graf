@@ -4,7 +4,15 @@ import "../../styles/admin/AdminProductos.css";
 import ModalConfirm from "../../components/ModalConfirm";
 
 // ✅ CORREGIDO - Igual que AdminMarcas pero con fallback
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = (() => {
+  // Si estamos en producción (Vercel)
+  if (window.location.hostname.includes('vercel.app')) {
+    return 'https://nova-graf-zbdt.onrender.com';
+  }
+  // Desarrollo local
+  return import.meta.env.VITE_API_URL || "http://localhost:5000";
+})();
+
 const API = `${API_URL}/api/admin/productos`;
 const API_BASE = `${API_URL}/api/admin`;
 const API_PROV = `${API_URL}/api/admin`;
