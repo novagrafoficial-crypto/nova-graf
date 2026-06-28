@@ -1,4 +1,4 @@
-// src/pages/Client/Checkout.jsx
+// src/pages/client/Checkout.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -10,11 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems = [], cartTotal = 0, refreshCart } = useCart();
-  
-  console.log('🛒 Checkout - cartItems:', cartItems);
-  console.log('💰 Checkout - cartTotal:', cartTotal);
-  
+  const { cartItems, cartTotal, refreshCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [metodosEntrega, setMetodosEntrega] = useState([]);
   const [formData, setFormData] = useState({
@@ -38,7 +34,7 @@ const Checkout = () => {
         const res = await axios.get(`${API_URL}/api/client/checkout/metodos-entrega`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setMetodosEntrega(res.data || []);
+        setMetodosEntrega(res.data);
       } catch (err) {
         console.error(err);
         setError('Error al cargar métodos de entrega');
@@ -63,18 +59,7 @@ const Checkout = () => {
     }
   }, [formData.metodo_entrega_id, formData.distancia_km, metodosEntrega]);
 
-  // ✅ Función para formatear número de forma segura
-  const formatPrice = (value) => {
-    const num = parseFloat(value) || 0;
-    return num.toFixed(2);
-  };
-
-  // Verificar que cartItems sea un array antes de usar .length
-  const hasItems = Array.isArray(cartItems) && cartItems.length > 0;
-  
-  // ✅ Asegurar que cartTotal sea un número
-  const safeCartTotal = parseFloat(cartTotal) || 0;
-  const totalGeneral = safeCartTotal + costoEnvio;
+  const totalGeneral = cartTotal + costoEnvio;
   const montoAnticipo = totalGeneral * 0.5;
   const montoRestante = totalGeneral * 0.5;
 
@@ -95,6 +80,7 @@ const Checkout = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Redirigir al pago del anticipo
       refreshCart();
       navigate(`/cliente/pedido/${response.data.pedido_id}/pago`);
     } catch (err) {
@@ -105,8 +91,7 @@ const Checkout = () => {
     }
   };
 
-  // Si no hay items, mostrar mensaje
-  if (!hasItems) {
+  if (cartItems.length === 0) {
     return (
       <div className="checkout-empty">
         <h2>Tu carrito está vacío</h2>
@@ -136,7 +121,7 @@ const Checkout = () => {
                 <option value="">Selecciona un método</option>
                 {metodosEntrega.map(m => (
                   <option key={m.id} value={m.id}>
-                    {m.nombre} - {m.es_dinamico_km ? 'Por Km' : `$${formatPrice(m.costo)}`}
+                    {m.nombre} - {m.es_dinamico_km ? 'Por Km' : `$${m.costo}`}
                   </option>
                 ))}
               </select>
@@ -187,40 +172,33 @@ const Checkout = () => {
         <div className="checkout-resumen">
           <h3>Resumen del pedido</h3>
           <div className="resumen-items">
-            {Array.isArray(cartItems) && cartItems.map((item, index) => {
-              // ✅ Asegurar que subtotal sea un número
-              const subtotal = parseFloat(item.subtotal) || parseFloat(item.precio_unitario) * parseFloat(item.cantidad) || 0;
-              const precioUnitario = parseFloat(item.precio_unitario) || 0;
-              const cantidad = parseInt(item.cantidad) || 0;
-              
-              return (
-                <div key={item.detalle_id || index} className="resumen-item">
-                  <span>{item.producto_nombre} x{cantidad}</span>
-                  <span>${formatPrice(subtotal)}</span>
-                </div>
-              );
-            })}
+            {cartItems.map(item => (
+              <div key={item.detalle_id} className="resumen-item">
+                <span>{item.producto_nombre} x{item.cantidad}</span>
+                <span>${item.subtotal.toFixed(2)}</span>
+              </div>
+            ))}
           </div>
           <div className="resumen-totales">
             <div className="resumen-linea">
               <span>Subtotal productos</span>
-              <span>${formatPrice(safeCartTotal)}</span>
+              <span>${cartTotal.toFixed(2)}</span>
             </div>
             <div className="resumen-linea">
               <span>Costo de envío</span>
-              <span>${formatPrice(costoEnvio)}</span>
+              <span>${costoEnvio.toFixed(2)}</span>
             </div>
             <div className="resumen-linea total">
               <span>Total</span>
-              <span>${formatPrice(totalGeneral)}</span>
+              <span>${totalGeneral.toFixed(2)}</span>
             </div>
             <div className="resumen-linea anticipo">
               <span>💰 Anticipo (50%)</span>
-              <span>${formatPrice(montoAnticipo)}</span>
+              <span>${montoAnticipo.toFixed(2)}</span>
             </div>
             <div className="resumen-linea restante">
               <span>Saldo restante (50%)</span>
-              <span>${formatPrice(montoRestante)}</span>
+              <span>${montoRestante.toFixed(2)}</span>
             </div>
           </div>
         </div>

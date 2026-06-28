@@ -720,3 +720,156 @@
     font-size: 0.7rem;
   }
 }
+
+
+/* Atributo pendiente de selección */
+.atributo-pendiente {
+  color: var(--color-warning, #c0840a);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Aviso si falta seleccionar atributos */
+.detalle-aviso-atributos {
+  font-size: 0.85rem;
+  color: #c0840a;
+  background: #fff8ea;
+  border: 1px solid #f5d78e;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Error del carrito */
+.detalle-error-carrito {
+  font-size: 0.85rem;
+  color: #c0392b;
+  background: #fdf0ef;
+  border: 1px solid #f5c0bc;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Control de cantidad con botones +/- */
+.cantidad-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cantidad-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f5f5f5;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.cantidad-btn:hover {
+  background: #e8e8e8;
+}
+
+/* Banner de los 3 pasos del flujo */
+.detalle-flujo-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: #f0f7ff;
+  border: 1px solid #c8e0f9;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  flex-wrap: wrap;
+}
+
+.flujo-paso {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #2c5282;
+  flex: 1;
+  min-width: 120px;
+}
+
+.flujo-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2b6cb0;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.flujo-sep {
+  font-size: 1rem;
+  color: #90cdf4;
+  align-self: center;
+}
+
+/* Botón principal: Agregar al carrito */
+.detalle-acciones {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn-agregar-carrito {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.85rem 1.5rem;
+  background: #1a56db;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-agregar-carrito:hover:not(:disabled) {
+  background: #1446c0;
+  transform: translateY(-1px);
+}
+
+.btn-agregar-carrito:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-agregar-carrito--ok {
+  background: #2e7d32 !important;
+}
+
+/* Botón secundario: Ir al carrito (aparece después de agregar) */
+.btn-ir-carrito {
+  padding: 0.85rem 1.25rem;
+  background: transparent;
+  color: #1a56db;
+  border: 2px solid #1a56db;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-ir-carrito:hover {
+  background: #eef2ff;
+}

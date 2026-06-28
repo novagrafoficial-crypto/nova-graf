@@ -37,8 +37,10 @@ import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
 import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
 import PedidosCliente from './pages/Client/PedidosCliente';
-import SolicitarDiseno from './pages/Client/SolicitarDiseno';
 import UnderConstruction from './pages/Client/UnderConstruction';
+import PagoPedido from './pages/Client/PagoPedido';
+import DetallePedido from './pages/Client/DetallePedido';
+import MisPedidos from './pages/Client/MisPedidos';
 
 // Dentro del Router, junto a las otras rutas de cliente
 
@@ -105,7 +107,9 @@ function App() {
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
           <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
           <Route path="/cliente/checkout" element={<Checkout />} />
-          <Route path="/cliente/producto/:id/solicitar" element={<SolicitarDiseno />} />
+          <Route path="/cliente/mis-pedidos" element={<MisPedidos />} />
+          <Route path="/cliente/pedido/:id" element={<DetallePedido />} />
+          <Route path="/cliente/pedido/:id/pago" element={<PagoPedido />} />
           <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
 
         </Route>
