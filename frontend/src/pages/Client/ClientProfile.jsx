@@ -297,7 +297,7 @@ function ClientProfile() {
             <PedidosUsuario />
           </div>
         );
-      case "Solicitud": // ← NUEVO CASE
+      case "Solicitud": 
         return (
           <div className="cp-card">
             <SolicitudesDiseno />

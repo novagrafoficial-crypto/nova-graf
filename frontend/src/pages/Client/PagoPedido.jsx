@@ -144,7 +144,7 @@ const PagoPedido = () => {
     );
   }
 
-  if (pedido.estado !== 'WAITING_DEPOSIT_VERIFICATION') {
+  if (pedido.estado !== 'PENDIENTE_VERIFICACION') {
     return (
       <div className="pago-wrapper">
         <div className="pago-card">

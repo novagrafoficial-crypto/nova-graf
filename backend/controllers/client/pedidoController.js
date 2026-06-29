@@ -48,7 +48,7 @@ const crearPedido = async (req, res) => {
       monto_anticipo: pedido.montoAnticipo,
       monto_restante: pedido.montoRestante,
       costo_envio: pedido.costoEnvio,
-      estado: 'WAITING_DEPOSIT_VERIFICATION'
+      estado: 'PENDIENTE_VERIFICACION'
     });
 
   } catch (error) {
@@ -98,7 +98,7 @@ const subirComprobante = async (req, res) => {
       return res.status(404).json({ message: 'Pedido no encontrado' });
     }
 
-    if (tipo_pago === 'ANTICIPO' && pedido.estado !== 'WAITING_DEPOSIT_VERIFICATION') {
+    if (tipo_pago === 'ANTICIPO' && pedido.estado !== 'PENDIENTE_VERIFICACION') {
       return res.status(400).json({
         message: `El pedido no está en espera de anticipo. Estado actual: ${pedido.estado}`
       });
@@ -137,7 +137,7 @@ const subirDiseno = async (req, res) => {
       return res.status(404).json({ message: 'Pedido no encontrado' });
     }
 
-    if (pedido.estado !== 'DESIGNING') {
+    if (pedido.estado !== 'PENDIENTE_VERIFICACION') {
       return res.status(400).json({
         message: `El pedido no está en etapa de diseño. Estado actual: ${pedido.estado}`
       });
@@ -147,7 +147,7 @@ const subirDiseno = async (req, res) => {
     // (Necesitas crear el modelo de disenos)
 
     // Cambiar estado a UNDER_REVIEW
-    await pedidoModel.actualizarEstadoPedido(id, 'UNDER_REVIEW');
+    await pedidoModel.actualizarEstadoPedido(id, 'EN_REVISION');
 
     res.json({
       success: true,
@@ -185,7 +185,7 @@ const crearPrevia = async (req, res) => {
     // (Necesitas crear el modelo de previas)
 
     // Cambiar estado a PREVIEWS_SENT
-    await pedidoModel.actualizarEstadoPedido(id, 'PREVIEWS_SENT');
+    await pedidoModel.actualizarEstadoPedido(id, 'PREVIAS_ENVIADAS');
 
     res.json({
       success: true,
@@ -199,11 +199,24 @@ const crearPrevia = async (req, res) => {
   }
 };
 
+const obtenerPedidosUsuario = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id_usuario;
+    const pedidos = await pedidoModel.obtenerPedidosUsuario(usuarioId);
+    res.json(pedidos);
+  } catch (error) {
+    console.error('Error al obtener pedidos:', error);
+    res.status(500).json({ message: 'Error al obtener pedidos' });
+  }
+};
+
+// Y en module.exports agrégala:
 module.exports = {
   obtenerMetodosEntrega,
   crearPedido,
   obtenerDetallePedido,
   subirComprobante,
   subirDiseno,
-  crearPrevia
+  crearPrevia,
+  obtenerPedidosUsuario  
 };

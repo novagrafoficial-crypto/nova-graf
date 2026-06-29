@@ -33,7 +33,6 @@ import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
-import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
 import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
 import PedidosCliente from './pages/Client/PedidosCliente';
@@ -105,7 +104,6 @@ function App() {
           <Route path="/cliente/carrito" element={<CarritoCliente/>} />
           <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
-          <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
           <Route path="/cliente/checkout" element={<Checkout />} />
           <Route path="/cliente/mis-pedidos" element={<MisPedidos />} />
           <Route path="/cliente/pedido/:id" element={<DetallePedido />} />

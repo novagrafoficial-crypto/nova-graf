@@ -59,7 +59,7 @@ const Checkout = () => {
       const costo = formData.distancia_km * metodo.costo_por_km;
       setCostoEnvio(Math.max(costo, metodo.costo_minimo));
     } else {
-      setCostoEnvio(metodo.costo || 0);
+      setCostoEnvio(parseFloat(metodo.costo) || 0);
     }
   }, [formData.metodo_entrega_id, formData.distancia_km, metodosEntrega]);
 

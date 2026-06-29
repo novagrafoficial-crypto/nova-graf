@@ -16,4 +16,7 @@ router.post('/:id/diseno', verificarToken, pedidoController.subirDiseno);
 // ─── CREAR PREVIA (SOLO JSON) ────────────────────────────────────
 router.post('/:id/previa', verificarToken, pedidoController.crearPrevia);
 
+// ─── OBTENER TODOS LOS PEDIDOS DEL USUARIO ───────────────────────
+router.get('/', verificarToken, pedidoController.obtenerPedidosUsuario);
+
 module.exports = router;

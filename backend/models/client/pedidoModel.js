@@ -72,7 +72,7 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
         usuario_id, metodo_entrega_id, total_productos, costo_envio,
         total_general, monto_anticipo, monto_restante, estado,
         direccion_envio, distancia_km_calculada
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'WAITING_DEPOSIT_VERIFICATION', $8, $9)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDIENTE_VERIFICACION', $8, $9)
       RETURNING id
     `;
     const pedidoValues = [
@@ -194,9 +194,65 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
   return rows[0] || null;
 };
 
+// ─── OBTENER PEDIDOS DEL USUARIO ──────────────────────────────────
+const obtenerPedidosUsuario = async (usuarioId) => {
+  const query = `
+    SELECT 
+      p.id,
+      p.fecha_pedido,
+      p.total_productos,
+      p.costo_envio,
+      p.total_general,
+      p.monto_anticipo,
+      p.monto_restante,
+      p.estado,
+      p.direccion_envio,
+      me.nombre AS metodo_entrega_nombre,
+      (
+        SELECT json_agg(
+          json_build_object(
+            'variante_id', pd.variante_id,
+            'cantidad', pd.cantidad,
+            'precio_unitario', pd.precio_unitario,
+            'subtotal', pd.cantidad * pd.precio_unitario,
+            'producto_nombre', pr.nombre,
+            'color', col.nombre,
+            'imagen_url', pv.imagen_url
+          )
+        )
+        FROM ventas.pedido_cliente_detalle pd
+        JOIN productos.producto_variantes pv ON pd.variante_id = pv.id
+        JOIN productos.productos pr ON pv.producto_id = pr.id
+        LEFT JOIN productos.colores col ON pv.color_id = col.id
+        WHERE pd.pedido_cliente_id = p.id
+      ) AS detalles,
+      (
+        SELECT json_agg(
+          json_build_object(
+            'id', pg.id,
+            'tipo_pago', pg.tipo_pago,
+            'monto', pg.monto,
+            'estado_pago', pg.estado_pago,
+            'notas_admin', pg.notas_admin,
+            'fecha_pago', pg.fecha_pago
+          ) ORDER BY pg.fecha_pago DESC
+        )
+        FROM ventas.pagos_pedidos pg
+        WHERE pg.pedido_cliente_id = p.id
+      ) AS pagos
+    FROM ventas.pedidos_clientes p
+    JOIN ventas.metodos_entrega me ON p.metodo_entrega_id = me.id
+    WHERE p.usuario_id = $1
+    ORDER BY p.fecha_pedido DESC
+  `;
+  const { rows } = await pool.query(query, [usuarioId]);
+  return rows;
+};
 
+// Agrégala al module.exports:
 module.exports = {
   crearPedidoDesdeCarrito,
   registrarPago,
-  obtenerDetallePedido
+  obtenerDetallePedido,
+  obtenerPedidosUsuario  
 };
