@@ -12,22 +12,21 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems = [], cartTotal = 0, refreshCart } = useCart();
   
-  console.log('🛒 Checkout - cartItems:', cartItems);
-  console.log('💰 Checkout - cartTotal:', cartTotal);
-  
   const [loading, setLoading] = useState(false);
   const [metodosEntrega, setMetodosEntrega] = useState([]);
+  const [metodosPago, setMetodosPago] = useState([]);
   const [formData, setFormData] = useState({
     metodo_entrega_id: '',
+    metodo_pago_id: '',
     direccion_envio: '',
     distancia_km: 0
   });
   const [error, setError] = useState(null);
   const [costoEnvio, setCostoEnvio] = useState(0);
 
-  // Cargar métodos de entrega
+  // Cargar métodos de entrega y pago
   useEffect(() => {
-    const fetchMetodos = async () => {
+    const fetchData = async () => {
       const token = getToken();
       if (!token) {
         navigate('/login');
@@ -35,19 +34,26 @@ const Checkout = () => {
       }
 
       try {
-        const res = await axios.get(`${API_URL}/api/client/checkout/metodos-entrega`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setMetodosEntrega(res.data || []);
+        const [entregaRes, pagoRes] = await Promise.all([
+          axios.get(`${API_URL}/api/client/checkout/metodos-entrega`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_URL}/api/client/checkout/metodos-pago`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+        
+        setMetodosEntrega(entregaRes.data || []);
+        setMetodosPago(pagoRes.data || []);
       } catch (err) {
         console.error(err);
-        setError('Error al cargar métodos de entrega');
+        setError('Error al cargar métodos');
       }
     };
-    fetchMetodos();
+    fetchData();
   }, [navigate]);
 
-  // Calcular costo de envío cuando cambia el método o la distancia
+  // Calcular costo de envío
   useEffect(() => {
     const metodo = metodosEntrega.find(m => m.id === parseInt(formData.metodo_entrega_id));
     if (!metodo) {
@@ -63,16 +69,12 @@ const Checkout = () => {
     }
   }, [formData.metodo_entrega_id, formData.distancia_km, metodosEntrega]);
 
-  // ✅ Función para formatear número de forma segura
   const formatPrice = (value) => {
     const num = parseFloat(value) || 0;
     return num.toFixed(2);
   };
 
-  // Verificar que cartItems sea un array antes de usar .length
   const hasItems = Array.isArray(cartItems) && cartItems.length > 0;
-  
-  // ✅ Asegurar que cartTotal sea un número
   const safeCartTotal = parseFloat(cartTotal) || 0;
   const totalGeneral = safeCartTotal + costoEnvio;
   const montoAnticipo = totalGeneral * 0.5;
@@ -89,6 +91,7 @@ const Checkout = () => {
         `${API_URL}/api/client/checkout/crear-pedido`,
         {
           metodo_entrega_id: parseInt(formData.metodo_entrega_id),
+          metodo_pago_id: parseInt(formData.metodo_pago_id),
           direccion_envio: formData.direccion_envio,
           distancia_km: formData.distancia_km || 0
         },
@@ -105,7 +108,6 @@ const Checkout = () => {
     }
   };
 
-  // Si no hay items, mostrar mensaje
   if (!hasItems) {
     return (
       <div className="checkout-empty">
@@ -119,7 +121,7 @@ const Checkout = () => {
     <div className="checkout-wrapper">
       <div className="checkout-header">
         <h2>Checkout</h2>
-        <p>Revisa tu pedido y elige el método de entrega</p>
+        <p>Revisa tu pedido y elige método de entrega y pago</p>
       </div>
 
       <div className="checkout-contenido">
@@ -144,6 +146,48 @@ const Checkout = () => {
                 <small className="metodo-descripcion">
                   {metodosEntrega.find(m => m.id === parseInt(formData.metodo_entrega_id))?.descripcion}
                 </small>
+              )}
+            </div>
+
+            {/* Método de pago */}
+            <div className="form-group">
+              <label>Método de pago *</label>
+              <select
+                value={formData.metodo_pago_id}
+                onChange={(e) => setFormData({ ...formData, metodo_pago_id: e.target.value })}
+                required
+              >
+                <option value="">Selecciona un método</option>
+                {metodosPago.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre} {m.requiere_comprobante ? '📎 (requiere comprobante)' : '✅ (pago directo)'}
+                  </option>
+                ))}
+              </select>
+              {formData.metodo_pago_id && (
+                <div className="metodo-pago-info">
+                  <small className="metodo-descripcion">
+                    {metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.descripcion}
+                  </small>
+                  {metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.instrucciones && (
+                    <div className="instrucciones-pago">
+                      <strong>Instrucciones:</strong>
+                      <p>{metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.instrucciones}</p>
+                    </div>
+                  )}
+                  {metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.datos_bancarios && (
+                    <div className="datos-bancarios">
+                      <strong>Datos bancarios:</strong>
+                      <pre>
+                        {JSON.stringify(
+                          metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.datos_bancarios,
+                          null,
+                          2
+                        )}
+                      </pre>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -188,14 +232,10 @@ const Checkout = () => {
           <h3>Resumen del pedido</h3>
           <div className="resumen-items">
             {Array.isArray(cartItems) && cartItems.map((item, index) => {
-              // ✅ Asegurar que subtotal sea un número
               const subtotal = parseFloat(item.subtotal) || parseFloat(item.precio_unitario) * parseFloat(item.cantidad) || 0;
-              const precioUnitario = parseFloat(item.precio_unitario) || 0;
-              const cantidad = parseInt(item.cantidad) || 0;
-              
               return (
                 <div key={item.detalle_id || index} className="resumen-item">
-                  <span>{item.producto_nombre} x{cantidad}</span>
+                  <span>{item.producto_nombre} x{item.cantidad}</span>
                   <span>${formatPrice(subtotal)}</span>
                 </div>
               );

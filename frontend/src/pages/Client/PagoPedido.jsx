@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getToken } from '../../utils/auth';
-import { supabase } from '../../lib/supabase'; // ← IMPORTANTE: usar supabase del frontend
+import { supabase } from '../../lib/supabase';
 import '../../styles/client/PagoPedido.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -32,6 +32,8 @@ const PagoPedido = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPedido(res.data);
+        console.log('📦 Pedido cargado:', res.data);
+        console.log('📦 metodo_pago_id:', res.data?.metodo_pago_id);
       } catch (err) {
         console.error(err);
         setError('Error al cargar el pedido');
@@ -50,7 +52,6 @@ const PagoPedido = () => {
     }
   };
 
-  // 🔥 FUNCIÓN PARA SUBIR A SUPABASE (IGUAL QUE EN SolicitarDiseno)
   const subirArchivoSupabase = async (file, usuarioId) => {
     const fileName = `comprobante_pedido_${id}_${Date.now()}_${file.name}`;
     const filePath = `comprobantes/usuario_${usuarioId}/${fileName}`;
@@ -58,7 +59,7 @@ const PagoPedido = () => {
     console.log(`📤 Subiendo comprobante a Supabase: ${filePath}`);
     
     const { error } = await supabase.storage
-      .from('borradores') // ← Mismo bucket
+      .from('borradores')
       .upload(filePath, file);
     
     if (error) {
@@ -88,18 +89,21 @@ const PagoPedido = () => {
       const token = getToken();
       const user = JSON.parse(localStorage.getItem('user'));
       
-      // 🔥 1. Subir comprobante a Supabase (desde el frontend)
       const comprobanteUrl = await subirArchivoSupabase(comprobante, user.id_usuario);
       
-      // 🔥 2. Enviar la URL al backend
+      // ✅ CORREGIDO: Enviar metodo_pago_id (número) no metodo_pago (string)
+      const payload = {
+        tipo_pago: 'ANTICIPO',
+        monto: pedido.monto_anticipo,
+        metodo_pago_id: pedido.metodo_pago_id, // ← ID del método de pago
+        comprobante_url: comprobanteUrl
+      };
+      
+      console.log('📤 Enviando al backend:', payload);
+      
       const response = await axios.post(
         `${API_URL}/api/client/pedidos/${id}/comprobante`,
-        {
-          tipo_pago: 'ANTICIPO',
-          monto: pedido.monto_anticipo,
-          metodo_pago: 'TRANSFERENCIA',
-          comprobante_url: comprobanteUrl // ← Enviamos la URL, no el archivo
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -108,12 +112,15 @@ const PagoPedido = () => {
         }
       );
       
+      console.log('✅ Respuesta del backend:', response.data);
+      
       setExito(true);
       setTimeout(() => {
         navigate(`/cliente/pedido/${id}`);
       }, 3000);
     } catch (err) {
-      console.error(err);
+      console.error('❌ Error:', err);
+      console.error('❌ Respuesta del error:', err.response?.data);
       setError(err.response?.data?.message || 'Error al subir el comprobante');
     } finally {
       setSubiendo(false);
@@ -124,7 +131,6 @@ const PagoPedido = () => {
   if (error) return <div className="pago-error">{error}</div>;
   if (!pedido) return <div className="pago-error">Pedido no encontrado</div>;
 
-  // Si ya hay un pago registrado
   const pagoExistente = pedido.pagos?.find(p => p.tipo_pago === 'ANTICIPO');
   if (pagoExistente) {
     return (

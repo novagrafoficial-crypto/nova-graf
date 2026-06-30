@@ -1,6 +1,7 @@
 // backend/controllers/client/pedidoController.js
 const pedidoModel = require('../../models/client/pedidoModel');
 const metodosEntregaModel = require('../../models/client/metodosEntregaModel');
+const metodosPagoModel = require('../../models/client/metodosPagoModel');
 const carritoModel = require('../../models/client/carritoModel');
 
 // ─── OBTENER MÉTODOS DE ENTREGA ────────────────────────────────────
@@ -18,10 +19,17 @@ const obtenerMetodosEntrega = async (req, res) => {
 const crearPedido = async (req, res) => {
   try {
     const usuarioId = req.usuario.id_usuario;
-    const { metodo_entrega_id, direccion_envio, distancia_km } = req.body;
+    const { metodo_entrega_id, metodo_pago_id, direccion_envio, distancia_km } = req.body;
 
+    console.log('📝 Creando pedido:', { metodo_entrega_id, metodo_pago_id, direccion_envio, distancia_km });
+
+    // Validaciones
     if (!metodo_entrega_id) {
       return res.status(400).json({ message: 'Se requiere método de entrega' });
+    }
+
+    if (!metodo_pago_id) {
+      return res.status(400).json({ message: 'Se requiere método de pago' });
     }
 
     if (!direccion_envio || direccion_envio.trim() === '') {
@@ -33,9 +41,11 @@ const crearPedido = async (req, res) => {
       return res.status(400).json({ message: 'El carrito está vacío' });
     }
 
+    // ✅ Crear pedido CON metodo_pago_id
     const pedido = await pedidoModel.crearPedidoDesdeCarrito(
       usuarioId,
       metodo_entrega_id,
+      metodo_pago_id,  // ← NUEVO PARÁMETRO
       direccion_envio,
       distancia_km || 0
     );
@@ -78,11 +88,11 @@ const obtenerDetallePedido = async (req, res) => {
   }
 };
 
-// ─── SUBIR COMPROBANTE (SOLO GUARDA URL) ──────────────────────────
+// ─── SUBIR COMPROBANTE ──────────────────────────────────────────
 const subirComprobante = async (req, res) => {
   try {
     const { id } = req.params;
-    const { tipo_pago, monto, metodo_pago, comprobante_url } = req.body;
+    const { tipo_pago, monto, metodo_pago_id, comprobante_url } = req.body;
 
     if (!comprobante_url) {
       return res.status(400).json({ message: 'La URL del comprobante es requerida' });
@@ -104,13 +114,13 @@ const subirComprobante = async (req, res) => {
       });
     }
 
-    // 🔥 SOLO GUARDAR LA URL EN LA BASE DE DATOS
+    // ✅ Registrar pago CON metodo_pago_id
     const pago = await pedidoModel.registrarPago(
       id,
       tipo_pago,
       monto,
-      metodo_pago,
-      comprobante_url // ← URL que viene del frontend
+      metodo_pago_id,  // ← ID del método de pago
+      comprobante_url
     );
 
     res.status(201).json({
@@ -125,80 +135,7 @@ const subirComprobante = async (req, res) => {
   }
 };
 
-// ─── SUBIR DISEÑO (SOLO GUARDA URL) ──────────────────────────────
-const subirDiseno = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { tipo_origen, archivo_url, simulador_json, notas_cliente } = req.body;
-    const usuarioId = req.usuario.id_usuario;
-
-    const pedido = await pedidoModel.obtenerDetallePedido(id, usuarioId);
-    if (!pedido) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
-    }
-
-    if (pedido.estado !== 'PENDIENTE_VERIFICACION') {
-      return res.status(400).json({
-        message: `El pedido no está en etapa de diseño. Estado actual: ${pedido.estado}`
-      });
-    }
-
-    // 🔥 GUARDAR EN ventas.disenos_clientes
-    // (Necesitas crear el modelo de disenos)
-
-    // Cambiar estado a UNDER_REVIEW
-    await pedidoModel.actualizarEstadoPedido(id, 'EN_REVISION');
-
-    res.json({
-      success: true,
-      message: 'Diseño enviado correctamente',
-      archivo_url: archivo_url
-    });
-
-  } catch (error) {
-    console.error('Error al subir diseño:', error);
-    res.status(500).json({ message: 'Error al subir diseño' });
-  }
-};
-
-// ─── CREAR PREVIA (SOLO GUARDA URL) ──────────────────────────────
-const crearPrevia = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { numero_previa, imagen_url } = req.body;
-    const usuarioId = req.usuario.id_usuario;
-
-    if (!numero_previa || ![1, 2].includes(numero_previa)) {
-      return res.status(400).json({ message: 'Número de previa inválido (1 o 2)' });
-    }
-
-    if (!imagen_url) {
-      return res.status(400).json({ message: 'La URL de la imagen es requerida' });
-    }
-
-    const pedido = await pedidoModel.obtenerDetallePedido(id, usuarioId);
-    if (!pedido) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
-    }
-
-    // 🔥 GUARDAR EN ventas.previas_diseno
-    // (Necesitas crear el modelo de previas)
-
-    // Cambiar estado a PREVIEWS_SENT
-    await pedidoModel.actualizarEstadoPedido(id, 'PREVIAS_ENVIADAS');
-
-    res.json({
-      success: true,
-      message: 'Previa creada correctamente',
-      imagen_url: imagen_url
-    });
-
-  } catch (error) {
-    console.error('Error al crear previa:', error);
-    res.status(500).json({ message: 'Error al crear previa' });
-  }
-};
-
+// ─── OBTENER PEDIDOS DEL USUARIO ──────────────────────────────────
 const obtenerPedidosUsuario = async (req, res) => {
   try {
     const usuarioId = req.usuario.id_usuario;
@@ -210,13 +147,10 @@ const obtenerPedidosUsuario = async (req, res) => {
   }
 };
 
-// Y en module.exports agrégala:
 module.exports = {
   obtenerMetodosEntrega,
   crearPedido,
   obtenerDetallePedido,
   subirComprobante,
-  subirDiseno,
-  crearPrevia,
-  obtenerPedidosUsuario  
+  obtenerPedidosUsuario
 };

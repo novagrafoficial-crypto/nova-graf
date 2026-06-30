@@ -10,11 +10,6 @@ router.get('/:id', verificarToken, pedidoController.obtenerDetallePedido);
 // ─── SUBIR COMPROBANTE (SOLO JSON) ──────────────────────────────
 router.post('/:id/comprobante', verificarToken, pedidoController.subirComprobante);
 
-// ─── SUBIR DISEÑO (SOLO JSON) ────────────────────────────────────
-router.post('/:id/diseno', verificarToken, pedidoController.subirDiseno);
-
-// ─── CREAR PREVIA (SOLO JSON) ────────────────────────────────────
-router.post('/:id/previa', verificarToken, pedidoController.crearPrevia);
 
 // ─── OBTENER TODOS LOS PEDIDOS DEL USUARIO ───────────────────────
 router.get('/', verificarToken, pedidoController.obtenerPedidosUsuario);

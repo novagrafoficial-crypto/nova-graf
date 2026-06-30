@@ -1,9 +1,8 @@
-// models/client/pedidoModel.js
+// backend/models/client/pedidoModel.js
 const pool = require('../../config/db');
-const carritoModel = require('./carritoModel');
 
 // ─── CREAR PEDIDO DESDE CARRITO ────────────────────────────────────
-const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvio, distanciaKm) => {
+const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId, direccionEnvio, distanciaKm) => {
   const client = await pool.connect();
   
   try {
@@ -32,12 +31,13 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
     // 2. Calcular totales
     let totalProductos = 0;
     const detalles = carritoItems.rows.map(item => {
-      const subtotal = item.cantidad * parseFloat(item.precio_unitario);
+      const precioUnitario = parseFloat(item.precio_unitario);
+      const subtotal = item.cantidad * precioUnitario;
       totalProductos += subtotal;
       return {
         variante_id: item.variante_id,
         cantidad: item.cantidad,
-        precio_unitario: parseFloat(item.precio_unitario)
+        precio_unitario: precioUnitario
       };
     });
     
@@ -54,30 +54,38 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
     }
     
     const metodo = metodoResult.rows[0];
-    let costoEnvio = parseFloat(metodo.costo);
+    let costoEnvio = parseFloat(metodo.costo) || 0;
     
-    // Si es dinámico por km, calcular
     if (metodo.es_dinamico_km && distanciaKm) {
       const costoCalculado = distanciaKm * parseFloat(metodo.costo_por_km);
-      costoEnvio = Math.max(costoCalculado, parseFloat(metodo.costo_minimo));
+      costoEnvio = Math.max(costoCalculado, parseFloat(metodo.costo_minimo) || 0);
     }
     
     const totalGeneral = totalProductos + costoEnvio;
     const montoAnticipo = totalGeneral * 0.5;
     const montoRestante = totalGeneral * 0.5;
     
-    // 4. Crear pedido
+    // 4. Crear pedido CON metodo_pago_id
     const pedidoQuery = `
       INSERT INTO ventas.pedidos_clientes (
-        usuario_id, metodo_entrega_id, total_productos, costo_envio,
-        total_general, monto_anticipo, monto_restante, estado,
-        direccion_envio, distancia_km_calculada
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDIENTE_VERIFICACION', $8, $9)
-      RETURNING id
+        usuario_id, 
+        metodo_entrega_id, 
+        metodo_pago_id,
+        total_productos, 
+        costo_envio,
+        total_general, 
+        monto_anticipo, 
+        monto_restante, 
+        estado,
+        direccion_envio, 
+        distancia_km_calculada
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'PENDIENTE_VERIFICACION', $9, $10)
+      RETURNING id, total_general, monto_anticipo, monto_restante, costo_envio
     `;
     const pedidoValues = [
       usuarioId, 
-      metodoEntregaId, 
+      metodoEntregaId,
+      metodoPagoId,      // ← NUEVO
       totalProductos, 
       costoEnvio,
       totalGeneral, 
@@ -87,7 +95,7 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
       distanciaKm || null
     ];
     const pedidoResult = await client.query(pedidoQuery, pedidoValues);
-    const pedidoId = pedidoResult.rows[0].id;
+    const pedido = pedidoResult.rows[0];
     
     // 5. Guardar detalles del pedido
     for (const detalle of detalles) {
@@ -96,7 +104,12 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
           pedido_cliente_id, variante_id, cantidad, precio_unitario
         ) VALUES ($1, $2, $3, $4)
       `;
-      await client.query(detalleQuery, [pedidoId, detalle.variante_id, detalle.cantidad, detalle.precio_unitario]);
+      await client.query(detalleQuery, [
+        pedido.id, 
+        detalle.variante_id, 
+        detalle.cantidad, 
+        detalle.precio_unitario
+      ]);
     }
     
     // 6. Vaciar carrito
@@ -108,11 +121,11 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
     await client.query('COMMIT');
     
     return {
-      pedidoId,
-      totalGeneral,
-      montoAnticipo,
-      montoRestante,
-      costoEnvio
+      pedidoId: pedido.id,
+      totalGeneral: parseFloat(pedido.total_general),
+      montoAnticipo: parseFloat(pedido.monto_anticipo),
+      montoRestante: parseFloat(pedido.monto_restante),
+      costoEnvio: parseFloat(pedido.costo_envio)
     };
     
   } catch (error) {
@@ -123,15 +136,26 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, direccionEnvi
   }
 };
 
-// ─── REGISTRAR PAGO ─────────────────────────────────────────────────
-const registrarPago = async (pedidoId, tipoPago, monto, metodoPago, comprobanteUrl) => {
+// ─── REGISTRAR PAGO CON METODO_PAGO_ID ─────────────────────────────
+const registrarPago = async (pedidoId, tipoPago, monto, metodoPagoId, comprobanteUrl) => {
   const query = `
     INSERT INTO ventas.pagos_pedidos (
-      pedido_cliente_id, tipo_pago, monto, metodo_pago, comprobante_url, estado_pago
-    ) VALUES ($1, $2, $3, $4, $5, 'pending')
+      pedido_cliente_id, 
+      tipo_pago, 
+      monto, 
+      metodo_pago_id,
+      comprobante_url, 
+      estado_pago
+    ) VALUES ($1, $2, $3, $4, $5, 'PENDIENTE')
     RETURNING *
   `;
-  const { rows } = await pool.query(query, [pedidoId, tipoPago, monto, metodoPago, comprobanteUrl]);
+  const { rows } = await pool.query(query, [
+    pedidoId, 
+    tipoPago, 
+    monto, 
+    metodoPagoId,  // ← ID del método de pago
+    comprobanteUrl,
+  ]);
   return rows[0];
 };
 
@@ -152,6 +176,8 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
       p.fecha_entrega_estimada,
       me.nombre AS metodo_entrega_nombre,
       me.tipo AS metodo_entrega_tipo,
+      mp.nombre AS metodo_pago_nombre,
+      mp.tipo AS metodo_pago_tipo,
       (
         SELECT json_agg(
           json_build_object(
@@ -176,7 +202,7 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
             'id', pg.id,
             'tipo_pago', pg.tipo_pago,
             'monto', pg.monto,
-            'metodo_pago', pg.metodo_pago,
+            'metodo_pago_id', pg.metodo_pago_id,
             'comprobante_url', pg.comprobante_url,
             'estado_pago', pg.estado_pago,
             'fecha_pago', pg.fecha_pago,
@@ -188,6 +214,7 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
       ) AS pagos
     FROM ventas.pedidos_clientes p
     JOIN ventas.metodos_entrega me ON p.metodo_entrega_id = me.id
+    LEFT JOIN ventas.metodos_pago mp ON p.metodo_pago_id = mp.id
     WHERE p.id = $1 AND p.usuario_id = $2
   `;
   const { rows } = await pool.query(query, [pedidoId, usuarioId]);
@@ -208,6 +235,7 @@ const obtenerPedidosUsuario = async (usuarioId) => {
       p.estado,
       p.direccion_envio,
       me.nombre AS metodo_entrega_nombre,
+      mp.nombre AS metodo_pago_nombre,
       (
         SELECT json_agg(
           json_build_object(
@@ -242,6 +270,7 @@ const obtenerPedidosUsuario = async (usuarioId) => {
       ) AS pagos
     FROM ventas.pedidos_clientes p
     JOIN ventas.metodos_entrega me ON p.metodo_entrega_id = me.id
+    LEFT JOIN ventas.metodos_pago mp ON p.metodo_pago_id = mp.id
     WHERE p.usuario_id = $1
     ORDER BY p.fecha_pedido DESC
   `;
@@ -249,10 +278,9 @@ const obtenerPedidosUsuario = async (usuarioId) => {
   return rows;
 };
 
-// Agrégala al module.exports:
 module.exports = {
   crearPedidoDesdeCarrito,
   registrarPago,
   obtenerDetallePedido,
-  obtenerPedidosUsuario  
+  obtenerPedidosUsuario
 };
