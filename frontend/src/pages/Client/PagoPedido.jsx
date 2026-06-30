@@ -33,7 +33,6 @@ const PagoPedido = () => {
         });
         setPedido(res.data);
         console.log('📦 Pedido cargado:', res.data);
-        console.log('📦 metodo_pago_id:', res.data?.metodo_pago_id);
       } catch (err) {
         console.error(err);
         setError('Error al cargar el pedido');
@@ -44,9 +43,24 @@ const PagoPedido = () => {
     fetchPedido();
   }, [id, navigate]);
 
+  const handleRemoveFile = () => {
+    setComprobante(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    const fileInput = document.getElementById('comprobante');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setComprobante(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -91,11 +105,9 @@ const PagoPedido = () => {
       
       const comprobanteUrl = await subirArchivoSupabase(comprobante, user.id_usuario);
       
-      // ✅ CORREGIDO: Enviar metodo_pago_id (número) no metodo_pago (string)
       const payload = {
         tipo_pago: 'ANTICIPO',
         monto: pedido.monto_anticipo,
-        metodo_pago_id: pedido.metodo_pago_id, // ← ID del método de pago
         comprobante_url: comprobanteUrl
       };
       
@@ -115,6 +127,7 @@ const PagoPedido = () => {
       console.log('✅ Respuesta del backend:', response.data);
       
       setExito(true);
+      // ✅ REDIRIGIR AL DETALLE DEL PEDIDO
       setTimeout(() => {
         navigate(`/cliente/pedido/${id}`);
       }, 3000);
@@ -135,16 +148,59 @@ const PagoPedido = () => {
   if (pagoExistente) {
     return (
       <div className="pago-wrapper">
-        <div className="pago-card">
-          <h2>Pago registrado</h2>
-          <p className="pago-subtitulo">Tu comprobante está siendo verificado</p>
-          <div className="pago-info">
-            <p><strong>Monto:</strong> ${pedido.monto_anticipo}</p>
-            <p><strong>Estado:</strong> {pagoExistente.estado_pago}</p>
+        <div className="pago-card pago-card--success">
+          <div className="pago-icon-circle">
+            <span className="pago-icon">✅</span>
           </div>
-          <button onClick={() => navigate(`/cliente/pedido/${id}`)}>
-            Ver detalle del pedido
-          </button>
+          
+          <h2 className="pago-title">¡Pago registrado!</h2>
+          <p className="pago-subtitle">Tu comprobante está siendo verificado por el administrador.</p>
+          
+          <div className="pago-info-box">
+            <div className="pago-info-row">
+              <span className="pago-info-label">💳 Monto</span>
+              <span className="pago-info-value">${pedido.monto_anticipo}</span>
+            </div>
+            <div className="pago-info-row">
+              <span className="pago-info-label">📌 Estado</span>
+              <span className="pago-info-value pago-status-pending">⏳ En verificación</span>
+            </div>
+            {pagoExistente.comprobante_url && (
+              <div className="pago-info-row">
+                <span className="pago-info-label">📎 Comprobante</span>
+                <a 
+                  href={pagoExistente.comprobante_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="pago-info-link"
+                >
+                  Ver comprobante
+                </a>
+              </div>
+            )}
+          </div>
+
+          <div className="pago-actions">
+            <button 
+              className="pago-btn pago-btn-primary"
+              onClick={() => navigate(`/cliente/pedido/${id}`)}
+            >
+              📋 Ver detalle del pedido
+            </button>
+            <button 
+              className="pago-btn pago-btn-secondary"
+              onClick={() => navigate('/cliente/perfil', { state: { activeTab: 'pedidos' } })}
+            >
+              ← Volver a mis pedidos
+            </button>
+          </div>
+
+          {pagoExistente.notas_admin && (
+            <div className="pago-nota-admin">
+              <span>📝</span>
+              <p><strong>Nota del administrador:</strong> {pagoExistente.notas_admin}</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -154,11 +210,19 @@ const PagoPedido = () => {
     return (
       <div className="pago-wrapper">
         <div className="pago-card">
-          <h2>Pedido en proceso</h2>
-          <p className="pago-subtitulo">Estado actual: {pedido.estado}</p>
-          <button onClick={() => navigate(`/cliente/pedido/${id}`)}>
-            Ver detalle
-          </button>
+          <div className="pago-icon-circle pago-icon-circle--info">
+            <span className="pago-icon">ℹ️</span>
+          </div>
+          <h2 className="pago-title">Pedido en proceso</h2>
+          <p className="pago-subtitle">Estado actual: <strong>{pedido.estado}</strong></p>
+          <div className="pago-actions">
+            <button 
+              className="pago-btn pago-btn-primary"
+              onClick={() => navigate(`/cliente/pedido/${id}`)}
+            >
+              📋 Ver detalle del pedido
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -191,18 +255,48 @@ const PagoPedido = () => {
         <form onSubmit={handleSubmit} className="pago-form">
           <div className="form-group">
             <label htmlFor="comprobante">Comprobante de pago</label>
-            <input
-              type="file"
-              id="comprobante"
-              accept="image/*,application/pdf"
-              onChange={handleFileChange}
-              required
-            />
+            
+            <div className="pago-file-area">
+              <input
+                type="file"
+                id="comprobante"
+                accept="image/*,application/pdf"
+                onChange={handleFileChange}
+                className="pago-file-input"
+              />
+              
+              {!comprobante ? (
+                <div className="pago-file-placeholder">
+                  <span className="pago-file-icon">📎</span>
+                  <span>Seleccionar archivo</span>
+                  <span className="pago-file-hint">JPG, PNG, PDF (máx. 5MB)</span>
+                </div>
+              ) : (
+                <div className="pago-file-selected">
+                  <div className="pago-file-info">
+                    <span className="pago-file-name">📄 {comprobante.name}</span>
+                    <span className="pago-file-size">
+                      {(comprobante.size / 1024).toFixed(1)} KB
+                    </span>
+                  </div>
+                  <button 
+                    type="button"
+                    className="pago-file-remove"
+                    onClick={handleRemoveFile}
+                    title="Eliminar archivo"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
             {previewUrl && (
               <div className="preview-container">
                 <img src={previewUrl} alt="Preview" className="preview-image" />
               </div>
             )}
+            
             <small>Formatos permitidos: JPG, PNG, PDF (máx. 5MB)</small>
           </div>
 
@@ -214,8 +308,8 @@ const PagoPedido = () => {
             </div>
           )}
 
-          <button type="submit" disabled={subiendo || exito}>
-            {subiendo ? 'Subiendo...' : 'Subir comprobante'}
+          <button type="submit" className="pago-btn-submit" disabled={subiendo || exito || !comprobante}>
+            {subiendo ? '⏳ Subiendo...' : '📤 Subir comprobante'}
           </button>
         </form>
       </div>

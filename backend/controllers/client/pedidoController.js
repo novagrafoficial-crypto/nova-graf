@@ -89,10 +89,13 @@ const obtenerDetallePedido = async (req, res) => {
 };
 
 // ─── SUBIR COMPROBANTE ──────────────────────────────────────────
+
 const subirComprobante = async (req, res) => {
   try {
     const { id } = req.params;
-    const { tipo_pago, monto, metodo_pago_id, comprobante_url } = req.body;
+    const { tipo_pago, monto, comprobante_url } = req.body;
+
+    console.log('📝 Subiendo comprobante:', { tipo_pago, monto, comprobante_url });
 
     if (!comprobante_url) {
       return res.status(400).json({ message: 'La URL del comprobante es requerida' });
@@ -114,12 +117,10 @@ const subirComprobante = async (req, res) => {
       });
     }
 
-    // ✅ Registrar pago CON metodo_pago_id
     const pago = await pedidoModel.registrarPago(
       id,
       tipo_pago,
       monto,
-      metodo_pago_id,  // ← ID del método de pago
       comprobante_url
     );
 

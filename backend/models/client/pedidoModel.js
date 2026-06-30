@@ -136,24 +136,22 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
   }
 };
 
-// ─── REGISTRAR PAGO CON METODO_PAGO_ID ─────────────────────────────
-const registrarPago = async (pedidoId, tipoPago, monto, metodoPagoId, comprobanteUrl) => {
+// ─── REGISTRAR PAGO  ─────────────────────────────
+const registrarPago = async (pedidoId, tipoPago, monto, comprobanteUrl) => {
   const query = `
     INSERT INTO ventas.pagos_pedidos (
       pedido_cliente_id, 
       tipo_pago, 
       monto, 
-      metodo_pago_id,
       comprobante_url, 
       estado_pago
-    ) VALUES ($1, $2, $3, $4, $5, 'PENDIENTE')
+    ) VALUES ($1, $2, $3, $4, 'PENDIENTE')
     RETURNING *
   `;
   const { rows } = await pool.query(query, [
     pedidoId, 
     tipoPago, 
     monto, 
-    metodoPagoId,  // ← ID del método de pago
     comprobanteUrl,
   ]);
   return rows[0];
@@ -202,7 +200,6 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
             'id', pg.id,
             'tipo_pago', pg.tipo_pago,
             'monto', pg.monto,
-            'metodo_pago_id', pg.metodo_pago_id,
             'comprobante_url', pg.comprobante_url,
             'estado_pago', pg.estado_pago,
             'fecha_pago', pg.fecha_pago,
@@ -260,6 +257,7 @@ const obtenerPedidosUsuario = async (usuarioId) => {
             'id', pg.id,
             'tipo_pago', pg.tipo_pago,
             'monto', pg.monto,
+            'comprobante_url', pg.comprobante_url,
             'estado_pago', pg.estado_pago,
             'notas_admin', pg.notas_admin,
             'fecha_pago', pg.fecha_pago

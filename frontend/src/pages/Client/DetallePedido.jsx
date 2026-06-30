@@ -5,6 +5,8 @@ import axios from 'axios';
 import { getToken } from '../../utils/auth';
 import '../../styles/client/DetallePedido.css';
 
+const API_URL = import.meta.env.VITE_API_URL; // ← ESTA LÍNEA FALTA
+
 // ✅ Estados del pedido (igual que en PedidosUsuario)
 const ESTADO_CONFIG = {
   PENDIENTE_VERIFICACION: { texto: "⏳ Anticipo pendiente", color: "#f59e0b", bg: "#fef3c7" },
@@ -38,9 +40,11 @@ const DetallePedido = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPedido(res.data);
+        console.log('📦 Pedido cargado:', res.data);
       } catch (err) {
-        console.error(err);
-        setError('Error al cargar el pedido');
+        console.error('❌ Error al cargar pedido:', err);
+        console.error('❌ Respuesta:', err.response?.data);
+        setError(err.response?.data?.message || 'Error al cargar el pedido');
       } finally {
         setLoading(false);
       }
@@ -83,7 +87,7 @@ const DetallePedido = () => {
           </div>
           <div className="info-linea">
             <span>Método de entrega:</span>
-            <span>{pedido.metodo_entrega_nombre}</span>
+            <span>{pedido.metodo_entrega_nombre || 'No especificado'}</span>
           </div>
           <div className="info-linea">
             <span>Dirección:</span>
@@ -108,24 +112,28 @@ const DetallePedido = () => {
         {/* Productos */}
         <div className="detalle-productos">
           <h3>🛒 Productos</h3>
-          {pedido.detalles?.map((detalle, index) => (
-            <div key={index} className="producto-item">
-              <img 
-                src={detalle.imagen_url || '/placeholder.png'} 
-                alt={detalle.producto_nombre} 
-                onError={(e) => (e.target.src = '/placeholder.png')}
-              />
-              <div className="producto-info">
-                <h4>{detalle.producto_nombre}</h4>
-                <p>Color: {detalle.color || 'N/A'}</p>
-                <p>Cantidad: {detalle.cantidad}</p>
-                <p>Precio unitario: ${detalle.precio_unitario}</p>
+          {pedido.detalles?.length > 0 ? (
+            pedido.detalles.map((detalle, index) => (
+              <div key={index} className="producto-item">
+                <img 
+                  src={detalle.imagen_url || '/placeholder.png'} 
+                  alt={detalle.producto_nombre} 
+                  onError={(e) => (e.target.src = '/placeholder.png')}
+                />
+                <div className="producto-info">
+                  <h4>{detalle.producto_nombre}</h4>
+                  <p>Color: {detalle.color || 'N/A'}</p>
+                  <p>Cantidad: {detalle.cantidad}</p>
+                  <p>Precio unitario: ${detalle.precio_unitario}</p>
+                </div>
+                <div className="producto-precio">
+                  ${detalle.subtotal}
+                </div>
               </div>
-              <div className="producto-precio">
-                ${detalle.subtotal}
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="producto-vacio">No hay productos en este pedido</p>
+          )}
           <div className="producto-total">
             <span>Subtotal productos:</span>
             <span>${pedido.total_productos}</span>
@@ -149,10 +157,10 @@ const DetallePedido = () => {
             <div key={index} className="pago-item">
               <span className="pago-tipo">{pago.tipo_pago}</span>
               <span className="pago-monto">${pago.monto}</span>
-              <span className={`pago-estado ${pago.estado_pago.toLowerCase()}`}>
+              <span className={`pago-estado ${pago.estado_pago?.toLowerCase() || 'pendiente'}`}>
                 {pago.estado_pago === 'PENDIENTE' ? '⏳ En verificación' :
                  pago.estado_pago === 'APROBADO' ? '✅ Aprobado' :
-                 pago.estado_pago === 'RECHAZADO' ? '❌ Rechazado' : pago.estado_pago}
+                 pago.estado_pago === 'RECHAZADO' ? '❌ Rechazado' : pago.estado_pago || 'Pendiente'}
               </span>
               {pago.comprobante_url && (
                 <a href={pago.comprobante_url} target="_blank" rel="noopener noreferrer" className="pago-comprobante">
