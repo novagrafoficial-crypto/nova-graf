@@ -33,12 +33,12 @@ import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
-import ProductoPersonalizador from './pages/Client/ProductoPersonalizador';
 import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
-import PedidosCliente from './pages/Client/PedidosCliente';
-import SolicitarDiseno from './pages/Client/SolicitarDiseno';
 import UnderConstruction from './pages/Client/UnderConstruction';
+import PagoPedido from './pages/Client/PagoPedido';
+import DetallePedido from './pages/Client/DetallePedido';
+
 
 // Dentro del Router, junto a las otras rutas de cliente
 
@@ -99,13 +99,12 @@ function App() {
         <Route element={<CartProvider><ClientLayout /></CartProvider>}>
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
-          <Route path="/cliente/pedidos" element={<PedidosCliente />} />
           <Route path="/cliente/carrito" element={<CarritoCliente/>} />
           <Route path="/cliente/catalogo" element={<CatalogoCliente />} />
           <Route path="/cliente/producto/:id" element={<ProductoDetalle />} />
-          <Route path="/cliente/producto/:id/personalizar" element={<ProductoPersonalizador />} />
           <Route path="/cliente/checkout" element={<Checkout />} />
-          <Route path="/cliente/producto/:id/solicitar" element={<SolicitarDiseno />} />
+          <Route path="/cliente/pedido/:id" element={<DetallePedido />} />
+          <Route path="/cliente/pedido/:id/pago" element={<PagoPedido />} />
           <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
 
         </Route>

@@ -1,3 +1,4 @@
+// src/components/client/ClientHeader.jsx
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
@@ -52,7 +53,7 @@ function ClientHeader({ user }) {
           <Link to="/cliente/catalogo" className="ch-nav__link">Catálogo</Link>
           {/* 👇 Redirige a "En construcción" */}
           <Link to="/cliente/en-construccion" className="ch-nav__link">Ofertas</Link>
-          <Link to="/cliente/pedidos" className="ch-nav__link">Mis compras</Link>
+          <Link to="/cliente/pedidos" className="ch-nav__link">Mis Pedidos</Link>
         </nav>
 
         <div className="ch-actions">

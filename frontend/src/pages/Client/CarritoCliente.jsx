@@ -1,11 +1,8 @@
+// src/pages/Client/CarritoCliente.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { getToken } from '../../utils/auth';
 import { useCart } from '../../context/CartContext';
 import '../../styles/client/Carrito.css';
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 // ─── MODAL DE CONFIRMACIÓN ─────────────────────────────────────────
 const ModalConfirmacion = ({ visible, mensaje, onConfirmar, onCancelar }) => {
@@ -63,15 +60,21 @@ const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
 
 const CarritoCliente = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState([]);
+  const { 
+    cartItems = [], 
+    cartTotal = 0, 
+    refreshCart, 
+    updateQuantity, 
+    removeFromCart 
+  } = useCart();
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { refreshCart } = useCart();
 
   // Estados para modales
   const [confirmModal, setConfirmModal] = useState({
     visible: false,
-    carritoId: null,
+    detalleId: null,
     mensaje: ''
   });
   const [notifModal, setNotifModal] = useState({
@@ -81,11 +84,11 @@ const CarritoCliente = () => {
     mensaje: ''
   });
 
-  const mostrarConfirmacion = (carritoId, mensaje) => {
-    setConfirmModal({ visible: true, carritoId, mensaje });
+  const mostrarConfirmacion = (detalleId, mensaje) => {
+    setConfirmModal({ visible: true, detalleId, mensaje });
   };
   const cerrarConfirmacion = () => {
-    setConfirmModal({ visible: false, carritoId: null, mensaje: '' });
+    setConfirmModal({ visible: false, detalleId: null, mensaje: '' });
   };
   const mostrarNotificacion = (tipo, titulo, mensaje) => {
     setNotifModal({ visible: true, tipo, titulo, mensaje });
@@ -94,39 +97,20 @@ const CarritoCliente = () => {
     setNotifModal({ ...notifModal, visible: false });
   };
 
-  const fetchCarrito = async () => {
-    const token = getToken();
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    try {
-      const res = await axios.get(`${API_URL}/api/client/carrito`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setItems(res.data);
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo cargar el carrito');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Cargar carrito al montar
   useEffect(() => {
-    fetchCarrito();
-  }, []);
+    const loadCart = async () => {
+      setLoading(true);
+      await refreshCart();
+      setLoading(false);
+    };
+    loadCart();
+  }, [refreshCart]);
 
-  const handleActualizarCantidad = async (carritoId, cantidad) => {
+  const handleActualizarCantidad = async (detalleId, cantidad) => {
     if (cantidad < 1) return;
-    const token = getToken();
     try {
-      await axios.put(`${API_URL}/api/client/carrito/${carritoId}`, 
-        { cantidad }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      await fetchCarrito();
-      refreshCart();
+      await updateQuantity(detalleId, cantidad);
       mostrarNotificacion('exito', 'Cantidad actualizada', 'El producto se actualizó correctamente.');
     } catch (err) {
       mostrarNotificacion('error', 'Error', 'No se pudo actualizar la cantidad.');
@@ -134,23 +118,14 @@ const CarritoCliente = () => {
   };
 
   const handleEliminar = async () => {
-    const { carritoId } = confirmModal;
+    const { detalleId } = confirmModal;
     cerrarConfirmacion();
-    const token = getToken();
     try {
-      await axios.delete(`${API_URL}/api/client/carrito/${carritoId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      await fetchCarrito();
-      refreshCart();
+      await removeFromCart(detalleId);
       mostrarNotificacion('exito', 'Producto eliminado', 'El producto se eliminó del carrito.');
     } catch (err) {
       mostrarNotificacion('error', 'Error', 'No se pudo eliminar el producto.');
     }
-  };
-
-  const calcularTotal = () => {
-    return items.reduce((sum, item) => sum + parseFloat(item.precio_total || 0), 0);
   };
 
   if (loading) return <div className="carrito-loading">Cargando carrito…</div>;
@@ -182,7 +157,7 @@ const CarritoCliente = () => {
       </div>
 
       <div className="carrito-contenido">
-        {items.length === 0 ? (
+        {cartItems.length === 0 ? (
           <div className="carrito-empty">
             <p>Tu carrito está vacío</p>
             <button onClick={() => navigate('/cliente/catalogo')}>Ver catálogo</button>
@@ -190,18 +165,17 @@ const CarritoCliente = () => {
         ) : (
           <div className="carrito-container">
             <div className="carrito-items">
-              {items.map(item => (
-                <div key={item.carrito_id} className="carrito-item">
+              {cartItems.map(item => (
+                <div key={item.detalle_id} className="carrito-item">
                   <div className="carrito-item__img">
                     <img 
-                      src={item.imagen_personalizada_url || item.variante_imagen} 
+                      src={item.imagen_url || 'https://placehold.co/100x100?text=Sin+imagen'} 
                       alt={item.producto_nombre} 
                     />
                   </div>
                   <div className="carrito-item__info">
                     <h3>{item.producto_nombre}</h3>
                     <p>Color: {item.color || 'N/A'}</p>
-                    {item.texto_personalizado && <p>Texto: {item.texto_personalizado}</p>}
                     <p className="carrito-item__price">
                       Precio unitario: ${parseFloat(item.precio_unitario).toFixed(2)}
                     </p>
@@ -209,24 +183,24 @@ const CarritoCliente = () => {
                   <div className="carrito-item__actions">
                     <div className="cantidad-control">
                       <button 
-                        onClick={() => handleActualizarCantidad(item.carrito_id, item.cantidad - 1)}
+                        onClick={() => handleActualizarCantidad(item.detalle_id, item.cantidad - 1)}
                         disabled={item.cantidad <= 1}
                       >
                         −
                       </button>
                       <span>{item.cantidad}</span>
                       <button 
-                        onClick={() => handleActualizarCantidad(item.carrito_id, item.cantidad + 1)}
+                        onClick={() => handleActualizarCantidad(item.detalle_id, item.cantidad + 1)}
                       >
                         +
                       </button>
                     </div>
                     <p className="carrito-item__subtotal">
-                      Subtotal: ${parseFloat(item.precio_total).toFixed(2)}
+                      Subtotal: ${parseFloat(item.subtotal).toFixed(2)}
                     </p>
                     <button 
                       className="btn-eliminar" 
-                      onClick={() => mostrarConfirmacion(item.carrito_id, `¿Eliminar "${item.producto_nombre}" del carrito?`)}
+                      onClick={() => mostrarConfirmacion(item.detalle_id, `¿Eliminar "${item.producto_nombre}" del carrito?`)}
                     >
                       🗑️ Eliminar
                     </button>
@@ -236,7 +210,7 @@ const CarritoCliente = () => {
             </div>
             <div className="carrito-resumen">
               <h2>Resumen</h2>
-              <p>Total: <strong>${calcularTotal().toFixed(2)}</strong></p>
+              <p>Total: <strong>${cartTotal.toFixed(2)}</strong></p>
               <button className="btn-checkout" onClick={() => navigate('/cliente/checkout')}>
                 Proceder al pago
               </button>
