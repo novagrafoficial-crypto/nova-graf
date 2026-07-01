@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import NotificationBell from './NotificationBell';
 import "../../styles/client/ClientHeader.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -57,6 +58,8 @@ function ClientHeader({ user }) {
         </nav>
 
         <div className="ch-actions">
+            {/* 🔔 Campanita de notificaciones */}
+          <NotificationBell />
           <Link to="/cliente/carrito" className="ch-cart" aria-label="Carrito">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
               stroke="currentColor" strokeWidth="2">

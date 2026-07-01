@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { NotificationProvider } from './context/NotificationContext';
 import { CartProvider } from "./context/CartContext"; // <-- IMPORTANTE
 
 import PublicLayout from "./layouts/PublicLayout";
@@ -96,7 +97,7 @@ function App() {
         </Route>
 
         {/* Rutas cliente */}
-        <Route element={<CartProvider><ClientLayout /></CartProvider>}>
+        <Route element={<CartProvider><NotificationProvider><ClientLayout /></NotificationProvider></CartProvider>}>
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
           <Route path="/cliente/carrito" element={<CarritoCliente/>} />
