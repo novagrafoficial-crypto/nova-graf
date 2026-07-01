@@ -65,7 +65,7 @@
   margin: 2.5rem;
 }
 .detalle-loading { color: var(--teal-deep); }
-.detalle-error   { color: #c0392b; }
+.detalle-error   { color: #b3261e; }
 
 /* ════════════════════════════════════════
    HERO HEADER  (mismo diseño que el catálogo)
@@ -524,70 +524,6 @@
   margin-bottom: 0.2rem;
 }
 
-/* ── ACCIONES ── */
-.detalle-acciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.9rem;
-  margin-top: 0.4rem;
-}
-
-.btn-personalizar,
-.btn-solicitar {
-  flex: 1;
-  min-width: 140px;
-  padding: 0.9rem 1.4rem;
-  border-radius: var(--radius-pill);
-  border: 2px solid transparent;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s, background 0.2s, border-color 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-.btn-personalizar::after,
-.btn-solicitar::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.15);
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.btn-personalizar:active::after,
-.btn-solicitar:active::after { opacity: 1; }
-
-.btn-personalizar {
-  background: var(--teal-vivid);
-  color: var(--white);
-  border-color: var(--teal-vivid);
-  box-shadow: 0 4px 16px rgba(53,186,153,0.35);
-}
-.btn-personalizar:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(53,186,153,0.45);
-}
-.btn-personalizar:active { transform: translateY(0) scale(0.98); }
-
-.btn-solicitar {
-  background: var(--white);
-  color: var(--teal-deep);
-  border-color: var(--teal-deep);
-}
-.btn-solicitar:hover {
-  background: var(--teal-deep);
-  color: var(--white);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px var(--teal-deep-20);
-}
-.btn-solicitar:active { transform: translateY(0) scale(0.98); }
-
 /* ── INFO DISEÑO APLICADO ── */
 .diseno-info {
   display: flex;
@@ -607,7 +543,7 @@
 .btn-quitar-diseno {
   background: none;
   border: none;
-  color: #c0392b;
+  color: #b3261e;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.82rem;
@@ -673,9 +609,222 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .detalle-modal-close:hover {
-  background: #ef4444;
+  background: #b3261e;
   color: var(--white);
   transform: scale(1.1) rotate(90deg);
+}
+
+/* ── ATRIBUTO PENDIENTE DE SELECCIÓN ── */
+.atributo-pendiente {
+  color: #8a6d1f;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* ── AVISO SI FALTA SELECCIONAR ATRIBUTOS ── */
+.detalle-aviso-atributos {
+  font-size: 0.85rem;
+  color: #8a6d1f;
+  background: var(--gray-soft);
+  border: 1px dashed var(--gray-warm);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── ERROR DEL CARRITO ── */
+.detalle-error-carrito {
+  font-size: 0.85rem;
+  color: #b3261e;
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid rgba(179, 38, 30, 0.2);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── CONTROL DE CANTIDAD CON BOTONES +/- ── */
+.cantidad-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cantidad-btn {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--gray-warm);
+  border-radius: 8px;
+  background: var(--gray-soft);
+  color: var(--teal-deep);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cantidad-btn:hover {
+  background: var(--teal-deep-10);
+  border-color: var(--teal-deep);
+}
+
+/* ── BANNER DE LOS 3 PASOS DEL FLUJO ── */
+.detalle-flujo-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--teal-deep-10);
+  border: 1px solid var(--teal-deep-20);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  flex-wrap: wrap;
+}
+
+.flujo-paso {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--teal-deep);
+  flex: 1;
+  min-width: 120px;
+}
+
+.flujo-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--teal-deep);
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.flujo-sep {
+  font-size: 1rem;
+  color: var(--teal-vivid);
+  align-self: center;
+}
+
+/* ── ACCIONES ── */
+.detalle-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 0.4rem;
+  align-items: center;
+}
+
+.btn-personalizar,
+.btn-solicitar {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.9rem 1.4rem;
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s, background 0.2s, border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-personalizar::after,
+.btn-solicitar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.btn-personalizar:active::after,
+.btn-solicitar:active::after { opacity: 1; }
+
+.btn-personalizar {
+  background: var(--teal-vivid);
+  color: var(--white);
+  border-color: var(--teal-vivid);
+  box-shadow: 0 4px 16px rgba(53,186,153,0.35);
+}
+.btn-personalizar:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(53,186,153,0.45);
+}
+.btn-personalizar:active { transform: translateY(0) scale(0.98); }
+
+.btn-solicitar {
+  background: var(--white);
+  color: var(--teal-deep);
+  border-color: var(--teal-deep);
+}
+.btn-solicitar:hover {
+  background: var(--teal-deep);
+  color: var(--white);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px var(--teal-deep-20);
+}
+.btn-solicitar:active { transform: translateY(0) scale(0.98); }
+
+/* ── BOTÓN PRINCIPAL: AGREGAR AL CARRITO ── */
+.btn-agregar-carrito {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.85rem 1.5rem;
+  background: var(--teal-deep);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-agregar-carrito:hover:not(:disabled) {
+  background: var(--teal-vivid);
+  transform: translateY(-1px);
+}
+
+.btn-agregar-carrito:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-agregar-carrito--ok {
+  background: var(--teal-vivid) !important;
+}
+
+/* ── BOTÓN SECUNDARIO: IR AL CARRITO (aparece después de agregar) ── */
+.btn-ir-carrito {
+  padding: 0.85rem 1.25rem;
+  background: transparent;
+  color: var(--teal-deep);
+  border: 2px solid var(--teal-deep);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-ir-carrito:hover {
+  background: var(--teal-deep-10);
 }
 
 /* ════════════════════════════════════════
@@ -719,157 +868,4 @@
     padding: 0.2rem 0.6rem;
     font-size: 0.7rem;
   }
-}
-
-
-/* Atributo pendiente de selección */
-.atributo-pendiente {
-  color: var(--color-warning, #c0840a);
-  font-style: italic;
-  font-size: 0.9rem;
-}
-
-/* Aviso si falta seleccionar atributos */
-.detalle-aviso-atributos {
-  font-size: 0.85rem;
-  color: #c0840a;
-  background: #fff8ea;
-  border: 1px solid #f5d78e;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  margin-bottom: 0.75rem;
-}
-
-/* Error del carrito */
-.detalle-error-carrito {
-  font-size: 0.85rem;
-  color: #c0392b;
-  background: #fdf0ef;
-  border: 1px solid #f5c0bc;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  margin-bottom: 0.75rem;
-}
-
-/* Control de cantidad con botones +/- */
-.cantidad-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.cantidad-btn {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f5f5f5;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-
-.cantidad-btn:hover {
-  background: #e8e8e8;
-}
-
-/* Banner de los 3 pasos del flujo */
-.detalle-flujo-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  background: #f0f7ff;
-  border: 1px solid #c8e0f9;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin: 1.25rem 0;
-  flex-wrap: wrap;
-}
-
-.flujo-paso {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.82rem;
-  color: #2c5282;
-  flex: 1;
-  min-width: 120px;
-}
-
-.flujo-num {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #2b6cb0;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.flujo-sep {
-  font-size: 1rem;
-  color: #90cdf4;
-  align-self: center;
-}
-
-/* Botón principal: Agregar al carrito */
-.detalle-acciones {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.btn-agregar-carrito {
-  flex: 1;
-  min-width: 200px;
-  padding: 0.85rem 1.5rem;
-  background: #1a56db;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.btn-agregar-carrito:hover:not(:disabled) {
-  background: #1446c0;
-  transform: translateY(-1px);
-}
-
-.btn-agregar-carrito:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-agregar-carrito--ok {
-  background: #2e7d32 !important;
-}
-
-/* Botón secundario: Ir al carrito (aparece después de agregar) */
-.btn-ir-carrito {
-  padding: 0.85rem 1.25rem;
-  background: transparent;
-  color: #1a56db;
-  border: 2px solid #1a56db;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-
-.btn-ir-carrito:hover {
-  background: #eef2ff;
 }

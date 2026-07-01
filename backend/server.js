@@ -93,7 +93,7 @@ const homeRoutes              = require('./routes/client/homeRoutes');
 const checkoutRoutes          = require('./routes/client/checkoutRoutes');
 const pedidosRoutes           = require('./routes/client/pedidosRoutes');
 const notificacionesRoutes    = require('./routes/client/notificacionesRoutes');
-
+const disenosRoutes           = require('./routes/client/disenosRoutes');
 
 
 
@@ -103,6 +103,8 @@ app.use('/api/client/home',       homeRoutes);
 app.use('/api/client/checkout', checkoutRoutes);
 app.use('/api/client/pedidos', pedidosRoutes);
 app.use('/api/client/notificaciones', notificacionesRoutes);
+app.use('/api/client/disenos', disenosRoutes);
+
 
 // ─── 8. RUTAS ADMIN ────────────────────────────────────────
 const marcasRoutes              = require('./routes/admin/marcasRoutes');

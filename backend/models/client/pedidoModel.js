@@ -275,10 +275,22 @@ const obtenerPedidosUsuario = async (usuarioId) => {
   const { rows } = await pool.query(query, [usuarioId]);
   return rows;
 };
+// backend/models/client/pedidoModel.js (Agregar función)
+const actualizarEstadoPedido = async (pedidoId, nuevoEstado) => {
+    const query = `
+        UPDATE ventas.pedidos_clientes 
+        SET estado = $1 
+        WHERE id = $2
+        RETURNING *
+    `;
+    const { rows } = await pool.query(query, [nuevoEstado, pedidoId]);
+    return rows[0];
+};
 
 module.exports = {
   crearPedidoDesdeCarrito,
   registrarPago,
   obtenerDetallePedido,
-  obtenerPedidosUsuario
+  obtenerPedidosUsuario,
+  actualizarEstadoPedido
 };

@@ -1,5 +1,21 @@
 /* src/styles/client/Checkout.css */
 
+/* ── TOKENS DE MARCA ── */
+:root {
+  --teal-deep:    #1A6163;
+  --teal-vivid:   #35BA99;
+  --gray-warm:    #DBDBD3;
+  --ink:          #000000;
+
+  --teal-deep-10: rgba(26, 97, 99, 0.10);
+  --teal-deep-20: rgba(26, 97, 99, 0.20);
+  --teal-vivid-10:rgba(53, 186, 153, 0.10);
+  --teal-vivid-20:rgba(53, 186, 153, 0.22);
+  --gray-soft:    #f4f4f2;
+  --gray-mid:     #9f9f99;
+  --white:        #ffffff;
+}
+
 .checkout-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -12,19 +28,19 @@
   text-align: center;
   margin-bottom: 3rem;
   padding-bottom: 2rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--gray-warm);
 }
 
 .checkout-header h2 {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin-bottom: 0.5rem;
 }
 
 .checkout-header p {
   font-size: 1.1rem;
-  color: #666;
+  color: var(--gray-mid);
 }
 
 /* ─── CONTENIDO PRINCIPAL ────────────────────────────────── */
@@ -37,11 +53,12 @@
 
 /* ─── FORMULARIO ─────────────────────────────────────────── */
 .checkout-form {
-  background: #ffffff;
+  background: var(--white);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid #eee;
+  box-shadow: 0 2px 16px rgba(26, 97, 99, 0.06);
+  border: 1px solid var(--gray-warm);
+  border-top: 4px solid var(--teal-deep);
 }
 
 .checkout-form .form-group {
@@ -52,7 +69,7 @@
   display: block;
   font-weight: 600;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--ink);
   margin-bottom: 0.5rem;
 }
 
@@ -61,21 +78,22 @@
 .checkout-form .form-group textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--gray-warm);
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: #fafafa;
+  background: var(--gray-soft);
   font-family: inherit;
+  color: var(--ink);
 }
 
 .checkout-form .form-group select:focus,
 .checkout-form .form-group input:focus,
 .checkout-form .form-group textarea:focus {
   outline: none;
-  border-color: #4a90d9;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.1);
+  border-color: var(--teal-vivid);
+  background: var(--white);
+  box-shadow: 0 0 0 4px var(--teal-vivid-20);
 }
 
 .checkout-form .form-group textarea {
@@ -87,10 +105,10 @@
   display: block;
   margin-top: 0.5rem;
   font-size: 0.85rem;
-  color: #888;
+  color: var(--gray-mid);
   font-style: italic;
   padding: 0.5rem;
-  background: #f8f9fa;
+  background: var(--gray-soft);
   border-radius: 6px;
 }
 
@@ -98,13 +116,105 @@
   display: block;
   margin-top: 0.4rem;
   font-size: 0.8rem;
-  color: #999;
+  color: var(--gray-mid);
+}
+
+/* ─── INFO DEL MÉTODO DE PAGO SELECCIONADO ──────────────────── */
+.metodo-pago-info {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.instrucciones-pago {
+  background: var(--gray-soft);
+  border: 1px solid var(--gray-warm);
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+}
+
+.instrucciones-pago strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--teal-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.35rem;
+}
+
+.instrucciones-pago p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* ─── DATOS BANCARIOS (formateados, no JSON crudo) ─────────── */
+.datos-bancarios {
+  background: var(--teal-deep-10);
+  border: 1px solid var(--teal-deep-20);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+}
+
+.datos-bancarios strong {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--teal-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.6rem;
+}
+
+.datos-bancarios-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.datos-bancarios-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--teal-deep-20);
+  font-size: 0.9rem;
+}
+
+.datos-bancarios-fila:last-child {
+  border-bottom: none;
+}
+
+.datos-bancarios-fila span:first-child {
+  color: var(--gray-mid);
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.datos-bancarios-fila span:last-child {
+  color: var(--ink);
+  font-weight: 700;
+  text-align: right;
+  word-break: break-word;
+}
+
+.datos-bancarios-vacio {
+  font-size: 0.85rem;
+  color: var(--gray-mid);
+  font-style: italic;
+  margin: 0;
 }
 
 .error-message {
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid rgba(179, 38, 30, 0.25);
+  color: #b3261e;
   padding: 0.75rem 1rem;
   border-radius: 10px;
   margin-bottom: 1.5rem;
@@ -114,45 +224,46 @@
 .btn-crear-pedido {
   width: 100%;
   padding: 1rem;
-  background: #1a1a1a;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
   border: none;
   border-radius: 10px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .btn-crear-pedido:hover:not(:disabled) {
-  background: #333;
+  background: var(--teal-vivid);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px var(--teal-vivid-20);
 }
 
 .btn-crear-pedido:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
 /* ─── RESUMEN ────────────────────────────────────────────── */
 .checkout-resumen {
-  background: #f8f9fa;
+  background: var(--gray-soft);
   border-radius: 16px;
   padding: 1.8rem;
   position: sticky;
   top: 2rem;
-  border: 1px solid #eee;
+  border: 1px solid var(--gray-warm);
+  border-top: 4px solid var(--teal-vivid);
 }
 
 .checkout-resumen h3 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--gray-warm);
 }
 
 .resumen-items {
@@ -165,9 +276,9 @@
   display: flex;
   justify-content: space-between;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--gray-warm);
   font-size: 0.95rem;
-  color: #444;
+  color: var(--gray-mid);
 }
 
 .resumen-item:last-child {
@@ -181,11 +292,11 @@
 
 .resumen-item span:last-child {
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .resumen-totales {
-  border-top: 2px solid #e0e0e0;
+  border-top: 2px solid var(--gray-warm);
   padding-top: 1.2rem;
 }
 
@@ -194,28 +305,28 @@
   justify-content: space-between;
   padding: 0.5rem 0;
   font-size: 0.95rem;
-  color: #555;
+  color: var(--gray-mid);
 }
 
 .resumen-linea.total {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   padding-top: 0.8rem;
-  border-top: 2px solid #e0e0e0;
+  border-top: 2px solid var(--teal-deep-20);
   margin-top: 0.5rem;
 }
 
 .resumen-linea.anticipo {
-  color: #2563eb;
-  font-weight: 600;
+  color: var(--teal-deep);
+  font-weight: 700;
   font-size: 1.05rem;
   padding-top: 0.5rem;
 }
 
 .resumen-linea.restante {
-  color: #7c3aed;
-  font-weight: 600;
+  color: var(--teal-vivid);
+  font-weight: 700;
   font-size: 1.05rem;
 }
 
@@ -232,14 +343,14 @@
 
 .checkout-empty h2 {
   font-size: 2rem;
-  color: #333;
+  color: var(--teal-deep);
   margin-bottom: 1rem;
 }
 
 .checkout-empty button {
   padding: 0.8rem 2.5rem;
-  background: #1a1a1a;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
   border: none;
   border-radius: 10px;
   font-size: 1rem;
@@ -249,7 +360,7 @@
 }
 
 .checkout-empty button:hover {
-  background: #333;
+  background: var(--teal-vivid);
   transform: translateY(-2px);
 }
 
@@ -288,5 +399,15 @@
 
   .resumen-linea.total {
     font-size: 1rem;
+  }
+
+  .datos-bancarios-fila {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .datos-bancarios-fila span:last-child {
+    text-align: left;
   }
 }

@@ -1,5 +1,21 @@
 /* src/styles/client/DetallePedido.css */
 
+/* ── TOKENS DE MARCA ── */
+:root {
+  --teal-deep:    #1A6163;
+  --teal-vivid:   #35BA99;
+  --gray-warm:    #DBDBD3;
+  --ink:          #000000;
+
+  --teal-deep-10: rgba(26, 97, 99, 0.10);
+  --teal-deep-20: rgba(26, 97, 99, 0.20);
+  --teal-vivid-10:rgba(53, 186, 153, 0.10);
+  --teal-vivid-20:rgba(53, 186, 153, 0.22);
+  --gray-soft:    #f4f4f2;
+  --gray-mid:     #9f9f99;
+  --white:        #ffffff;
+}
+
 /* ─── CONTENEDOR PRINCIPAL ────────────────────────────────────── */
 .detalle-pedido-wrapper {
   max-width: 1000px;
@@ -16,15 +32,15 @@
   flex-wrap: wrap;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--gray-warm);
 }
 
 .btn-volver {
   background: none;
   border: none;
-  color: #2563eb;
+  color: var(--teal-deep);
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   padding: 0.5rem 0;
   transition: all 0.3s ease;
@@ -34,7 +50,7 @@
 }
 
 .btn-volver:hover {
-  color: #1d4ed8;
+  color: var(--teal-vivid);
   transform: translateX(-3px);
 }
 
@@ -49,16 +65,16 @@
 .detalle-pedido-titulo h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin: 0;
 }
 
 .detalle-estado {
-  padding: 4px 16px;
-  border-radius: 99px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
+  padding: 5px 16px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -73,26 +89,27 @@
 
 /* ─── INFORMACIÓN ──────────────────────────────────────────────── */
 .detalle-info {
-  background: #f8f9fa;
+  background: var(--gray-soft);
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-warm);
+  border-top: 3px solid var(--teal-deep);
 }
 
 .detalle-info h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin-bottom: 1.2rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--gray-warm);
 }
 
 .info-linea {
   display: flex;
   justify-content: space-between;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--gray-warm);
   font-size: 0.95rem;
 }
 
@@ -101,51 +118,58 @@
 }
 
 .info-linea span:first-child {
-  color: #6b7280;
+  color: var(--gray-mid);
   font-weight: 500;
 }
 
 .info-linea span:last-child {
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ink);
   text-align: right;
 }
 
 .info-linea.total {
   margin-top: 0.8rem;
   padding-top: 0.8rem;
-  border-top: 2px solid #d1d5db;
+  border-top: 2px solid var(--teal-deep-20);
   font-size: 1.05rem;
 }
 
 .info-linea.total span:last-child {
-  color: #2563eb;
+  color: var(--teal-deep);
   font-size: 1.1rem;
 }
 
 /* ─── PRODUCTOS ────────────────────────────────────────────────── */
 .detalle-productos {
-  background: #ffffff;
+  background: var(--white);
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-warm);
+  border-top: 3px solid var(--teal-vivid);
 }
 
 .detalle-productos h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin-bottom: 1.2rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--gray-warm);
 }
 
 .producto-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 0.8rem 0.5rem;
+  border-radius: 8px;
+  border-bottom: 1px solid var(--gray-soft);
+  transition: background 0.2s ease;
+}
+
+.producto-item:hover {
+  background: var(--gray-soft);
 }
 
 .producto-item:last-child {
@@ -157,7 +181,8 @@
   height: 60px;
   object-fit: cover;
   border-radius: 8px;
-  background: #f3f4f6;
+  background: var(--gray-soft);
+  border: 1px solid var(--gray-warm);
   flex-shrink: 0;
 }
 
@@ -168,21 +193,21 @@
 
 .producto-info h4 {
   font-size: 0.95rem;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-weight: 700;
+  color: var(--ink);
   margin: 0 0 0.2rem 0;
 }
 
 .producto-info p {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--gray-mid);
   margin: 0.1rem 0;
 }
 
 .producto-precio {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   flex-shrink: 0;
 }
 
@@ -191,48 +216,49 @@
   justify-content: space-between;
   padding: 0.6rem 0;
   font-size: 0.95rem;
-  color: #4b5563;
+  color: var(--gray-mid);
 }
 
 .producto-total:last-of-type {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--gray-warm);
   margin-top: 0.3rem;
   padding-top: 0.8rem;
 }
 
 .producto-total span:last-child {
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .producto-total.grand-total {
   font-size: 1.1rem;
-  border-top: 2px solid #d1d5db;
+  border-top: 2px solid var(--teal-deep-20);
   margin-top: 0.5rem;
   padding-top: 1rem;
 }
 
 .producto-total.grand-total span:last-child {
-  color: #2563eb;
+  color: var(--teal-deep);
   font-size: 1.15rem;
 }
 
 /* ─── PAGOS ─────────────────────────────────────────────────────── */
 .detalle-pagos {
-  background: #ffffff;
+  background: var(--white);
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-warm);
+  border-top: 3px solid var(--teal-deep);
   margin-bottom: 2rem;
 }
 
 .detalle-pagos h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin-bottom: 1.2rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--gray-warm);
 }
 
 .pago-item {
@@ -241,7 +267,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   padding: 0.8rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--gray-soft);
 }
 
 .pago-item:last-child {
@@ -249,68 +275,71 @@
 }
 
 .pago-tipo {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
-  color: #1a1a1a;
+  color: var(--ink);
   min-width: 100px;
 }
 
 .pago-monto {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   min-width: 80px;
 }
 
 .pago-estado {
-  padding: 2px 12px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .pago-estado.pendiente {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--gray-soft);
+  color: var(--gray-mid);
+  border: 1px dashed var(--gray-warm);
 }
 
 .pago-estado.aprobado {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--teal-vivid-10);
+  color: var(--teal-deep);
+  border: 1px solid var(--teal-vivid-20);
 }
 
 .pago-estado.rechazado {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(179, 38, 30, 0.08);
+  color: #b3261e;
+  border: 1px solid rgba(179, 38, 30, 0.2);
 }
 
 .pago-comprobante {
-  color: #2563eb;
+  color: var(--teal-deep);
   font-size: 0.85rem;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s ease;
   margin-left: auto;
 }
 
 .pago-comprobante:hover {
-  color: #1d4ed8;
+  color: var(--teal-vivid);
   text-decoration: underline;
 }
 
 .pago-notas {
   font-size: 0.8rem;
-  color: #6b7280;
-  background: #f3f4f6;
+  color: var(--gray-mid);
+  background: var(--gray-soft);
   padding: 2px 10px;
   border-radius: 4px;
   width: 100%;
 }
 
 .pago-vacio {
-  color: #6b7280;
+  color: var(--gray-mid);
   font-size: 0.95rem;
   text-align: center;
   padding: 1rem 0;
@@ -339,37 +368,37 @@
 
 .btn-accion:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(26, 97, 99, 0.18);
 }
 
 .btn-pago {
-  background: #2563eb;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
 }
 
 .btn-pago:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+  background: var(--teal-vivid);
+  box-shadow: 0 4px 16px var(--teal-vivid-20);
 }
 
 .btn-diseno {
-  background: #7c3aed;
-  color: white;
+  background: var(--teal-vivid);
+  color: var(--white);
 }
 
 .btn-diseno:hover {
-  background: #6d28d9;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+  background: var(--teal-deep);
+  box-shadow: 0 4px 16px var(--teal-deep-20);
 }
 
 .btn-cancelar {
-  background: #ef4444;
-  color: white;
+  background: #b3261e;
+  color: var(--white);
 }
 
 .btn-cancelar:hover {
-  background: #dc2626;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+  background: #8f1e18;
+  box-shadow: 0 4px 16px rgba(179, 38, 30, 0.25);
 }
 
 /* ─── LOADING Y ERROR ───────────────────────────────────────────── */
@@ -379,7 +408,8 @@
   align-items: center;
   min-height: 300px;
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--teal-deep);
+  font-weight: 600;
 }
 
 .detalle-error {
@@ -388,7 +418,7 @@
   align-items: center;
   min-height: 300px;
   font-size: 1.1rem;
-  color: #dc2626;
+  color: #b3261e;
   text-align: center;
   padding: 2rem;
 }
@@ -438,7 +468,7 @@
     width: 100%;
     text-align: right;
     padding-top: 0.3rem;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--gray-soft);
   }
 
   .pago-item {

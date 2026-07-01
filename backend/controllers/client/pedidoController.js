@@ -3,6 +3,7 @@ const pedidoModel = require('../../models/client/pedidoModel');
 const metodosEntregaModel = require('../../models/client/metodosEntregaModel');
 const metodosPagoModel = require('../../models/client/metodosPagoModel');
 const carritoModel = require('../../models/client/carritoModel');
+const disenoModel = require('../../models/client/disenoModel');
 
 // ─── OBTENER MÉTODOS DE ENTREGA ────────────────────────────────────
 const obtenerMetodosEntrega = async (req, res) => {
@@ -148,10 +149,113 @@ const obtenerPedidosUsuario = async (req, res) => {
   }
 };
 
+
+// ─── SUBIR DISEÑO ──────────────────────────────────────────────
+const subirDiseno = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tipo_origen, archivo_url, simulador_json, notas_cliente } = req.body;
+        const usuarioId = req.usuario.id_usuario;
+
+        // 1. Verificar que el pedido existe y pertenece al usuario
+        const pedido = await pedidoModel.obtenerDetallePedido(id, usuarioId);
+        if (!pedido) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Pedido no encontrado' 
+            });
+        }
+
+        // 2. Verificar que el pedido está en estado EN_DISENO
+        if (pedido.estado !== 'EN_DISENO') {
+            return res.status(400).json({
+                success: false,
+                message: `El pedido no está en etapa de diseño. Estado actual: ${pedido.estado}`
+            });
+        }
+
+        // 3. Validar que tenga al menos un tipo de diseño
+        if (tipo_origen === 'ARCHIVO_SUBIDO' && !archivo_url) {
+            return res.status(400).json({
+                success: false,
+                message: 'La URL del archivo es requerida para ARCHIVO_SUBIDO'
+            });
+        }
+
+        if (tipo_origen === 'SIMULADOR' && !simulador_json) {
+            return res.status(400).json({
+                success: false,
+                message: 'El JSON del simulador es requerido para SIMULADOR'
+            });
+        }
+
+        // 4. Guardar diseño
+        const diseno = await disenoModel.guardarDiseno(
+            id,
+            tipo_origen,
+            archivo_url || null,
+            simulador_json || null,
+            notas_cliente || null
+        );
+
+        // 5. Cambiar estado del pedido a EN_REVISION
+        await pedidoModel.actualizarEstadoPedido(id, 'EN_REVISION');
+
+        // 6. Crear notificación (el trigger lo hace automático)
+
+        res.status(201).json({
+            success: true,
+            message: 'Diseño enviado correctamente',
+            diseno,
+            nuevo_estado: 'EN_REVISION'
+        });
+
+    } catch (error) {
+        console.error('Error al subir diseño:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al subir diseño' 
+        });
+    }
+};
+
+// ─── OBTENER DISEÑOS DE UN PEDIDO ─────────────────────────────
+const obtenerDisenos = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuarioId = req.usuario.id_usuario;
+
+        // Verificar que el pedido existe y pertenece al usuario
+        const pedido = await pedidoModel.obtenerDetallePedido(id, usuarioId);
+        if (!pedido) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Pedido no encontrado' 
+            });
+        }
+
+        const disenos = await disenoModel.obtenerDisenosPorPedido(id);
+
+        res.json({
+            success: true,
+            disenos
+        });
+
+    } catch (error) {
+        console.error('Error al obtener diseños:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener diseños' 
+        });
+    }
+};
+
 module.exports = {
   obtenerMetodosEntrega,
   crearPedido,
   obtenerDetallePedido,
+  subirDiseno,
+  obtenerDisenos,
   subirComprobante,
   obtenerPedidosUsuario
 };

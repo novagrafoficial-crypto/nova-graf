@@ -8,6 +8,53 @@ import '../../styles/client/Checkout.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// ✅ Normaliza el campo datos_bancarios venga como venga de la BD:
+//    - objeto plano { banco: "...", clabe: "..." }
+//    - string JSON: '{"banco":"...","clabe":"..."}'
+//    - array con un objeto adentro: [{ banco: "...", clabe: "..." }]
+//    - array con un string JSON adentro: ['{"banco":"...","clabe":"..."}']
+const normalizarDatosBancarios = (data) => {
+  if (!data) return null;
+
+  let valor = data;
+
+  // Si viene como string, intentar parsear a JSON
+  if (typeof valor === 'string') {
+    try {
+      valor = JSON.parse(valor);
+    } catch {
+      return null;
+    }
+  }
+
+  // Si viene como array, tomar el primer elemento
+  if (Array.isArray(valor)) {
+    valor = valor[0];
+    if (typeof valor === 'string') {
+      try {
+        valor = JSON.parse(valor);
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  if (!valor || typeof valor !== 'object') return null;
+  return valor;
+};
+
+// ✅ Convierte "numero_cuenta" -> "Número cuenta" para mostrarlo bonito
+const formatearEtiqueta = (clave) => {
+  const especiales = {
+    clabe: 'CLABE',
+    rfc: 'RFC',
+  };
+  if (especiales[clave.toLowerCase()]) return especiales[clave.toLowerCase()];
+  return clave
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems = [], cartTotal = 0, refreshCart } = useCart();
@@ -79,6 +126,11 @@ const Checkout = () => {
   const totalGeneral = safeCartTotal + costoEnvio;
   const montoAnticipo = totalGeneral * 0.5;
   const montoRestante = totalGeneral * 0.5;
+
+  const metodoPagoSeleccionado = metodosPago.find(
+    m => m.id === parseInt(formData.metodo_pago_id)
+  );
+  const datosBancarios = normalizarDatosBancarios(metodoPagoSeleccionado?.datos_bancarios);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -164,27 +216,40 @@ const Checkout = () => {
                   </option>
                 ))}
               </select>
-              {formData.metodo_pago_id && (
+
+              {metodoPagoSeleccionado && (
                 <div className="metodo-pago-info">
-                  <small className="metodo-descripcion">
-                    {metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.descripcion}
-                  </small>
-                  {metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.instrucciones && (
+                  {metodoPagoSeleccionado.descripcion && (
+                    <small className="metodo-descripcion">
+                      {metodoPagoSeleccionado.descripcion}
+                    </small>
+                  )}
+
+                  {metodoPagoSeleccionado.instrucciones && (
                     <div className="instrucciones-pago">
-                      <strong>Instrucciones:</strong>
-                      <p>{metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.instrucciones}</p>
+                      <strong>📌 Instrucciones</strong>
+                      <p>{metodoPagoSeleccionado.instrucciones}</p>
                     </div>
                   )}
-                  {metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.datos_bancarios && (
+
+                  {/* ✅ Datos bancarios formateados (ya no JSON crudo) */}
+                  {metodoPagoSeleccionado.datos_bancarios && (
                     <div className="datos-bancarios">
-                      <strong>Datos bancarios:</strong>
-                      <pre>
-                        {JSON.stringify(
-                          metodosPago.find(m => m.id === parseInt(formData.metodo_pago_id))?.datos_bancarios,
-                          null,
-                          2
-                        )}
-                      </pre>
+                      <strong>🏦 Datos bancarios</strong>
+                      {datosBancarios ? (
+                        <div className="datos-bancarios-lista">
+                          {Object.entries(datosBancarios).map(([clave, valor]) => (
+                            <div className="datos-bancarios-fila" key={clave}>
+                              <span>{formatearEtiqueta(clave)}</span>
+                              <span>{String(valor)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="datos-bancarios-vacio">
+                          No se pudieron leer los datos bancarios de este método.
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

@@ -1,31 +1,32 @@
-//pages/Client/ProductoDetalle.jsx
+// pages/Client/ProductoDetalle.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../../context/CartContext'; // ← IMPORTADO
 import '../../styles/client/ProductoDetalle.css';
 
-const API_URL      = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 const API_PRODUCTOS = `${API_URL}/api/client/productos`;
-const API_CARRITO   = `${API_URL}/api/client/carrito`;
 
 const ProductoDetalle = () => {
-  const { id }       = useParams();
-  const { state }    = useLocation();
-  const navigate     = useNavigate();
+  const { id } = useParams();
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  
+  const { addToCart } = useCart(); // ← NUEVO
 
-  const [producto,          setProducto]  = useState(null);
-  const [varianteActiva,    setVariante]  = useState(null);
-  const [loading,           setLoading]   = useState(true);
-  const [error,             setError]     = useState(null);
-  const [cantidad,          setCantidad]  = useState(1);
+  const [producto, setProducto] = useState(null);
+  const [varianteActiva, setVariante] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [cantidad, setCantidad] = useState(1);
   const [atributosSeleccionados, setAtributos] = useState({});
 
-  const [portafolio,        setPortafolio]    = useState([]);
-  const [modalImageUrl,     setModalImageUrl] = useState(null);
+  const [portafolio, setPortafolio] = useState([]);
+  const [modalImageUrl, setModalImageUrl] = useState(null);
 
-  // ── Feedback del botón agregar ──────────────────
-  const [agregando,  setAgregando]  = useState(false);
-  const [agregado,   setAgregado]   = useState(false);
+  const [agregando, setAgregando] = useState(false);
+  const [agregado, setAgregado] = useState(false);
   const [errorCarrito, setErrorCarrito] = useState('');
 
   // ── Fetch producto ─────────────────────────────
@@ -67,15 +68,15 @@ const ProductoDetalle = () => {
   const closeModal = () => setModalImageUrl(null);
 
   // ── Atributos ──────────────────────────────────
-  const coloresUnicos        = producto
+  const coloresUnicos = producto
     ? [...new Map(producto.variantes.map(v => [v.color, v])).values()]
     : [];
 
-  const variantesDelColor    = producto
+  const variantesDelColor = producto
     ? producto.variantes.filter(v => v.color === varianteActiva?.color)
     : [];
 
-  const atributosAgrupados   = variantesDelColor.reduce((acc, v) => {
+  const atributosAgrupados = variantesDelColor.reduce((acc, v) => {
     (v.atributos || []).forEach(({ tipo, valor }) => {
       if (!acc[tipo]) acc[tipo] = new Set();
       acc[tipo].add(valor);
@@ -83,31 +84,27 @@ const ProductoDetalle = () => {
     return acc;
   }, {});
 
-  const seleccionarAtributo  = (tipo, valor) =>
+  const seleccionarAtributo = (tipo, valor) =>
     setAtributos(prev => ({ ...prev, [tipo]: valor }));
 
   const precioFinal = producto
     ? Number(producto.precio_base) + Number(varianteActiva?.precio_adicional || 0)
     : 0;
 
-  // ── ¿Todos los atributos elegidos? ────────────
   const atributosPendientes = Object.keys(atributosAgrupados).filter(
     tipo => !atributosSeleccionados[tipo]
   );
   const puedeAgregar = atributosPendientes.length === 0 && varianteActiva;
 
-  // ── Agregar al carrito ─────────────────────────
+  // ── AGREGAR AL CARRITO (CORREGIDO) ─────────────
   const agregarAlCarrito = async () => {
     if (!puedeAgregar) return;
     setAgregando(true);
     setErrorCarrito('');
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        API_CARRITO,
-        { variante_id: varianteActiva.variante_id, cantidad },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // ✅ USAR EL CONTEXTO
+      await addToCart(varianteActiva.variante_id, cantidad);
+      
       setAgregado(true);
       setTimeout(() => setAgregado(false), 3000);
     } catch (err) {
@@ -124,12 +121,11 @@ const ProductoDetalle = () => {
 
   // ── Render ─────────────────────────────────────
   if (loading) return <div className="detalle-loading">Cargando producto…</div>;
-  if (error)   return <div className="detalle-error">{error}</div>;
+  if (error) return <div className="detalle-error">{error}</div>;
   if (!producto) return null;
 
   return (
     <div className="detalle-wrapper">
-
       {/* ── HEADER ── */}
       <div className="detalle-header">
         <button className="btn-volver" onClick={() => navigate(-1)}>
@@ -143,7 +139,6 @@ const ProductoDetalle = () => {
 
       <div className="detalle-contenido">
         <div className="detalle-layout">
-
           {/* ── PORTAFOLIO / INSPIRACIÓN ── */}
           {portafolio.length > 0 && (
             <div className="detalle-referencias">
@@ -179,13 +174,12 @@ const ProductoDetalle = () => {
 
           {/* ── INFO ── */}
           <div className="detalle-info">
-
             <h1 className="detalle-nombre">{producto.producto_nombre}</h1>
 
             <div className="detalle-badges">
-              {producto.categoria    && <span className="badge">{producto.categoria}</span>}
+              {producto.categoria && <span className="badge">{producto.categoria}</span>}
               {producto.subcategoria && <span className="badge">{producto.subcategoria}</span>}
-              {producto.marca        && <span className="badge badge--marca">{producto.marca}</span>}
+              {producto.marca && <span className="badge badge--marca">{producto.marca}</span>}
             </div>
 
             <p className="detalle-desc">{producto.descripcion}</p>
@@ -225,7 +219,7 @@ const ProductoDetalle = () => {
               </div>
             </div>
 
-            {/* ── ATRIBUTOS (talla, tamaño, etc.) ── */}
+            {/* ── ATRIBUTOS ── */}
             {Object.entries(atributosAgrupados).map(([tipo, valores]) => (
               <div key={tipo} className="detalle-atributo-grupo">
                 <p className="detalle-atributo-grupo__label">

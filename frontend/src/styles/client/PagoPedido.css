@@ -1,5 +1,21 @@
 /* src/styles/client/PagoPedido.css */
 
+/* ── TOKENS DE MARCA ── */
+:root {
+  --teal-deep:    #1A6163;
+  --teal-vivid:   #35BA99;
+  --gray-warm:    #DBDBD3;
+  --ink:          #000000;
+
+  --teal-deep-10: rgba(26, 97, 99, 0.10);
+  --teal-deep-20: rgba(26, 97, 99, 0.20);
+  --teal-vivid-10:rgba(53, 186, 153, 0.10);
+  --teal-vivid-20:rgba(53, 186, 153, 0.22);
+  --gray-soft:    #f4f4f2;
+  --gray-mid:     #9f9f99;
+  --white:        #ffffff;
+}
+
 /* ─── CONTENEDOR PRINCIPAL ────────────────────────────────────── */
 .pago-wrapper {
   max-width: 600px;
@@ -13,19 +29,21 @@
 
 /* ─── TARJETA PRINCIPAL ───────────────────────────────────────── */
 .pago-card {
-  background: #ffffff;
+  background: var(--white);
   border-radius: 20px;
   padding: 2.5rem 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 32px rgba(26, 97, 99, 0.08);
+  border: 1px solid var(--gray-warm);
+  border-top: 4px solid var(--teal-deep);
   width: 100%;
   transition: all 0.3s ease;
 }
 
 .pago-card--success {
-  border-color: #34d399;
+  border-color: var(--teal-vivid);
   border-width: 2px;
-  background: linear-gradient(to bottom, #ffffff, #f0fdf4);
+  border-top-width: 4px;
+  background: linear-gradient(to bottom, var(--white), var(--teal-vivid-10));
 }
 
 /* ─── ICONO ────────────────────────────────────────────────────── */
@@ -37,19 +55,19 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 1.2rem auto;
-  background: #dcfce7;
+  background: var(--teal-vivid-10);
   font-size: 2rem;
-  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+  box-shadow: 0 4px 12px var(--teal-vivid-20);
 }
 
 .pago-icon-circle--info {
-  background: #dbeafe;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background: var(--teal-deep-10);
+  box-shadow: 0 4px 12px var(--teal-deep-20);
 }
 
 .pago-icon-circle--payment {
-  background: #fef3c7;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  background: var(--gray-soft);
+  box-shadow: 0 4px 12px rgba(159, 159, 153, 0.3);
 }
 
 .pago-icon {
@@ -62,29 +80,29 @@
   text-align: center;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   margin-bottom: 0.3rem;
 }
 
 .pago-subtitle {
   text-align: center;
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--gray-mid);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
 
 .pago-subtitle strong {
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 /* ─── CAJA DE INFORMACIÓN ────────────────────────────────────── */
 .pago-info-box {
-  background: #f8fafc;
+  background: var(--gray-soft);
   border-radius: 12px;
   padding: 1rem 1.2rem;
   margin-bottom: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-warm);
 }
 
 .pago-info-row {
@@ -92,7 +110,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--gray-warm);
 }
 
 .pago-info-row:last-child {
@@ -101,60 +119,66 @@
 
 .pago-info-label {
   font-weight: 500;
-  color: #4b5563;
+  color: var(--gray-mid);
   font-size: 0.9rem;
 }
 
 .pago-info-value {
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ink);
   font-size: 0.9rem;
 }
 
 .pago-status-pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--gray-soft);
+  color: var(--gray-mid);
+  border: 1px dashed var(--gray-warm);
   padding: 2px 14px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .pago-status-approved {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--teal-vivid-10);
+  color: var(--teal-deep);
+  border: 1px solid var(--teal-vivid-20);
   padding: 2px 14px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .pago-status-rejected {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(179, 38, 30, 0.08);
+  color: #b3261e;
+  border: 1px solid rgba(179, 38, 30, 0.2);
   padding: 2px 14px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .pago-info-link {
-  color: #2563eb;
+  color: var(--teal-deep);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.9rem;
   transition: all 0.3s ease;
 }
 
 .pago-info-link:hover {
-  color: #1d4ed8;
+  color: var(--teal-vivid);
   text-decoration: underline;
 }
 
 /* ─── DATOS BANCARIOS ──────────────────────────────────────────── */
 .pago-datos-bancarios {
-  background: #f0f7ff;
-  border: 1px solid #dbeafe;
+  background: var(--teal-deep-10);
+  border: 1px solid var(--teal-deep-20);
   border-radius: 12px;
   padding: 1.2rem 1.5rem;
   margin-bottom: 1.5rem;
@@ -163,7 +187,7 @@
 .pago-datos-bancarios h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #1e40af;
+  color: var(--teal-deep);
   margin-bottom: 0.8rem;
   display: flex;
   align-items: center;
@@ -181,7 +205,7 @@
   justify-content: space-between;
   padding: 0.4rem 0;
   margin: 0;
-  border-bottom: 1px solid #e5edf5;
+  border-bottom: 1px solid var(--teal-deep-20);
   font-size: 0.9rem;
 }
 
@@ -190,12 +214,12 @@
 }
 
 .banco-info p strong {
-  color: #4b5563;
+  color: var(--gray-mid);
   font-weight: 500;
 }
 
 .banco-info p span {
-  color: #1a1a1a;
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -203,29 +227,29 @@
 .pago-monto {
   text-align: center;
   padding: 1.2rem;
-  background: #f8fafc;
+  background: var(--gray-soft);
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-warm);
 }
 
 .pago-monto h3 {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--gray-mid);
   margin-bottom: 0.3rem;
 }
 
 .pago-monto .monto {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   display: block;
 }
 
 .pago-monto .monto-detalle {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--gray-mid);
 }
 
 /* ─── FORMULARIO ───────────────────────────────────────────────── */
@@ -241,32 +265,32 @@
   display: block;
   font-weight: 600;
   font-size: 0.95rem;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-bottom: 0.5rem;
 }
 
 .pago-form .form-group input[type="file"] {
   width: 100%;
   padding: 0.8rem;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--gray-warm);
   border-radius: 10px;
-  background: #fafafa;
+  background: var(--gray-soft);
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
 }
 
 .pago-form .form-group input[type="file"]:hover {
-  border-color: #2563eb;
-  background: #f5f9ff;
+  border-color: var(--teal-deep);
+  background: var(--teal-deep-10);
 }
 
 .pago-form .form-group input[type="file"]::file-selector-button {
   padding: 0.5rem 1.2rem;
   border: none;
   border-radius: 6px;
-  background: #2563eb;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
   font-weight: 600;
   cursor: pointer;
   margin-right: 1rem;
@@ -274,14 +298,14 @@
 }
 
 .pago-form .form-group input[type="file"]::file-selector-button:hover {
-  background: #1d4ed8;
+  background: var(--teal-vivid);
 }
 
 .pago-form .form-group small {
   display: block;
   margin-top: 0.4rem;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--gray-mid);
 }
 
 /* ─── PREVIEW ──────────────────────────────────────────────────── */
@@ -290,7 +314,7 @@
   border-radius: 8px;
   overflow: hidden;
   max-width: 200px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-warm);
 }
 
 .preview-image {
@@ -301,9 +325,9 @@
 
 /* ─── MENSAJES ──────────────────────────────────────────────────── */
 .error-message {
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid rgba(179, 38, 30, 0.25);
+  color: #b3261e;
   padding: 0.7rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -311,18 +335,19 @@
 }
 
 .exito-message {
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
+  background: var(--teal-vivid-10);
+  border: 1px solid var(--teal-vivid-20);
+  color: var(--teal-deep);
   padding: 0.7rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .pago-nota-admin {
-  background: #fef3c7;
-  border: 1px solid #fde68a;
+  background: var(--gray-soft);
+  border: 1px dashed var(--gray-warm);
   border-radius: 8px;
   padding: 0.8rem 1rem;
   margin-top: 1rem;
@@ -338,7 +363,7 @@
 .pago-nota-admin p {
   margin: 0;
   font-size: 0.9rem;
-  color: #92400e;
+  color: var(--ink);
 }
 
 /* ─── BOTONES ──────────────────────────────────────────────────── */
@@ -370,28 +395,29 @@
 }
 
 .pago-btn-primary {
-  background: #2563eb;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
 }
 
 .pago-btn-primary:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+  background: var(--teal-vivid);
+  box-shadow: 0 4px 16px var(--teal-vivid-20);
 }
 
 .pago-btn-secondary {
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--gray-soft);
+  color: var(--ink);
+  border: 1px solid var(--gray-warm);
 }
 
 .pago-btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--gray-warm);
 }
 
 .pago-btn-submit {
   width: 100%;
-  background: #1a1a1a;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
   padding: 1rem;
   font-size: 1rem;
   border: none;
@@ -402,9 +428,9 @@
 }
 
 .pago-btn-submit:hover:not(:disabled) {
-  background: #374151;
+  background: var(--teal-vivid);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px var(--teal-deep-20);
 }
 
 .pago-btn-submit:disabled {
@@ -419,7 +445,8 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--teal-deep);
+  font-weight: 600;
 }
 
 .pago-loading::after {
@@ -438,52 +465,55 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-  color: #dc2626;
-  background: #fee2e2;
+  color: #b3261e;
+  background: rgba(179, 38, 30, 0.08);
   border-radius: 12px;
-  border: 1px solid #fecaca;
+  border: 1px solid rgba(179, 38, 30, 0.2);
 }
 
 /* ─── ESTADOS DEL PEDIDO ───────────────────────────────────────── */
 .pago-estado-badge {
   display: inline-block;
   padding: 4px 14px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .pago-estado-badge--pendiente {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--gray-soft);
+  color: var(--gray-mid);
+  border: 1px dashed var(--gray-warm);
 }
 
 .pago-estado-badge--aprobado {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--teal-vivid-10);
+  color: var(--teal-deep);
+  border: 1px solid var(--teal-vivid-20);
 }
 
 .pago-estado-badge--rechazado {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(179, 38, 30, 0.08);
+  color: #b3261e;
+  border: 1px solid rgba(179, 38, 30, 0.2);
 }
 
 /* ─── ÁREA DE ARCHIVO MEJORADA ────────────────────────────────── */
 .pago-file-area {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--gray-warm);
   border-radius: 12px;
   padding: 1rem;
-  background: #fafafa;
+  background: var(--gray-soft);
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
 }
 
 .pago-file-area:hover {
-  border-color: #2563eb;
-  background: #f5f9ff;
+  border-color: var(--teal-deep);
+  background: var(--teal-deep-10);
 }
 
 .pago-file-input {
@@ -512,12 +542,12 @@
 
 .pago-file-placeholder span:not(.pago-file-hint) {
   font-weight: 500;
-  color: #374151;
+  color: var(--ink);
 }
 
 .pago-file-hint {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--gray-mid);
 }
 
 /* ─── ARCHIVO SELECCIONADO ────────────────────────────────────── */
@@ -526,9 +556,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.8rem;
-  background: #eff6ff;
+  background: var(--teal-deep-10);
   border-radius: 8px;
-  border: 1px solid #dbeafe;
+  border: 1px solid var(--teal-deep-20);
   pointer-events: none;
 }
 
@@ -540,23 +570,23 @@
 }
 
 .pago-file-name {
-  font-weight: 500;
-  color: #1e40af;
+  font-weight: 600;
+  color: var(--teal-deep);
   font-size: 0.9rem;
 }
 
 .pago-file-size {
   font-size: 0.75rem;
-  color: #6b7280;
-  background: #e5e7eb;
+  color: var(--gray-mid);
+  background: var(--gray-warm);
   padding: 0.1rem 0.6rem;
   border-radius: 4px;
 }
 
 .pago-file-remove {
-  background: #fee2e2;
+  background: rgba(179, 38, 30, 0.1);
   border: none;
-  color: #dc2626;
+  color: #b3261e;
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -573,7 +603,7 @@
 }
 
 .pago-file-remove:hover {
-  background: #fecaca;
+  background: rgba(179, 38, 30, 0.2);
   transform: scale(1.1);
 }
 

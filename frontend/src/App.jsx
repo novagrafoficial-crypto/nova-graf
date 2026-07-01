@@ -39,12 +39,11 @@ import Checkout from './pages/Client/Checkout';
 import UnderConstruction from './pages/Client/UnderConstruction';
 import PagoPedido from './pages/Client/PagoPedido';
 import DetallePedido from './pages/Client/DetallePedido';
+import SubirDiseno from './pages/Client/SubirDiseno';
+import EditorDiseno from './pages/Client/EditorDiseno';
 
 
-// Dentro del Router, junto a las otras rutas de cliente
 
-
-// Dentro de las rutas protegidas del cliente:
 
 
 // Páginas admin
@@ -107,6 +106,8 @@ function App() {
           <Route path="/cliente/pedido/:id" element={<DetallePedido />} />
           <Route path="/cliente/pedido/:id/pago" element={<PagoPedido />} />
           <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
+          <Route path="/cliente/pedido/:id/diseno" element={<SubirDiseno />} />
+          <Route path="/cliente/pedido/:id/editor" element={<EditorDiseno />} />
 
         </Route>
 
