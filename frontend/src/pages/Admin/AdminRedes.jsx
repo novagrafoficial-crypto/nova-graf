@@ -73,21 +73,40 @@ export default function AdminRedes() {
       {error && <p className="empresa-status error">{error}</p>}
 
       <div className="empresa-add-row">
-        <input className="empresa-input" placeholder="Red social (ej. Facebook)" value={red} onChange={(e) => setRed(e.target.value)} />
-        <input className="empresa-input" placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
-        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
-        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
+        <input
+          className="empresa-input"
+          placeholder="Red social (ej. Facebook)"
+          value={red}
+          onChange={(e) => setRed(e.target.value)}
+        />
+        <input
+          className="empresa-input"
+          placeholder="URL"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+        />
+        <button className="btn-agregar" onClick={guardar}>
+          {editandoId ? "Actualizar" : "Agregar"}
+        </button>
+        {editandoId && (
+          <button className="btn-agregar" onClick={handleCancelar}
+            style={{ background: "#e0f0ee", color: "#1A6163", border: "1px solid #35BA99" }}>
+            Cancelar
+          </button>
+        )}
       </div>
 
       <div className="empresa-item-list">
         {redes.map((r) => (
           <div key={r.red_social_id} className="empresa-item">
             <div className="empresa-item-text">
-              <strong>{r.red_social}</strong>
+              <strong style={{ color: "#1A6163" }}>{r.red_social}</strong>
               <div className="empresa-item-sub">{r.url_red_social}</div>
             </div>
-            <button className="btn-agregar" onClick={() => handleEditar(r)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(r.red_social_id)}>Eliminar</button>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(r)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(r.red_social_id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

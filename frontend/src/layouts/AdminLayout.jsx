@@ -6,11 +6,10 @@ const NAV_LINKS = [
   { to: "categorias",    icon: "📁", label: "Gestión de Categorías" },
   { to: "subcategorias", icon: "📂", label: "Gestión de Subcategorías" },
   { to: "productos",     icon: "🛍️", label: "Gestión de Productos" },
+  { to: "pedidos", icon: "📋", label: "Gestión de Pedidos" },
   { to: "usuarios",      icon: "👥", label: "Gestión de Usuarios" },
-  { to: "modulo-extra",  icon: "🗄️", label: "Gestión de BD" },
   { to: "publicacion",   icon: "📰", label: "Administrar Publicación" },
-  { to: "empresa",       icon: "🏢", label: "Gestión de Empresa" },
-  { to: "stock",         icon: "📊", label: "Predicción de Reabastecimiento" },
+  { to: "empresa",       icon: "🏢", label: "Gestión de Empresa" }
 ];
 
 
@@ -32,10 +31,10 @@ function AdminLayout() {
   return (
     <div className="admin-layout">
 
-      {/* ══ SIDEBAR — posición fija, nunca se mueve ══════════════════════════ */}
+      {}
       <aside className="admin-sidebar">
 
-        {/* Tarjeta de bienvenida */}
+        {}
         <div className="sidebar-welcome">
           <div className="welcome-avatar">
             {adminName.charAt(0).toUpperCase()}
@@ -78,6 +77,17 @@ function AdminLayout() {
         {/* Banner con el título de la sección actual */}
         <div className="content-banner">
           <div className="banner-text">
+            <button
+              onClick={() => navigate(-1)}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "rgba(255,255,255,0.8)", fontSize: "13px",
+                display: "flex", alignItems: "center", gap: "6px",
+                padding: 0, marginBottom: "8px"
+              }}
+            >
+              ← Regresar
+            </button>
             <h2 className="banner-title">{sectionTitle}</h2>
             <p className="banner-subtitle">Panel de Administración</p>
           </div>

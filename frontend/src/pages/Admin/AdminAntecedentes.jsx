@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
-
 const API_URL = import.meta.env.VITE_API_URL;
-
 const API = `${API_URL}/api/admin/antecedentes`;
 
 export default function AdminAntecedentes() {
@@ -83,21 +81,41 @@ export default function AdminAntecedentes() {
       {error && <p className="empresa-status error">{error}</p>}
 
       <div className="empresa-add-row">
-        <input className="empresa-input" placeholder="Descripción del evento" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
-        <input className="empresa-input" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={{ maxWidth: "180px" }} />
-        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
-        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
+        <input
+          className="empresa-input"
+          placeholder="Descripción del evento"
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+        />
+        <input
+          className="empresa-input"
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          style={{ maxWidth: "180px" }}
+        />
+        <button className="btn-agregar" onClick={guardar}>
+          {editandoId ? "Actualizar" : "Agregar"}
+        </button>
+        {editandoId && (
+          <button className="btn-agregar" onClick={handleCancelar}
+            style={{ background: "#e0f0ee", color: "#1A6163", border: "1px solid #35BA99" }}>
+            Cancelar
+          </button>
+        )}
       </div>
 
       <div className="empresa-item-list">
         {antecedentes.map((a) => (
           <div key={a.id} className="empresa-item">
             <div className="empresa-item-text">
-              <strong>{a.descripcion}</strong>
+              <strong style={{ color: "#1A6163" }}>{a.descripcion}</strong>
               <div className="empresa-item-sub">{formatFecha(a.fecha_evento)}</div>
             </div>
-            <button className="btn-agregar" onClick={() => handleEditar(a)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(a.id)}>Eliminar</button>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(a)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(a.id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

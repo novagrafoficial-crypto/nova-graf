@@ -85,7 +85,7 @@ export default function AdminMision() {
         </button>
         {editandoId && (
           <button className="btn-guardar" onClick={handleCancelar}
-            style={{ background: "var(--surface2)", boxShadow: "none" }}>
+            style={{ background: "#e0f0ee", color: "#1A6163", boxShadow: "none" }}>
             Cancelar
           </button>
         )}
@@ -94,9 +94,11 @@ export default function AdminMision() {
       <div className="empresa-item-list" style={{ marginTop: "16px" }}>
         {misiones.map((m) => (
           <div key={m.id} className="empresa-item">
-            <span className="empresa-item-text">{m.descripcion}</span>
-            <button className="btn-agregar" onClick={() => handleEditar(m)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(m.id)}>Eliminar</button>
+            <p className="empresa-item-text">{m.descripcion}</p>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(m)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(m.id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

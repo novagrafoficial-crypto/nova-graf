@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
 const API = `${API_URL}/api/admin/contactos`;
 
 export default function AdminContactos() {
@@ -75,21 +74,40 @@ export default function AdminContactos() {
       {error && <p className="empresa-status error">{error}</p>}
 
       <div className="empresa-add-row">
-        <input className="empresa-input" placeholder="Tipo (ej. Teléfono)" value={tipo} onChange={(e) => setTipo(e.target.value)} />
-        <input className="empresa-input" placeholder="Valor (ej. +52 123 456 7890)" value={valor} onChange={(e) => setValor(e.target.value)} />
-        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
-        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
+        <input
+          className="empresa-input"
+          placeholder="Tipo (ej. Teléfono)"
+          value={tipo}
+          onChange={(e) => setTipo(e.target.value)}
+        />
+        <input
+          className="empresa-input"
+          placeholder="Valor (ej. +52 123 456 7890)"
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+        />
+        <button className="btn-agregar" onClick={guardar}>
+          {editandoId ? "Actualizar" : "Agregar"}
+        </button>
+        {editandoId && (
+          <button className="btn-agregar" onClick={handleCancelar}
+            style={{ background: "#e0f0ee", color: "#1A6163", border: "1px solid #35BA99" }}>
+            Cancelar
+          </button>
+        )}
       </div>
 
       <div className="empresa-item-list">
         {contactos.map((c) => (
           <div key={c.contacto_id} className="empresa-item">
             <div className="empresa-item-text">
-              <strong>{c.tipo_contacto}</strong>
+              <strong style={{ color: "#1A6163" }}>{c.tipo_contacto}</strong>
               <div className="empresa-item-sub">{c.valor_contacto}</div>
             </div>
-            <button className="btn-agregar" onClick={() => handleEditar(c)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(c.contacto_id)}>Eliminar</button>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(c)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(c.contacto_id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

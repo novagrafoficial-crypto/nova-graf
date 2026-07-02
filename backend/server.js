@@ -126,6 +126,7 @@ const monitoreoRoutes           = require('./routes/admin/monitoreoRoutes');
 const proveedorRoutes           = require('./routes/admin/proveedorRoutes');
 const publicacionRoutes         = require('./routes/admin/publicacionRoutes');
 const reabastecimientoRoutes    = require('./routes/admin/reabastecimientoRoutes');
+const pedidosAdminRoutes = require('./routes/admin/pedidosAdminRoutes');
 
 
 app.use('/api/admin/antecedentes',     adminAntecedentesRoutes);
@@ -147,6 +148,7 @@ app.use('/api/admin/usuarios',         usuariosRoutes);
 app.use('/api/admin/modulo',           moduloAdminRoutes);
 app.use('/api',                        publicacionRoutes);
 app.use('/api/admin/reabastecimiento', reabastecimientoRoutes);
+app.use('/api/admin/pedidos', pedidosAdminRoutes);
 
 // ─── 9. INICIAR SERVIDOR ───────────────────────────────────
 const PORT = process.env.PORT || 5000;

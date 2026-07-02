@@ -47,22 +47,24 @@ import UnderConstruction from './pages/Client/UnderConstruction';
 
 
 // Páginas admin
+import AdminHome from "./pages/Admin/AdminHome";
+import Admin from "./layouts/AdminLayout";
 import AdminMarcas from "./pages/Admin/AdminMarcas";
 import AdminCategorias from "./pages/Admin/AdminCategorias";
 import AdminSubcategorias from "./pages/Admin/AdminSubcategorias";
 import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
-import AdminModulo from "./pages/Admin/AdminModulo";
 import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
-import AdminInventario from './pages/Admin/AdminInventario';
-import Reabastecimiento from './pages/Admin/Reabastecimiento';
-import Ventasproducto from "./pages/Admin/Ventasproducto";
-import Variantesmodal from "./pages/Admin/Variantesmodal";
-import Prediccionpage from "./pages/Admin/Prediccionpage";
-import DetallePrediccion from './pages/Admin/DetallePrediccion';
-import VentasGrafica from "./pages/Admin/VentasGrafica";
+import AdminPedidos from "./pages/Admin/AdminPedidos";
+//import AdminInventario from './pages/Admin/AdminInventario';
+//import Reabastecimiento from './pages/Admin/Reabastecimiento';
+//import Ventasproducto from "./pages/Admin/Ventasproducto";
+//import Variantesmodal from "./pages/Admin/Variantesmodal";
+//import Prediccionpage from "./pages/Admin/Prediccionpage";
+//import DetallePrediccion from './pages/Admin/DetallePrediccion';
+//import VentasGrafica from "./pages/Admin/VentasGrafica";
 import GestionSolicitudes from './pages/Admin/GestionSolicitudes';
 
 
@@ -111,23 +113,17 @@ function App() {
         </Route>
 
         {/* Rutas admin */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<AdminHome />} />
           <Route path="marcas" element={<AdminMarcas />} />
           <Route path="categorias" element={<AdminCategorias />} />
           <Route path="subcategorias" element={<AdminSubcategorias />} />
           <Route path="productos" element={<AdminProductos />} />
           <Route path="publicacion" element={<AdminPublicacion />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
-          <Route path="modulo-extra" element={<AdminModulo />} />
           <Route path="mision" element={<AdminMision />} />
           <Route path="empresa" element={<AdminEmpresaCom />} />
-          <Route path="inventario" element={<AdminInventario />} />
-          <Route path="stock" element={<Reabastecimiento />} />
-          <Route path="stock/:id/ventas" element={<Ventasproducto/>} />
-          <Route path="stock/:id/variantes" element={<Variantesmodal/>} />
-          <Route path="stock/:id/prediccion" element={<Prediccionpage/>} />
-          <Route path="/admin/prediccion/variante/:varianteId" element={<DetallePrediccion />} />
-          <Route path="/admin/ventas/:id/grafica" element={<VentasGrafica />} />
+          <Route path="pedidos" element={<AdminPedidos />} />
           <Route path="/admin/solicitudes" element={<GestionSolicitudes />} />
 
         </Route>
