@@ -1,13 +1,13 @@
 // src/pages/Client/DetallePedido.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getToken } from '../../utils/auth';
 import '../../styles/client/DetallePedido.css';
 
-const API_URL = import.meta.env.VITE_API_URL; // ← ESTA LÍNEA FALTA
+const API_URL = import.meta.env.VITE_API_URL;
 
-// ✅ Estados del pedido (igual que en PedidosUsuario)
+// ✅ Estados del pedido
 const ESTADO_CONFIG = {
   PENDIENTE_VERIFICACION: { texto: "⏳ Anticipo pendiente", color: "#f59e0b", bg: "#fef3c7" },
   EN_DISENO: { texto: "🎨 En diseño", color: "#3b82f6", bg: "#eff6ff" },
@@ -27,6 +27,15 @@ const DetallePedido = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ─── ESTADO DEL CHAT ─────────────────────────────────────────────
+  const [mensajes, setMensajes] = useState([]);
+  const [nuevoMensaje, setNuevoMensaje] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState(null);
+  const chatContainerRef = useRef(null);
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')));
+
+  // ─── FETCH PEDIDO ─────────────────────────────────────────────────
   useEffect(() => {
     const fetchPedido = async () => {
       const token = getToken();
@@ -52,11 +61,88 @@ const DetallePedido = () => {
     fetchPedido();
   }, [id, navigate]);
 
+  // ─── FETCH MENSAJES ──────────────────────────────────────────────
+  const fetchMensajes = async () => {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const res = await axios.get(`${API_URL}/api/client/chat/${id}/chat`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMensajes(res.data.mensajes || []);
+      // Scroll al final del chat
+      setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 100);
+    } catch (err) {
+      console.error('❌ Error al obtener mensajes:', err);
+      setChatError('No se pudieron cargar los mensajes');
+    }
+  };
+
+  // ─── ENVIAR MENSAJE ──────────────────────────────────────────────
+  const enviarMensaje = async () => {
+    if (!nuevoMensaje.trim()) return;
+
+    const token = getToken();
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    setChatLoading(true);
+    setChatError(null);
+
+    try {
+      await axios.post(
+        `${API_URL}/api/client/chat/${id}/chat`,
+        { mensaje: nuevoMensaje.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNuevoMensaje('');
+      await fetchMensajes();
+    } catch (err) {
+      console.error('❌ Error al enviar mensaje:', err);
+      setChatError('No se pudo enviar el mensaje');
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  // ─── POLLING DE MENSAJES ─────────────────────────────────────────
+  useEffect(() => {
+    if (!pedido) return;
+
+    // Solo cargar chat si el pedido está en estados de diseño/revisión
+    const estadosConChat = ['EN_REVISION', 'PREVIAS_ENVIADAS', 'EN_DISENO'];
+    if (estadosConChat.includes(pedido.estado)) {
+      fetchMensajes();
+      
+      // Polling cada 10 segundos
+      const interval = setInterval(fetchMensajes, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [pedido]);
+
+  // ─── ENTER PARA ENVIAR MENSAJE ───────────────────────────────────
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensaje();
+    }
+  };
+
+  // ─── RENDER ──────────────────────────────────────────────────────
   if (loading) return <div className="detalle-loading">Cargando...</div>;
   if (error) return <div className="detalle-error">{error}</div>;
   if (!pedido) return <div className="detalle-error">Pedido no encontrado</div>;
 
   const estadoInfo = ESTADO_CONFIG[pedido.estado] || { texto: pedido.estado, color: "#6b7280", bg: "#f3f4f6" };
+  const mostrarChat = ['EN_REVISION', 'PREVIAS_ENVIADAS', 'EN_DISENO'].includes(pedido.estado);
+  const esAdmin = user?.rol === 'admin';
 
   return (
     <div className="detalle-pedido-wrapper">
@@ -78,7 +164,7 @@ const DetallePedido = () => {
 
       {/* ─── GRID ─── */}
       <div className="detalle-pedido-grid">
-        {/* Información */}
+        {/* ─── INFORMACIÓN ─── */}
         <div className="detalle-info">
           <h3>📋 Información del pedido</h3>
           <div className="info-linea">
@@ -109,7 +195,7 @@ const DetallePedido = () => {
           </div>
         </div>
 
-        {/* Productos */}
+        {/* ─── PRODUCTOS ─── */}
         <div className="detalle-productos">
           <h3>🛒 Productos</h3>
           {pedido.detalles?.length > 0 ? (
@@ -177,6 +263,77 @@ const DetallePedido = () => {
         )}
       </div>
 
+      {/* ─── CHAT ────────────────────────────────────────────────────── */}
+      {mostrarChat && (
+        <div className="detalle-chat">
+          <div className="chat-header">
+            <h3>💬 Chat con el equipo</h3>
+            <span className="chat-status online">🟢 En línea</span>
+          </div>
+
+          <div className="chat-mensajes" ref={chatContainerRef}>
+            {mensajes.length === 0 ? (
+              <div className="chat-empty">
+                <span>💬</span>
+                <p>No hay mensajes aún. Inicia la conversación con el equipo.</p>
+              </div>
+            ) : (
+              mensajes.map((msg, index) => {
+                const esAdmin = msg.remitente_rol === 'admin';
+                return (
+                  <div 
+                    key={index} 
+                    className={`chat-mensaje ${esAdmin ? 'admin' : 'cliente'}`}
+                  >
+                    <div className="chat-mensaje-header">
+                      <strong>{msg.remitente_nombre}</strong>
+                      {esAdmin && <span className="chat-badge">Admin</span>}
+                      <span className="chat-hora">
+                        {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <p className="chat-mensaje-texto">{msg.mensaje}</p>
+                    {!msg.leido && esAdmin && (
+                      <span className="chat-no-leido">● No leído</span>
+                    )}
+                  </div>
+                );
+              })
+            )}
+            {chatLoading && (
+              <div className="chat-loading">
+                <span>⏳ Enviando...</span>
+              </div>
+            )}
+          </div>
+
+          {chatError && (
+            <div className="chat-error">{chatError}</div>
+          )}
+
+          <div className="chat-input-area">
+            <textarea
+              className="chat-input"
+              value={nuevoMensaje}
+              onChange={(e) => setNuevoMensaje(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Escribe tu mensaje..."
+              rows="2"
+            />
+            <button 
+              className="chat-enviar"
+              onClick={enviarMensaje}
+              disabled={chatLoading || !nuevoMensaje.trim()}
+            >
+              {chatLoading ? '⏳' : '📤'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ─── ACCIONES ─── */}
       <div className="detalle-acciones">
         {pedido.estado === 'PENDIENTE_VERIFICACION' && (
@@ -185,13 +342,23 @@ const DetallePedido = () => {
           </button>
         )}
         {pedido.estado === 'EN_DISENO' && (
-          <button className="btn-accion btn-diseno" onClick={() => navigate(`/cliente/pedido/${pedido.id}/diseno`)}>
-            🎨 Subir diseño personalizado
-          </button>
+          <>
+            <button className="btn-accion btn-diseno" onClick={() => navigate(`/cliente/pedido/${pedido.id}/editor`)}>
+              🎨 Editor interactivo
+            </button>
+            <button className="btn-accion btn-subir" onClick={() => navigate(`/cliente/pedido/${pedido.id}/diseno`)}>
+              📎 Subir archivo
+            </button>
+          </>
         )}
         {pedido.estado === 'PENDIENTE_PAGO_FINAL' && (
           <button className="btn-accion btn-pago" onClick={() => navigate(`/cliente/pedido/${pedido.id}/pago-final`)}>
             💰 Pagar saldo restante
+          </button>
+        )}
+        {pedido.estado === 'PREVIAS_ENVIADAS' && (
+          <button className="btn-accion btn-previa" onClick={() => navigate(`/cliente/pedido/${pedido.id}/previas`)}>
+            🖼️ Ver previas
           </button>
         )}
       </div>
