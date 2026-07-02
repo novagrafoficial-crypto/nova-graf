@@ -1,0 +1,231 @@
+/* src/styles/client/PagoPedido.css */
+
+.pago-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  min-height: 80vh;
+}
+
+.pago-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eee;
+}
+
+.pago-card h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.pago-subtitulo {
+  text-align: center;
+  color: #666;
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+}
+
+/* ─── DATOS BANCARIOS ────────────────────────────────────── */
+.pago-datos-bancarios {
+  background: #f0f7ff;
+  border: 2px solid #dbeafe;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.pago-datos-bancarios h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pago-datos-bancarios h3::before {
+  content: "🏦";
+}
+
+.banco-info {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.banco-info p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #e5edf5;
+}
+
+.banco-info p:last-child {
+  border-bottom: none;
+}
+
+.banco-info p strong {
+  color: #1a1a1a;
+}
+
+/* ─── MONTO ───────────────────────────────────────────────── */
+.pago-monto {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.pago-monto h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.pago-monto .monto {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.pago-monto .monto-detalle {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0.3rem;
+}
+
+/* ─── FORMULARIO ──────────────────────────────────────────── */
+.pago-form {
+  margin-top: 2rem;
+}
+
+.pago-form .form-group {
+  margin-bottom: 1.8rem;
+}
+
+.pago-form .form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.pago-form .form-group input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed #d0d0d0;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pago-form .form-group input[type="file"]:hover {
+  border-color: #4a90d9;
+  background: #f5f9ff;
+}
+
+.pago-form .form-group small {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.pago-form .error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.pago-form .exito-message {
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.pago-form button {
+  width: 100%;
+  padding: 1rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pago-form button:hover:not(:disabled) {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.pago-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── ESTADOS DEL PEDIDO ────────────────────────────────── */
+.pago-info {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+
+.pago-info p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.pago-info p strong {
+  color: #1a1a1a;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .pago-wrapper {
+    padding: 1rem;
+  }
+
+  .pago-card {
+    padding: 1.5rem;
+  }
+
+  .pago-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .pago-monto .monto {
+    font-size: 2rem;
+  }
+
+  .banco-info p {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}

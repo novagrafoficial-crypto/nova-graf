@@ -88,22 +88,19 @@ app.use('/api/public', portafolioRoutes);
 
 // ─── 7. RUTAS CLIENTE ──────────────────────────────────────
 const productosClientRoutes   = require('./routes/client/productosRoutes');
-const borradoresClienteRoutes = require('./routes/client/borradores');
 const carritoRoutes           = require('./routes/client/carritoRoutes');
 const homeRoutes              = require('./routes/client/homeRoutes');
 const checkoutRoutes          = require('./routes/client/checkoutRoutes');
-const pedidosRoutes = require('./routes/client/pedidosRoutes');
-const solicitudDisenoRoutes = require('./routes/client/solicitudDisenoRoutes');
+const pedidosRoutes           = require('./routes/client/pedidosRoutes');
+
 
 
 
 app.use('/api/client/productos',  productosClientRoutes);
-app.use('/api/client/borradores', borradoresClienteRoutes);
 app.use('/api/client/carrito',    carritoRoutes);
 app.use('/api/client/home',       homeRoutes);
-app.use('/api/client/checkout',   checkoutRoutes);
+app.use('/api/client/checkout', checkoutRoutes);
 app.use('/api/client/pedidos', pedidosRoutes);
-app.use('/api', solicitudDisenoRoutes);
 
 
 // ─── 8. RUTAS ADMIN ────────────────────────────────────────
