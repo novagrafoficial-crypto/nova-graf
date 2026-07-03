@@ -5,20 +5,24 @@ const API = `${import.meta.env.VITE_API_URL}/api/admin/pedidos`;
 
 const ESTADOS = [
   "PENDIENTE_VERIFICACION",
-  "ANTICIPO_VERIFICADO",
+  "EN_DISENO",
+  "EN_REVISION",
+  "PREVIAS_ENVIADAS",
   "EN_PRODUCCION",
-  "LISTO_PARA_ENTREGA",
-  "ENTREGADO",
+  "PENDIENTE_PAGO_FINAL",
+  "ENVIADO",
   "CANCELADO",
 ];
 
 const COLORES = {
   PENDIENTE_VERIFICACION: { bg: "#FFF3CD", color: "#7d5a00" },
-  ANTICIPO_VERIFICADO:    { bg: "#d4f5eb", color: "#0F6E56" },
-  EN_PRODUCCION:          { bg: "#d0eaff", color: "#0a4a7c" },
-  LISTO_PARA_ENTREGA:     { bg: "#e8d5ff", color: "#4a0080" },
-  ENTREGADO:              { bg: "#e0f5e0", color: "#1a6163" },
-  CANCELADO:              { bg: "#ffe0e0", color: "#8b0000" },
+  EN_DISENO:              { bg: "#d0eaff", color: "#0a4a7c" },
+  EN_REVISION:            { bg: "#ffe8d0", color: "#7a3500" },
+  PREVIAS_ENVIADAS:       { bg: "#e8d5ff", color: "#4a0080" },
+  EN_PRODUCCION:          { bg: "#d4f5eb", color: "#0F6E56" },
+  PENDIENTE_PAGO_FINAL:   { bg: "#ffd6d6", color: "#8b0000" },
+  ENVIADO:                { bg: "#e0f5e0", color: "#1a6163" },
+  CANCELADO:              { bg: "#f0f0f0", color: "#555" },
 };
 
 export default function AdminPedidos() {

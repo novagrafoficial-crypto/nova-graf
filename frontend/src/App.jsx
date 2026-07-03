@@ -58,6 +58,7 @@ import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
 import AdminPedidos from "./pages/Admin/AdminPedidos";
+import AdminPedidoDetalle from "./pages/Admin/AdminPedidoDetalle";
 //import AdminInventario from './pages/Admin/AdminInventario';
 //import Reabastecimiento from './pages/Admin/Reabastecimiento';
 //import Ventasproducto from "./pages/Admin/Ventasproducto";
@@ -123,6 +124,7 @@ function App() {
           <Route path="mision" element={<AdminMision />} />
           <Route path="empresa" element={<AdminEmpresaCom />} />
           <Route path="pedidos" element={<AdminPedidos />} />
+          <Route path="pedidos/:id" element={<AdminPedidoDetalle />} />
           <Route path="/admin/solicitudes" element={<GestionSolicitudes />} />
 
         </Route>

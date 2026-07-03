@@ -55,10 +55,16 @@ const obtenerPorId = async (id) => {
     WHERE d.pedido_cliente_id = $1
   `, [id]);
 
-  const pagos = await db.query(`
-    SELECT * FROM ventas.pagos_pedidos 
+    const pagos = await db.query(`
+      SELECT * FROM ventas.pagos_pedidos 
+      WHERE pedido_cliente_id = $1 
+      ORDER BY fecha_pago DESC
+    `, [id]);
+
+    const disenos = await db.query(`
+    SELECT * FROM ventas.disenos_clientes 
     WHERE pedido_cliente_id = $1 
-    ORDER BY fecha_pago DESC
+    ORDER BY fecha_envio DESC
   `, [id]);
 
   const previas = await db.query(`
@@ -81,6 +87,7 @@ const obtenerPorId = async (id) => {
     pagos: pagos.rows,
     previas: previas.rows,
     chat: chat.rows,
+    disenos: disenos.rows,
   };
 };
 
@@ -102,6 +109,7 @@ const actualizarPago = async (id, estado_pago, notas_admin) => {
   return result.rows[0];
 };
 
+
 const subirPrevia = async (pedido_cliente_id, numero_previa, imagen_url) => {
   const result = await db.query(`
     INSERT INTO ventas.previas_diseno (pedido_cliente_id, numero_previa, imagen_url)
@@ -118,4 +126,16 @@ const enviarMensaje = async (pedido_cliente_id, remitente_id, mensaje) => {
   return result.rows[0];
 };
 
-module.exports = { obtenerTodos, obtenerPorId, actualizarEstado, actualizarPago, subirPrevia, enviarMensaje };
+const notificarAdmins = async (pedido_id, tipo, titulo, mensaje, enlace) => {
+  const admins = await db.query(
+    `SELECT id_usuario FROM public.usuarios WHERE rol = 'administrador'`
+  );
+  for (const admin of admins.rows) {
+    await db.query(`
+      INSERT INTO ventas.notificaciones (usuario_id, pedido_id, tipo, titulo, mensaje, enlace)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [admin.id_usuario, pedido_id, tipo, titulo, mensaje, enlace]);
+  }
+};
+
+module.exports = { obtenerTodos, obtenerPorId, actualizarEstado, actualizarPago, subirPrevia, enviarMensaje, notificarAdmins };

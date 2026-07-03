@@ -15,6 +15,7 @@ const obtenerPedidoPorId = async (req, res) => {
     if (!data.pedido) return res.status(404).json({ error: 'Pedido no encontrado' });
     res.json(data);
   } catch (err) {
+    console.error('❌ Error en obtenerPedidoPorId:', err.message);
     res.status(500).json({ error: err.message });
   }
 };
