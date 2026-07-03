@@ -42,6 +42,7 @@ import DetallePedido from './pages/Client/DetallePedido';
 import SubirDiseno from './pages/Client/SubirDiseno';
 import EditorDiseno from './pages/Client/EditorDiseno';
 import VerPrevias from './pages/Client/VerPrevias';
+import Personalizados from './pages/Client/Personalizados';
 
 
 
@@ -110,6 +111,7 @@ function App() {
           <Route path="/cliente/pedido/:id/diseno" element={<SubirDiseno />} />
           <Route path="/cliente/pedido/:id/editor" element={<EditorDiseno />} />
           <Route path="/cliente/pedido/:id/previas" element={<VerPrevias />} />
+          <Route path="/cliente/personalizados" element={<Personalizados />} />
 
         </Route>
 

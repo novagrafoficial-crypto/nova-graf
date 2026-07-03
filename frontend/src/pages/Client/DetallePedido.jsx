@@ -120,7 +120,7 @@ const DetallePedido = () => {
     const estadosConChat = ['EN_REVISION', 'PREVIAS_ENVIADAS', 'EN_DISENO'];
     if (estadosConChat.includes(pedido.estado)) {
       fetchMensajes();
-      
+
       // Polling cada 10 segundos
       const interval = setInterval(fetchMensajes, 10000);
       return () => clearInterval(interval);
@@ -142,7 +142,6 @@ const DetallePedido = () => {
 
   const estadoInfo = ESTADO_CONFIG[pedido.estado] || { texto: pedido.estado, color: "#6b7280", bg: "#f3f4f6" };
   const mostrarChat = ['EN_REVISION', 'PREVIAS_ENVIADAS', 'EN_DISENO'].includes(pedido.estado);
-  const esAdmin = user?.rol === 'admin';
 
   return (
     <div className="detalle-pedido-wrapper">
@@ -162,205 +161,228 @@ const DetallePedido = () => {
         </div>
       </div>
 
-      {/* ─── GRID ─── */}
-      <div className="detalle-pedido-grid">
-        {/* ─── INFORMACIÓN ─── */}
-        <div className="detalle-info">
-          <h3>📋 Información del pedido</h3>
-          <div className="info-linea">
-            <span>Fecha:</span>
-            <span>{new Date(pedido.fecha_pedido).toLocaleDateString()}</span>
-          </div>
-          <div className="info-linea">
-            <span>Método de entrega:</span>
-            <span>{pedido.metodo_entrega_nombre || 'No especificado'}</span>
-          </div>
-          <div className="info-linea">
-            <span>Dirección:</span>
-            <span>{pedido.direccion_envio || 'No especificada'}</span>
-          </div>
-          {pedido.distancia_km_calculada && (
-            <div className="info-linea">
-              <span>Distancia:</span>
-              <span>{pedido.distancia_km_calculada} km</span>
-            </div>
-          )}
-          <div className="info-linea">
-            <span>Fecha estimada:</span>
-            <span>{pedido.fecha_entrega_estimada ? new Date(pedido.fecha_entrega_estimada).toLocaleDateString() : 'Por definir'}</span>
-          </div>
-          <div className="info-linea total">
-            <span>Total:</span>
-            <span>${pedido.total_general}</span>
-          </div>
-        </div>
+      {/* ─── LAYOUT PRINCIPAL: chat a la izquierda, detalle a la derecha ─── */}
+      <div className={`detalle-pedido-layout ${mostrarChat ? 'con-chat' : 'sin-chat'}`}>
 
-        {/* ─── PRODUCTOS ─── */}
-        <div className="detalle-productos">
-          <h3>🛒 Productos</h3>
-          {pedido.detalles?.length > 0 ? (
-            pedido.detalles.map((detalle, index) => (
-              <div key={index} className="producto-item">
-                <img 
-                  src={detalle.imagen_url || '/placeholder.png'} 
-                  alt={detalle.producto_nombre} 
-                  onError={(e) => (e.target.src = '/placeholder.png')}
-                />
-                <div className="producto-info">
-                  <h4>{detalle.producto_nombre}</h4>
-                  <p>Color: {detalle.color || 'N/A'}</p>
-                  <p>Cantidad: {detalle.cantidad}</p>
-                  <p>Precio unitario: ${detalle.precio_unitario}</p>
-                </div>
-                <div className="producto-precio">
-                  ${detalle.subtotal}
-                </div>
+        {/* ─── COLUMNA IZQUIERDA: CHAT ─── */}
+        {mostrarChat && (
+          <div className="detalle-chat">
+            <div className="chat-header">
+              <div className="chat-header-titulo">
+                <h3>💬 Chat con el equipo</h3>
+                <span className="chat-status online">🟢 En línea</span>
               </div>
-            ))
-          ) : (
-            <p className="producto-vacio">No hay productos en este pedido</p>
-          )}
-          <div className="producto-total">
-            <span>Subtotal productos:</span>
-            <span>${pedido.total_productos}</span>
-          </div>
-          <div className="producto-total">
-            <span>Envío:</span>
-            <span>${pedido.costo_envio}</span>
-          </div>
-          <div className="producto-total grand-total">
-            <span>Total:</span>
-            <span>${pedido.total_general}</span>
-          </div>
-        </div>
-      </div>
+            </div>
 
-      {/* ─── PAGOS ─── */}
-      <div className="detalle-pagos">
-        <h3>💳 Pagos</h3>
-        {pedido.pagos?.length > 0 ? (
-          pedido.pagos.map((pago, index) => (
-            <div key={index} className="pago-item">
-              <span className="pago-tipo">{pago.tipo_pago}</span>
-              <span className="pago-monto">${pago.monto}</span>
-              <span className={`pago-estado ${pago.estado_pago?.toLowerCase() || 'pendiente'}`}>
-                {pago.estado_pago === 'PENDIENTE' ? '⏳ En verificación' :
-                 pago.estado_pago === 'APROBADO' ? '✅ Aprobado' :
-                 pago.estado_pago === 'RECHAZADO' ? '❌ Rechazado' : pago.estado_pago || 'Pendiente'}
-              </span>
-              {pago.comprobante_url && (
-                <a href={pago.comprobante_url} target="_blank" rel="noopener noreferrer" className="pago-comprobante">
-                  📎 Ver comprobante
-                </a>
+            <div className="chat-mensajes" ref={chatContainerRef}>
+              {mensajes.length === 0 ? (
+                <div className="chat-empty">
+                  <span>💬</span>
+                  <p>No hay mensajes aún. Inicia la conversación con el equipo.</p>
+                </div>
+              ) : (
+                mensajes.map((msg, index) => {
+                  const esAdmin = msg.remitente_rol === 'admin';
+                  return (
+                    <div
+                      key={index}
+                      className={`chat-mensaje ${esAdmin ? 'admin' : 'cliente'}`}
+                    >
+                      <div className="chat-mensaje-header">
+                        <strong>{msg.remitente_nombre}</strong>
+                        {esAdmin && <span className="chat-badge">Admin</span>}
+                        <span className="chat-hora">
+                          {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <p className="chat-mensaje-texto">{msg.mensaje}</p>
+                      {!msg.leido && esAdmin && (
+                        <span className="chat-no-leido">● No leído</span>
+                      )}
+                    </div>
+                  );
+                })
               )}
-              {pago.notas_admin && (
-                <span className="pago-notas">📝 {pago.notas_admin}</span>
+              {chatLoading && (
+                <div className="chat-loading">
+                  <span>⏳ Enviando...</span>
+                </div>
               )}
             </div>
-          ))
-        ) : (
-          <p className="pago-vacio">No hay pagos registrados</p>
+
+            {chatError && (
+              <div className="chat-error">{chatError}</div>
+            )}
+
+            <div className="chat-input-area">
+              <textarea
+                className="chat-input"
+                value={nuevoMensaje}
+                onChange={(e) => setNuevoMensaje(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Escribe tu mensaje..."
+                rows="2"
+              />
+              <button
+                className="chat-enviar"
+                onClick={enviarMensaje}
+                disabled={chatLoading || !nuevoMensaje.trim()}
+              >
+                {chatLoading ? '⏳' : '📤'}
+              </button>
+            </div>
+          </div>
         )}
-      </div>
 
-      {/* ─── CHAT ────────────────────────────────────────────────────── */}
-      {mostrarChat && (
-        <div className="detalle-chat">
-          <div className="chat-header">
-            <h3>💬 Chat con el equipo</h3>
-            <span className="chat-status online">🟢 En línea</span>
+        {/* ─── COLUMNA DERECHA: INFO, PRODUCTOS, PAGOS, ACCIONES ─── */}
+        <div className="detalle-pedido-main">
+
+          {/* ─── INFO + PRODUCTOS ─── */}
+          <div className="detalle-pedido-grid">
+            <div className="detalle-info">
+              <h3>📋 Información del pedido</h3>
+              <div className="info-linea">
+                <span>Fecha:</span>
+                <span>{new Date(pedido.fecha_pedido).toLocaleDateString()}</span>
+              </div>
+              <div className="info-linea">
+                <span>Método de entrega:</span>
+                <span>{pedido.metodo_entrega_nombre || 'No especificado'}</span>
+              </div>
+              <div className="info-linea">
+                <span>Dirección:</span>
+                <span>{pedido.direccion_envio || 'No especificada'}</span>
+              </div>
+              {pedido.distancia_km_calculada && (
+                <div className="info-linea">
+                  <span>Distancia:</span>
+                  <span>{pedido.distancia_km_calculada} km</span>
+                </div>
+              )}
+              <div className="info-linea">
+                <span>Fecha estimada:</span>
+                <span>{pedido.fecha_entrega_estimada ? new Date(pedido.fecha_entrega_estimada).toLocaleDateString() : 'Por definir'}</span>
+              </div>
+              <div className="info-linea total">
+                <span>Total:</span>
+                <span>${pedido.total_general}</span>
+              </div>
+            </div>
+
+            <div className="detalle-productos">
+              <h3>🛒 Productos</h3>
+              {pedido.detalles?.length > 0 ? (
+                pedido.detalles.map((detalle, index) => (
+                  <div key={index} className="producto-item">
+                    <img
+                      src={detalle.imagen_url || '/placeholder.png'}
+                      alt={detalle.producto_nombre}
+                      onError={(e) => (e.target.src = '/placeholder.png')}
+                    />
+                    <div className="producto-info">
+                      <h4>{detalle.producto_nombre}</h4>
+                      <p>Color: {detalle.color || 'N/A'}</p>
+                      <p>Cantidad: {detalle.cantidad}</p>
+                      <p>Precio unitario: ${detalle.precio_unitario}</p>
+                    </div>
+                    <div className="producto-precio">
+                      ${detalle.subtotal}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="producto-vacio">No hay productos en este pedido</p>
+              )}
+              <div className="producto-total">
+                <span>Subtotal productos:</span>
+                <span>${pedido.total_productos}</span>
+              </div>
+              <div className="producto-total">
+                <span>Envío:</span>
+                <span>${pedido.costo_envio}</span>
+              </div>
+              <div className="producto-total grand-total">
+                <span>Total:</span>
+                <span>${pedido.total_general}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="chat-mensajes" ref={chatContainerRef}>
-            {mensajes.length === 0 ? (
-              <div className="chat-empty">
-                <span>💬</span>
-                <p>No hay mensajes aún. Inicia la conversación con el equipo.</p>
-              </div>
-            ) : (
-              mensajes.map((msg, index) => {
-                const esAdmin = msg.remitente_rol === 'admin';
-                return (
-                  <div 
-                    key={index} 
-                    className={`chat-mensaje ${esAdmin ? 'admin' : 'cliente'}`}
-                  >
-                    <div className="chat-mensaje-header">
-                      <strong>{msg.remitente_nombre}</strong>
-                      {esAdmin && <span className="chat-badge">Admin</span>}
-                      <span className="chat-hora">
-                        {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+          {/* ─── PAGOS ─── */}
+          <div className="detalle-pagos">
+            <h3>💳 Pagos</h3>
+            {pedido.pagos?.length > 0 ? (
+              <div className="pagos-lista">
+                {pedido.pagos.map((pago, index) => (
+                  <div key={index} className="pago-item">
+                    <div className="pago-item-fila-principal">
+                      <div className="pago-item-info">
+                        <span className="pago-tipo">{pago.tipo_pago}</span>
+                        <span className="pago-monto">${pago.monto}</span>
+                      </div>
+                      <span className={`pago-estado ${pago.estado_pago?.toLowerCase() || 'pendiente'}`}>
+                        {pago.estado_pago === 'PENDIENTE' ? '⏳ En verificación' :
+                         pago.estado_pago === 'APROBADO' ? '✅ Aprobado' :
+                         pago.estado_pago === 'RECHAZADO' ? '❌ Rechazado' : pago.estado_pago || 'Pendiente'}
                       </span>
                     </div>
-                    <p className="chat-mensaje-texto">{msg.mensaje}</p>
-                    {!msg.leido && esAdmin && (
-                      <span className="chat-no-leido">● No leído</span>
+                    {(pago.comprobante_url || pago.notas_admin) && (
+                      <div className="pago-item-fila-secundaria">
+                        {pago.comprobante_url && (
+                          <a href={pago.comprobante_url} target="_blank" rel="noopener noreferrer" className="pago-comprobante">
+                            📎 Ver comprobante
+                          </a>
+                        )}
+                        {pago.notas_admin && (
+                          <span className="pago-notas">📝 {pago.notas_admin}</span>
+                        )}
+                      </div>
                     )}
                   </div>
-                );
-              })
-            )}
-            {chatLoading && (
-              <div className="chat-loading">
-                <span>⏳ Enviando...</span>
+                ))}
               </div>
+            ) : (
+              <p className="pago-vacio">No hay pagos registrados</p>
             )}
           </div>
 
-          {chatError && (
-            <div className="chat-error">{chatError}</div>
-          )}
-
-          <div className="chat-input-area">
-            <textarea
-              className="chat-input"
-              value={nuevoMensaje}
-              onChange={(e) => setNuevoMensaje(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Escribe tu mensaje..."
-              rows="2"
-            />
-            <button 
-              className="chat-enviar"
-              onClick={enviarMensaje}
-              disabled={chatLoading || !nuevoMensaje.trim()}
-            >
-              {chatLoading ? '⏳' : '📤'}
-            </button>
+          {/* ─── ACCIONES ─── */}
+          <div className="detalle-acciones">
+            {pedido.estado === 'PENDIENTE_VERIFICACION' && (
+              <button className="btn-accion btn-pago" onClick={() => navigate(`/cliente/pedido/${pedido.id}/pago`)}>
+                <span className="btn-accion-icono">📎</span>
+                <span>Subir comprobante de pago</span>
+              </button>
+            )}
+            {pedido.estado === 'EN_DISENO' && (
+              <>
+                <button className="btn-accion btn-diseno" onClick={() => navigate(`/cliente/pedido/${pedido.id}/editor`)}>
+                  <span className="btn-accion-icono">🎨</span>
+                  <span>Editor interactivo</span>
+                </button>
+                <button className="btn-accion btn-subir" onClick={() => navigate(`/cliente/pedido/${pedido.id}/diseno`)}>
+                  <span className="btn-accion-icono">📎</span>
+                  <span>Subir archivo</span>
+                </button>
+              </>
+            )}
+            {pedido.estado === 'PENDIENTE_PAGO_FINAL' && (
+              <button className="btn-accion btn-pago" onClick={() => navigate(`/cliente/pedido/${pedido.id}/pago-final`)}>
+                <span className="btn-accion-icono">💰</span>
+                <span>Pagar saldo restante</span>
+              </button>
+            )}
+            {pedido.estado === 'PREVIAS_ENVIADAS' && (
+              <button className="btn-accion btn-previa" onClick={() => navigate(`/cliente/pedido/${pedido.id}/previas`)}>
+                <span className="btn-accion-icono">🖼️</span>
+                <span>Ver previas</span>
+              </button>
+            )}
           </div>
         </div>
-      )}
-
-      {/* ─── ACCIONES ─── */}
-      <div className="detalle-acciones">
-        {pedido.estado === 'PENDIENTE_VERIFICACION' && (
-          <button className="btn-accion btn-pago" onClick={() => navigate(`/cliente/pedido/${pedido.id}/pago`)}>
-            📎 Subir comprobante de pago
-          </button>
-        )}
-        {pedido.estado === 'EN_DISENO' && (
-          <>
-            <button className="btn-accion btn-diseno" onClick={() => navigate(`/cliente/pedido/${pedido.id}/editor`)}>
-              🎨 Editor interactivo
-            </button>
-            <button className="btn-accion btn-subir" onClick={() => navigate(`/cliente/pedido/${pedido.id}/diseno`)}>
-              📎 Subir archivo
-            </button>
-          </>
-        )}
-        {pedido.estado === 'PENDIENTE_PAGO_FINAL' && (
-          <button className="btn-accion btn-pago" onClick={() => navigate(`/cliente/pedido/${pedido.id}/pago-final`)}>
-            💰 Pagar saldo restante
-          </button>
-        )}
-        {pedido.estado === 'PREVIAS_ENVIADAS' && (
-          <button className="btn-accion btn-previa" onClick={() => navigate(`/cliente/pedido/${pedido.id}/previas`)}>
-            🖼️ Ver previas
-          </button>
-        )}
       </div>
     </div>
   );

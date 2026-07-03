@@ -1,115 +1,88 @@
-// src/pages/client/Personalizados.jsx
+// src/pages/Client/Personalizados.jsx
 import { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../../styles/client/Personalizados.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function Personalizados() {
-  const { user } = useOutletContext() || {};
-  const [personalizados, setPersonalizados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [categorias, setCategorias] = useState([]);
-  const [catActiva, setCatActiva] = useState('todas');
+const Personalizados = () => {
+    const navigate = useNavigate();
+    const [portafolio, setPortafolio] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Aquí asumo que tienes un endpoint que devuelve los trabajos personalizados
-    // Si no, podrías usar el mismo endpoint de portafolio pero filtrando
-    fetch(`${API_URL}/api/client/personalizados`)
-      .then(r => r.json())
-      .then(data => {
-        setPersonalizados(data.personalizados || []);
-        setCategorias(data.categorias || []);
-      })
-      .catch(err => console.error('Error:', err))
-      .finally(() => setLoading(false));
-  }, []);
+    useEffect(() => {
+        const fetchPortafolio = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/api/client/portafolio`);
+                setPortafolio(res.data.portafolio || []);
+                console.log('📦 Portafolio cargado:', res.data.portafolio);
+            } catch (err) {
+                console.error('Error al cargar portafolio:', err);
+                setError('No se pudieron cargar los productos personalizados');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPortafolio();
+    }, []);
 
-  const filtrados = catActiva === 'todas' 
-    ? personalizados 
-    : personalizados.filter(p => p.categoria?.toLowerCase() === catActiva.toLowerCase());
+    if (loading) return <div className="personalizados-loading">Cargando productos personalizados...</div>;
+    if (error) return <div className="personalizados-error">{error}</div>;
 
-  if (loading) return <div className="personalizados-loading">Cargando...</div>;
+    return (
+        <div className="personalizados-wrapper">
+            <div className="personalizados-header">
+                <h2>🎨 Productos personalizados</h2>
+                <p>Explora nuestra galería de trabajos realizados</p>
+            </div>
 
-  return (
-    <div className="personalizados-page">
-      <div className="personalizados-header">
-        <h1>✨ Trabajos Personalizados</h1>
-        <p>Descubre nuestros proyectos realizados para clientes como tú</p>
-      </div>
-
-      {/* Filtros por categoría */}
-      <div className="personalizados-filtros">
-        <button 
-          className={`filtro-btn ${catActiva === 'todas' ? 'active' : ''}`}
-          onClick={() => setCatActiva('todas')}
-        >
-          Todos
-        </button>
-        {categorias.map(cat => (
-          <button 
-            key={cat}
-            className={`filtro-btn ${catActiva === cat.toLowerCase() ? 'active' : ''}`}
-            onClick={() => setCatActiva(cat.toLowerCase())}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Grid de personalizados */}
-      <div className="personalizados-grid">
-        {filtrados.length === 0 ? (
-          <div className="personalizados-empty">
-            <span>🔍</span>
-            <p>No hay trabajos en esta categoría</p>
-          </div>
-        ) : (
-          filtrados.map((item, i) => (
-            <PersonalizadoCard key={item.id} item={item} index={i} />
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Componente Card para cada trabajo personalizado
-function PersonalizadoCard({ item, index }) {
-  const [hovered, setHovered] = useState(false);
-  
-  const img = item.imagen_url?.startsWith('http')
-    ? item.imagen_url
-    : item.imagen_url ? `${API_URL}${item.imagen_url}` : null;
-
-  return (
-    <div 
-      className="personalizado-card"
-      style={{ animationDelay: `${index * 0.1}s` }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="personalizado-card__media">
-        {img ? (
-          <img src={img} alt={item.titulo || 'Trabajo personalizado'} loading="lazy" />
-        ) : (
-          <div className="personalizado-card__placeholder">🎨</div>
-        )}
-        {item.categoria && (
-          <span className="personalizado-card__tag">{item.categoria}</span>
-        )}
-        <div className={`personalizado-card__overlay ${hovered ? 'visible' : ''}`}>
-          <button className="personalizado-card__btn">Ver detalles</button>
+            {portafolio.length === 0 ? (
+                <div className="personalizados-empty">
+                    <span>🖼️</span>
+                    <p>No hay productos personalizados publicados aún.</p>
+                </div>
+            ) : (
+                <div className="personalizados-grid">
+                    {portafolio.map((item) => (
+                        <div 
+                            key={item.id} 
+                            className="personalizado-card"
+                            onClick={() => {
+                                if (item.producto_id) {
+                                    navigate(`/cliente/producto/${item.producto_id}`);
+                                }
+                            }}
+                        >
+                            <div className="personalizado-imagen">
+                                <img 
+                                    src={item.imagen_url} 
+                                    alt={item.descripcion || item.producto_nombre || 'Producto personalizado'}
+                                    onError={(e) => e.target.src = '/placeholder.png'}
+                                />
+                                {item.producto_nombre && (
+                                    <span className="personalizado-badge">{item.producto_nombre}</span>
+                                )}
+                            </div>
+                            <div className="personalizado-info">
+                                <h3>{item.descripcion || item.producto_nombre || 'Producto personalizado'}</h3>
+                                {item.categoria_nombre && (
+                                    <p className="personalizado-categoria">{item.categoria_nombre}</p>
+                                )}
+                                {item.precio_base && (
+                                    <p className="personalizado-precio">Desde ${item.precio_base}</p>
+                                )}
+                                <button className="personalizado-btn">
+                                    Ver producto →
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-      </div>
-      
-      <div className="personalizado-card__body">
-        <h3>{item.titulo || 'Trabajo personalizado'}</h3>
-        {item.descripcion && <p>{item.descripcion}</p>}
-        {item.cliente && (
-          <span className="personalizado-card__cliente">👤 {item.cliente}</span>
-        )}
-      </div>
-    </div>
-  );
-}
+    );
+};
+
+export default Personalizados;

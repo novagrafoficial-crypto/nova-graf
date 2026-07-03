@@ -31,17 +31,17 @@ const SubirDiseno = () => {
   const subirArchivoSupabase = async (file, usuarioId) => {
     const fileName = `diseno_pedido_${id}_${Date.now()}_${file.name}`;
     const filePath = `disenos/usuario_${usuarioId}/${fileName}`;
-    
+
     const { error } = await supabase.storage
       .from('borradores')
       .upload(filePath, file);
-    
+
     if (error) throw error;
-    
+
     const { data: { publicUrl } } = supabase.storage
       .from('borradores')
       .getPublicUrl(filePath);
-    
+
     return publicUrl;
   };
 
@@ -59,9 +59,9 @@ const SubirDiseno = () => {
     try {
       const token = getToken();
       const user = JSON.parse(localStorage.getItem('user'));
-      
+
       const archivoUrl = await subirArchivoSupabase(archivo, user.id_usuario);
-      
+
       await axios.post(
         `${API_URL}/api/client/pedidos/${id}/diseno`,
         {
@@ -76,7 +76,7 @@ const SubirDiseno = () => {
           }
         }
       );
-      
+
       setExito(true);
       setTimeout(() => {
         navigate(`/cliente/pedido/${id}`);
@@ -97,12 +97,6 @@ const SubirDiseno = () => {
         modo: 'diseno_pedido'
       }
     });
-  };
-
-  // Opción 3: Generar con IA (opcional)
-  const generarConIA = () => {
-    // Aquí iría la lógica de IA
-    alert('🚀 Funcionalidad de IA en desarrollo');
   };
 
   return (
@@ -131,7 +125,7 @@ const SubirDiseno = () => {
             {/* ─── TARJETAS DE OPCIONES ─── */}
             <div className="sd-cards">
               {/* Opción 1: Subir archivo */}
-              <div 
+              <div
                 className={`sd-card ${opcionSeleccionada === 'archivo' ? 'sd-card--selected' : ''}`}
                 onClick={() => setOpcionSeleccionada('archivo')}
               >
@@ -142,7 +136,7 @@ const SubirDiseno = () => {
               </div>
 
               {/* Opción 2: Editor interactivo */}
-              <div 
+              <div
                 className={`sd-card ${opcionSeleccionada === 'editor' ? 'sd-card--selected' : ''}`}
                 onClick={() => setOpcionSeleccionada('editor')}
               >
@@ -170,7 +164,7 @@ const SubirDiseno = () => {
                       {previewUrl ? (
                         <div className="sd-preview">
                           <img src={previewUrl} alt="Preview" />
-                          <button 
+                          <button
                             type="button"
                             className="sd-preview-remove"
                             onClick={(e) => {
@@ -216,8 +210,8 @@ const SubirDiseno = () => {
 
                   {error && <div className="sd-error">{error}</div>}
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="sd-submit"
                     disabled={subiendo || !archivo}
                   >
@@ -235,7 +229,7 @@ const SubirDiseno = () => {
                   <p>Crea tu propio diseño usando nuestro editor visual. Puedes agregar texto, imágenes y personalizar colores.</p>
                 </div>
 
-                <button 
+                <button
                   className="sd-editor-btn"
                   onClick={irAlEditor}
                 >
@@ -262,33 +256,6 @@ const SubirDiseno = () => {
                       <p>Guardar tu diseño</p>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {opcionSeleccionada === 'ia' && (
-              <div className="sd-content sd-content-ia">
-                <div className="sd-ia-info">
-                  <span>🤖</span>
-                  <h3>Generar diseño con IA</h3>
-                  <p>Describe lo que quieres y la IA generará un diseño para ti</p>
-                </div>
-
-                <div className="sd-group">
-                  <label className="sd-label">Describe tu idea</label>
-                  <textarea
-                    className="sd-textarea"
-                    placeholder="Ej: Un logo minimalista con un león en tonos azules..."
-                    rows="4"
-                  />
-                </div>
-
-                <button className="sd-ia-btn">
-                  🤖 Generar diseño
-                </button>
-
-                <div className="sd-ia-disclaimer">
-                  <small>⚠️ La IA generará una propuesta inicial que el administrador podrá ajustar.</small>
                 </div>
               </div>
             )}
