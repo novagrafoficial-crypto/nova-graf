@@ -124,8 +124,11 @@ const proveedorRoutes           = require('./routes/admin/proveedorRoutes');
 const publicacionRoutes         = require('./routes/admin/publicacionRoutes');
 const reabastecimientoRoutes    = require('./routes/admin/reabastecimientoRoutes');
 const pedidosAdminRoutes = require('./routes/admin/pedidosAdminRoutes');
+const marketingRoutes = require('./routes/admin/marketingRoutes');
 
 
+
+app.use('/api/admin/marketing', marketingRoutes);
 app.use('/api/admin/antecedentes',     adminAntecedentesRoutes);
 app.use('/api/admin/vision',           adminVisionRoutes);
 app.use('/api/admin/contactos',        adminContactosRoutes);

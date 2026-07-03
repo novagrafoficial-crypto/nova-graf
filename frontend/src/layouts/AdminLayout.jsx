@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: "usuarios",      icon: "👥", label: "Gestión de Usuarios" },
   { to: "publicacion",   icon: "📰", label: "Administrar Publicación" },
   { to: "empresa",       icon: "🏢", label: "Gestión de Empresa" },
+  { to: "ofertas", icon: "🏷️", label: "Ofertas y Descuentos" },
 ];
 
 function AdminLayout() {

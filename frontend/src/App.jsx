@@ -67,7 +67,7 @@ import AdminPedidoDetalle from "./pages/Admin/AdminPedidoDetalle";
 //import DetallePrediccion from './pages/Admin/DetallePrediccion';
 //import VentasGrafica from "./pages/Admin/VentasGrafica";
 import GestionSolicitudes from './pages/Admin/GestionSolicitudes';
-
+import AdminMarketing from "./pages/Admin/AdminMarketing";
 
 
 
@@ -113,6 +113,7 @@ function App() {
         </Route>
 
         {/* Rutas admin */}
+   
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
           <Route path="marcas" element={<AdminMarcas />} />
@@ -126,7 +127,7 @@ function App() {
           <Route path="pedidos" element={<AdminPedidos />} />
           <Route path="pedidos/:id" element={<AdminPedidoDetalle />} />
           <Route path="/admin/solicitudes" element={<GestionSolicitudes />} />
-
+          <Route path="ofertas" element={<AdminMarketing />} />
         </Route>
 
       </Routes>
