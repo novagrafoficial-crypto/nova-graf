@@ -49,9 +49,9 @@ import DetallePedido from './pages/Client/DetallePedido';
 // Páginas admin
 import AdminHome from "./pages/Admin/AdminHome";
 import Admin from "./layouts/AdminLayout";
-import AdminMarcas from "./pages/Admin/AdminMarcas";
-import AdminCategorias from "./pages/Admin/AdminCategorias";
-import AdminSubcategorias from "./pages/Admin/AdminSubcategorias";
+//import AdminMarcas from "./pages/Admin/AdminMarcas";
+//import AdminCategorias from "./pages/Admin/AdminCategorias";
+//import AdminSubcategorias from "./pages/Admin/AdminSubcategorias";
 import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminPublicacion from './pages/Admin/AdminPublicacion';
@@ -68,6 +68,8 @@ import AdminPedidoDetalle from "./pages/Admin/AdminPedidoDetalle";
 //import VentasGrafica from "./pages/Admin/VentasGrafica";
 import GestionSolicitudes from './pages/Admin/GestionSolicitudes';
 import AdminMarketing from "./pages/Admin/AdminMarketing";
+import AdminInventario from "./pages/Admin/AdminInventario";
+import AdminCatalogo from "./pages/Admin/AdminCatalogo";
 
 
 
@@ -116,9 +118,7 @@ function App() {
    
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<AdminHome />} />
-          <Route path="marcas" element={<AdminMarcas />} />
-          <Route path="categorias" element={<AdminCategorias />} />
-          <Route path="subcategorias" element={<AdminSubcategorias />} />
+          <Route path="Registro de atributos" element={<AdminCatalogo />} />
           <Route path="productos" element={<AdminProductos />} />
           <Route path="publicacion" element={<AdminPublicacion />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
@@ -128,6 +128,7 @@ function App() {
           <Route path="pedidos/:id" element={<AdminPedidoDetalle />} />
           <Route path="/admin/solicitudes" element={<GestionSolicitudes />} />
           <Route path="ofertas" element={<AdminMarketing />} />
+          <Route path="inventario" element={<AdminInventario />} />
         </Route>
 
       </Routes>

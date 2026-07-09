@@ -3,15 +3,14 @@ import { useState, useEffect } from "react";
 import "../styles/admin/AdminLayout.css";
 
 const NAV_LINKS = [
-  { to: "marcas",        icon: "📦", label: "Gestión de Marcas" },
-  { to: "categorias",    icon: "📁", label: "Gestión de Categorías" },
-  { to: "subcategorias", icon: "📂", label: "Gestión de Subcategorías" },
+  { to: "Registro de atributos", icon: "🗂️", label: "Catálogo" },
   { to: "productos",     icon: "🛍️", label: "Gestión de Productos" },
   { to: "pedidos",       icon: "📋", label: "Gestión de Pedidos" },
   { to: "usuarios",      icon: "👥", label: "Gestión de Usuarios" },
   { to: "publicacion",   icon: "📰", label: "Administrar Publicación" },
   { to: "empresa",       icon: "🏢", label: "Gestión de Empresa" },
   { to: "ofertas", icon: "🏷️", label: "Ofertas y Descuentos" },
+  { to: "inventario", icon: "📦", label: "Inventario" },
 ];
 
 function AdminLayout() {
