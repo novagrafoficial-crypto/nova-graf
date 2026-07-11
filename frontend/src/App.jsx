@@ -70,6 +70,8 @@ import GestionSolicitudes from './pages/Admin/GestionSolicitudes';
 import AdminMarketing from "./pages/Admin/AdminMarketing";
 import AdminInventario from "./pages/Admin/AdminInventario";
 import AdminCatalogo from "./pages/Admin/AdminCatalogo";
+import AdminDatosBancarios from "./pages/Admin/AdminDatosBancarios";
+import AdminMetodosEntrega from "./pages/Admin/AdminMetodosEntrega";
 
 
 
@@ -129,6 +131,8 @@ function App() {
           <Route path="/admin/solicitudes" element={<GestionSolicitudes />} />
           <Route path="ofertas" element={<AdminMarketing />} />
           <Route path="inventario" element={<AdminInventario />} />
+          <Route path="datos-bancarios" element={<AdminDatosBancarios />} />
+          <Route path="metodos-entrega" element={<AdminMetodosEntrega />} />
         </Route>
 
       </Routes>

@@ -11,6 +11,8 @@ const NAV_LINKS = [
   { to: "empresa",       icon: "🏢", label: "Gestión de Empresa" },
   { to: "ofertas", icon: "🏷️", label: "Ofertas y Descuentos" },
   { to: "inventario", icon: "📦", label: "Inventario" },
+  { to: "datos-bancarios", icon: "🏦", label: "Datos Bancarios" },
+  { to: "metodos-entrega", icon: "🚚", label: "Métodos de Entrega" },
 ];
 
 function AdminLayout() {

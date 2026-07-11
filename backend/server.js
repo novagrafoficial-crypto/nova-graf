@@ -126,8 +126,12 @@ const pedidosAdminRoutes = require('./routes/admin/pedidosAdminRoutes');
 const marketingRoutes = require('./routes/admin/marketingRoutes');
 const comprasRoutes = require('./routes/admin/comprasRoutes');
 const proveedorRoutes = require('./routes/admin/proveedoresRoutes');
+const metodosPagoRoutes = require('./routes/admin/metodosPagoRoutes');
+const metodosEntregaRoutes = require('./routes/admin/metodosEntregaRoutes');
 
 
+app.use('/api/admin/metodos-entrega', metodosEntregaRoutes);
+app.use('/api/admin/metodos-pago', metodosPagoRoutes);
 app.use('/api/admin/proveedores', proveedorRoutes);
 app.use('/api/admin/compras', comprasRoutes);
 app.use('/api/admin/marketing', marketingRoutes);
