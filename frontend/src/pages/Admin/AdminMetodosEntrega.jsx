@@ -3,15 +3,20 @@ import { useEffect, useState } from "react";
 const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/metodos-entrega`;
 
 const TIPO_ICONS = {
-  ENVIO: "🚚",
-  RECOLECCION: "🏪",
+  ENVIO_LOCAL: "🚚",
+  RECOGIDA_FISICA: "🏪",
   PUNTO_MEDIO: "📍",
   default: "📦"
 };
 
+const TIPO_LABELS = {
+  ENVIO_LOCAL: "Envío local",
+  RECOGIDA_FISICA: "Recogida física",
+  PUNTO_MEDIO: "Punto medio",
+};
+
 const FORM_VACIO = {
-  tipo: "ENVIO", nombre: "", descripcion: "", costo: 0,
-  es_dinamico_km: false, costo_por_km: 0, costo_minimo: 0, activo: true
+  tipo: "ENVIO_LOCAL", nombre: "", descripcion: "", costo: 0, activo: true
 };
 
 const inputStyle = {
@@ -26,13 +31,13 @@ const FormularioMetodo = ({ datos, setDatos, onGuardar, onCancelar, titulo }) =>
       <div>
         <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Nombre *</label>
         <input value={datos.nombre} onChange={e => setDatos(f => ({ ...f, nombre: e.target.value }))}
-          placeholder="Ej: Envío a domicilio" style={inputStyle} />
+          placeholder="Ej: Colonia Centro" style={inputStyle} />
       </div>
       <div>
         <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Tipo</label>
         <select value={datos.tipo} onChange={e => setDatos(f => ({ ...f, tipo: e.target.value }))} style={inputStyle}>
-          <option value="ENVIO">Envío</option>
-          <option value="RECOLECCION">Recolección</option>
+          <option value="ENVIO_LOCAL">Envío local</option>
+          <option value="RECOGIDA_FISICA">Recogida física</option>
           <option value="PUNTO_MEDIO">Punto medio</option>
         </select>
       </div>
@@ -42,29 +47,15 @@ const FormularioMetodo = ({ datos, setDatos, onGuardar, onCancelar, titulo }) =>
           placeholder="Breve descripción del método" style={inputStyle} />
       </div>
       <div>
-        <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Costo fijo ($)</label>
-        <input type="number" min="0" step="0.01" value={datos.costo}
-          onChange={e => setDatos(f => ({ ...f, costo: parseFloat(e.target.value) || 0 }))} style={inputStyle} />
+        <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Costo ($)</label>
+        <input
+          type="number" min="0" step="0.01"
+          value={datos.costo}
+          onChange={e => setDatos(f => ({ ...f, costo: e.target.value === "" ? "" : e.target.value }))}
+          onBlur={e => setDatos(f => ({ ...f, costo: parseFloat(e.target.value) || 0 }))}
+          style={inputStyle}
+        />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingTop: "22px" }}>
-        <input type="checkbox" id="dinamico" checked={datos.es_dinamico_km}
-          onChange={e => setDatos(f => ({ ...f, es_dinamico_km: e.target.checked }))} />
-        <label htmlFor="dinamico" style={{ fontSize: "13px", color: "#333" }}>Costo dinámico por km</label>
-      </div>
-      {datos.es_dinamico_km && (
-        <>
-          <div>
-            <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Costo por km ($)</label>
-            <input type="number" min="0" step="0.01" value={datos.costo_por_km}
-              onChange={e => setDatos(f => ({ ...f, costo_por_km: parseFloat(e.target.value) || 0 }))} style={inputStyle} />
-          </div>
-          <div>
-            <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Costo mínimo ($)</label>
-            <input type="number" min="0" step="0.01" value={datos.costo_minimo}
-              onChange={e => setDatos(f => ({ ...f, costo_minimo: parseFloat(e.target.value) || 0 }))} style={inputStyle} />
-          </div>
-        </>
-      )}
     </div>
     <div style={{ display: "flex", gap: "10px" }}>
       <button onClick={onGuardar} style={{
@@ -86,6 +77,7 @@ export default function AdminMetodosEntrega() {
   const [mostrarFormNuevo, setMostrarFormNuevo] = useState(false);
   const [formNuevo, setFormNuevo] = useState(FORM_VACIO);
   const [status, setStatus] = useState(null);
+  const [filtro, setFiltro] = useState("TODOS");
 
   useEffect(() => { cargar(); }, []);
 
@@ -107,13 +99,10 @@ export default function AdminMetodosEntrega() {
   const abrirEditar = (m) => {
     setEditandoId(m.id);
     setForm({
-      tipo: m.tipo || "ENVIO",
+      tipo: m.tipo || "ENVIO_LOCAL",
       nombre: m.nombre || "",
       descripcion: m.descripcion || "",
       costo: m.costo ?? 0,
-      es_dinamico_km: m.es_dinamico_km ?? false,
-      costo_por_km: m.costo_por_km ?? 0,
-      costo_minimo: m.costo_minimo ?? 0,
       activo: m.activo ?? true,
     });
   };
@@ -124,7 +113,7 @@ export default function AdminMetodosEntrega() {
       const res = await fetch(`${API}/${editandoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, costo: parseFloat(form.costo) || 0 }),
       });
       if (!res.ok) throw new Error("Error al guardar");
       mostrarStatus("ok", "Método actualizado correctamente");
@@ -139,7 +128,7 @@ export default function AdminMetodosEntrega() {
       const res = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formNuevo),
+        body: JSON.stringify({ ...formNuevo, costo: parseFloat(formNuevo.costo) || 0 }),
       });
       if (!res.ok) throw new Error("Error al crear");
       mostrarStatus("ok", "Método de entrega creado correctamente");
@@ -158,6 +147,8 @@ export default function AdminMetodosEntrega() {
     cargar();
   };
 
+  const metodosFiltrados = filtro === "TODOS" ? metodos : metodos.filter(m => m.tipo === filtro);
+
   if (loading) return <p style={{ padding: "2rem", color: "#999" }}>Cargando...</p>;
 
   return (
@@ -166,7 +157,7 @@ export default function AdminMetodosEntrega() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <div>
           <h1 style={{ color: "#1A6163", fontSize: "22px", fontWeight: 500, margin: 0 }}>Métodos de Entrega</h1>
-          <p style={{ color: "#999", fontSize: "14px", margin: "4px 0 0" }}>Gestiona las opciones de entrega disponibles para los clientes</p>
+          <p style={{ color: "#999", fontSize: "14px", margin: "4px 0 0" }}>{metodos.length} métodos registrados</p>
         </div>
         <button onClick={() => setMostrarFormNuevo(!mostrarFormNuevo)} style={{
           padding: "10px 20px", borderRadius: "8px", border: "none",
@@ -174,6 +165,21 @@ export default function AdminMetodosEntrega() {
         }}>
           + Nuevo método
         </button>
+      </div>
+
+      {/* Filtros */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+        {["TODOS", "ENVIO_LOCAL", "RECOGIDA_FISICA", "PUNTO_MEDIO"].map(t => (
+          <button key={t} onClick={() => setFiltro(t)} style={{
+            padding: "6px 16px", borderRadius: "20px", border: "1.5px solid",
+            cursor: "pointer", fontSize: "12px", fontWeight: 500,
+            background: filtro === t ? "#1A6163" : "transparent",
+            color: filtro === t ? "#fff" : "#1A6163",
+            borderColor: "#1A6163",
+          }}>
+            {t === "TODOS" ? "Todos" : TIPO_LABELS[t]}
+          </button>
+        ))}
       </div>
 
       {status && (
@@ -197,22 +203,19 @@ export default function AdminMetodosEntrega() {
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {metodos.length === 0 ? (
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {metodosFiltrados.length === 0 ? (
           <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>No hay métodos de entrega registrados.</p>
-        ) : metodos.map(m => (
+        ) : metodosFiltrados.map(m => (
           <div key={m.id} style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", overflow: "hidden" }}>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: editandoId === m.id ? "1px solid #d4eeea" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "24px" }}>{TIPO_ICONS[m.tipo] || TIPO_ICONS.default}</span>
                 <div>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: "15px", color: "#1A6163" }}>{m.nombre}</p>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: "14px", color: "#1A6163" }}>{m.nombre}</p>
                   <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
-                    {m.tipo}
-                    {m.es_dinamico_km
-                      ? ` · $${m.costo_por_km}/km (mín. $${m.costo_minimo})`
-                      : ` · $${parseFloat(m.costo || 0).toFixed(2)} fijo`}
+                    {TIPO_LABELS[m.tipo] || m.tipo} · ${parseFloat(m.costo || 0).toFixed(2)}
                   </p>
                 </div>
               </div>
