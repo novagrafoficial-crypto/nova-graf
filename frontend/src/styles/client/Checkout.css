@@ -1,189 +1,167 @@
 /* src/styles/client/Checkout.css */
 
-/* ── TOKENS DE MARCA ── */
 :root {
-  --teal-deep:    #1A6163;
-  --teal-vivid:   #35BA99;
-  --gray-warm:    #DBDBD3;
-  --ink:          #000000;
-
-  --teal-deep-10: rgba(26, 97, 99, 0.10);
-  --teal-deep-20: rgba(26, 97, 99, 0.20);
-  --teal-vivid-10:rgba(53, 186, 153, 0.10);
-  --teal-vivid-20:rgba(53, 186, 153, 0.22);
-  --gray-soft:    #f4f4f2;
-  --gray-mid:     #9f9f99;
-  --white:        #ffffff;
+  --teal-deep: #1A6163;
+  --teal-vivid: #35BA99;
+  --gray-warm: #DBDBD3;
+  --gray-text: #4A4A46;
+  --white: #FFFFFF;
+  --border-radius: 10px;
 }
 
 .checkout-wrapper {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
-  min-height: 80vh;
+  padding: 32px 24px 64px;
 }
 
-/* ─── HEADER ─────────────────────────────────────────────── */
 .checkout-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid var(--gray-warm);
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--gray-warm);
+  padding-bottom: 16px;
 }
 
 .checkout-header h2 {
-  font-size: 2.2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--teal-deep);
-  margin-bottom: 0.5rem;
+  margin: 0 0 4px;
 }
 
 .checkout-header p {
-  font-size: 1.1rem;
-  color: var(--gray-mid);
+  color: var(--gray-text);
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-/* ─── CONTENIDO PRINCIPAL ────────────────────────────────── */
+/* ─── Layout de dos columnas, panel de resumen sticky ─── */
 .checkout-contenido {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 2.5rem;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
   align-items: start;
 }
 
-/* ─── FORMULARIO ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .checkout-contenido {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Formulario ─── */
 .checkout-form {
   background: var(--white);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 2px 16px rgba(26, 97, 99, 0.06);
   border: 1px solid var(--gray-warm);
-  border-top: 4px solid var(--teal-deep);
+  border-radius: var(--border-radius);
+  padding: 28px;
 }
 
-.checkout-form .form-group {
-  margin-bottom: 1.8rem;
+.form-group {
+  margin-bottom: 22px;
 }
 
-.checkout-form .form-group label {
+.form-group label {
   display: block;
   font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--ink);
-  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--teal-deep);
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
 }
 
-.checkout-form .form-group select,
-.checkout-form .form-group input,
-.checkout-form .form-group textarea {
+.form-group select,
+.form-group textarea,
+.form-group input[type="text"] {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--gray-warm);
-  border-radius: 10px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--gray-soft);
-  font-family: inherit;
-  color: var(--ink);
+  padding: 11px 14px;
+  border: 1px solid var(--gray-warm);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--gray-text);
+  background: var(--white);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.checkout-form .form-group select:focus,
-.checkout-form .form-group input:focus,
-.checkout-form .form-group textarea:focus {
+.form-group select:focus,
+.form-group textarea:focus,
+.form-group input[type="text"]:focus {
   outline: none;
   border-color: var(--teal-vivid);
-  background: var(--white);
-  box-shadow: 0 0 0 4px var(--teal-vivid-20);
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.15);
 }
 
-.checkout-form .form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.checkout-form .metodo-descripcion {
+.form-group small {
   display: block;
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--gray-mid);
-  font-style: italic;
-  padding: 0.5rem;
-  background: var(--gray-soft);
-  border-radius: 6px;
-}
-
-.checkout-form .form-group small {
-  display: block;
-  margin-top: 0.4rem;
+  margin-top: 6px;
   font-size: 0.8rem;
-  color: var(--gray-mid);
+  color: var(--gray-text);
 }
 
-/* ─── INFO DEL MÉTODO DE PAGO SELECCIONADO ──────────────────── */
-.metodo-pago-info {
-  margin-top: 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.instrucciones-pago {
-  background: var(--gray-soft);
-  border: 1px solid var(--gray-warm);
-  border-radius: 10px;
-  padding: 0.9rem 1.1rem;
-}
-
-.instrucciones-pago strong {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--teal-deep);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 0.35rem;
-}
-
-.instrucciones-pago p {
-  margin: 0;
+.entrega-sin-opciones {
   font-size: 0.9rem;
-  color: var(--ink);
-  line-height: 1.5;
+  color: var(--gray-text);
+  font-style: italic;
+  margin: 4px 0;
 }
 
-/* ─── DATOS BANCARIOS (formateados, no JSON crudo) ─────────── */
-.datos-bancarios {
-  background: var(--teal-deep-10);
-  border: 1px solid var(--teal-deep-20);
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
+.entrega-option-desc {
+  color: var(--gray-text);
 }
 
-.datos-bancarios strong {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  font-weight: 700;
+/* ─── Info fija (punto medio / tienda) ─── */
+.direccion-fija {
+  background: rgba(53, 186, 153, 0.06);
+  border: 1px solid rgba(53, 186, 153, 0.25);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.direccion-fija-info p {
+  margin: 0 0 6px;
+  color: var(--gray-text);
+}
+
+.direccion-fija-info strong {
   color: var(--teal-deep);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 0.6rem;
+}
+
+.direccion-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--teal-deep);
+}
+
+/* ─── Método de pago: info expandida ─── */
+.metodo-pago-info {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--gray-warm);
+  border-radius: 8px;
+}
+
+.metodo-pago-info .metodo-descripcion {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.instrucciones-pago strong,
+.datos-bancarios strong {
+  display: block;
+  color: var(--teal-deep);
+  font-size: 0.85rem;
+  margin-bottom: 4px;
 }
 
 .datos-bancarios-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  margin-top: 6px;
 }
 
 .datos-bancarios-fila {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--teal-deep-20);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   font-size: 0.9rem;
 }
 
@@ -191,223 +169,138 @@
   border-bottom: none;
 }
 
-.datos-bancarios-fila span:first-child {
-  color: var(--gray-mid);
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.datos-bancarios-fila span:last-child {
-  color: var(--ink);
-  font-weight: 700;
-  text-align: right;
-  word-break: break-word;
-}
-
 .datos-bancarios-vacio {
   font-size: 0.85rem;
-  color: var(--gray-mid);
+  color: var(--gray-text);
   font-style: italic;
-  margin: 0;
 }
 
+/* ─── Error ─── */
 .error-message {
-  background: rgba(179, 38, 30, 0.08);
-  border: 1px solid rgba(179, 38, 30, 0.25);
-  color: #b3261e;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  background: #FDECEC;
+  border: 1px solid #F3B6B6;
+  color: #B33A3A;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
 }
 
+/* ─── Botón principal ─── */
 .btn-crear-pedido {
   width: 100%;
-  padding: 1rem;
+  padding: 14px;
   background: var(--teal-deep);
   color: var(--white);
   border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: 700;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.15s ease;
 }
 
 .btn-crear-pedido:hover:not(:disabled) {
   background: var(--teal-vivid);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px var(--teal-vivid-20);
 }
 
 .btn-crear-pedido:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
 
-/* ─── RESUMEN ────────────────────────────────────────────── */
+/* ─── Panel de resumen (sticky) ─── */
 .checkout-resumen {
-  background: var(--gray-soft);
-  border-radius: 16px;
-  padding: 1.8rem;
   position: sticky;
-  top: 2rem;
-  border: 1px solid var(--gray-warm);
-  border-top: 4px solid var(--teal-vivid);
+  top: 24px;
+  background: var(--teal-deep);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 26px;
 }
 
 .checkout-resumen h3 {
-  font-size: 1.3rem;
+  margin: 0 0 18px;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: var(--teal-deep);
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--gray-warm);
 }
 
 .resumen-items {
-  margin-bottom: 1.5rem;
-  max-height: 300px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
 .resumen-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--gray-warm);
-  font-size: 0.95rem;
-  color: var(--gray-mid);
+  font-size: 0.88rem;
+  padding: 6px 0;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.resumen-item:last-child {
-  border-bottom: none;
-}
-
-.resumen-item span:first-child {
-  flex: 1;
-  margin-right: 1rem;
-}
-
-.resumen-item span:last-child {
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.resumen-totales {
-  border-top: 2px solid var(--gray-warm);
-  padding-top: 1.2rem;
-}
-
-.resumen-linea {
+.resumen-totales .resumen-linea {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  font-size: 0.95rem;
-  color: var(--gray-mid);
+  font-size: 0.9rem;
+  padding: 6px 0;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .resumen-linea.total {
-  font-size: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 8px;
+  padding-top: 12px;
   font-weight: 700;
-  color: var(--teal-deep);
-  padding-top: 0.8rem;
-  border-top: 2px solid var(--teal-deep-20);
-  margin-top: 0.5rem;
+  font-size: 1.05rem;
+  color: var(--white);
 }
 
 .resumen-linea.anticipo {
-  color: var(--teal-deep);
-  font-weight: 700;
-  font-size: 1.05rem;
-  padding-top: 0.5rem;
+  color: var(--teal-vivid);
+  font-weight: 600;
 }
 
 .resumen-linea.restante {
-  color: var(--teal-vivid);
-  font-weight: 700;
-  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
 }
 
-/* ─── PÁGINA VACÍA ───────────────────────────────────────── */
+/* ─── Loading / vacío ─── */
+.checkout-loading,
 .checkout-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  padding: 80px 24px;
   text-align: center;
-  padding: 2rem;
+  color: var(--gray-text);
 }
 
-.checkout-empty h2 {
-  font-size: 2rem;
-  color: var(--teal-deep);
-  margin-bottom: 1rem;
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-warm);
+  border-top-color: var(--teal-vivid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .checkout-empty button {
-  padding: 0.8rem 2.5rem;
+  margin-top: 16px;
+  padding: 10px 24px;
   background: var(--teal-deep);
   color: var(--white);
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.checkout-empty button:hover {
-  background: var(--teal-vivid);
-  transform: translateY(-2px);
-}
-
-/* ─── RESPONSIVE ──────────────────────────────────────────── */
-@media (max-width: 968px) {
-  .checkout-contenido {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .checkout-resumen {
-    position: static;
-  }
-
-  .checkout-header h2 {
-    font-size: 1.8rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .checkout-wrapper {
-    padding: 1rem;
-  }
-
-  .checkout-form {
-    padding: 1.5rem;
-  }
-
-  .checkout-resumen {
-    padding: 1.2rem;
-  }
-
-  .checkout-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .resumen-linea.total {
-    font-size: 1rem;
-  }
-
-  .datos-bancarios-fila {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
-  }
-
-  .datos-bancarios-fila span:last-child {
-    text-align: left;
-  }
+  font-weight: 600;
 }

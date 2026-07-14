@@ -10,6 +10,9 @@ router.get('/:id', verificarToken, pedidoController.obtenerDetallePedido);
 // ─── SUBIR COMPROBANTE (SOLO JSON) ──────────────────────────────
 router.post('/:id/comprobante', verificarToken, pedidoController.subirComprobante);
 
+// ─── PAGO FINAL (SOLO JSON - LA IMAGEN YA ESTÁ EN SUPABASE) ──────
+router.post('/:id/pago-final', verificarToken, pedidoController.pagoFinal); 
+
 // ─── OBTENER TODOS LOS PEDIDOS DEL USUARIO ───────────────────────
 router.get('/', verificarToken, pedidoController.obtenerPedidosUsuario);
 

@@ -128,9 +128,6 @@ const ProductoDetalle = () => {
     <div className="detalle-wrapper">
       {/* ── HEADER ── */}
       <div className="detalle-header">
-        <button className="btn-volver" onClick={() => navigate(-1)}>
-          ← Volver al catálogo
-        </button>
         <h2 className="detalle-header__titulo">{producto.producto_nombre}</h2>
         <p className="detalle-header__subtitulo">
           Elige tu color y opciones — el diseño lo coordinas con nosotros después de tu pedido.

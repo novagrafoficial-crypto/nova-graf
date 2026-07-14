@@ -8,70 +8,61 @@ import '../../styles/client/Checkout.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// ✅ Normaliza el campo datos_bancarios venga como venga de la BD:
-//    - objeto plano { banco: "...", clabe: "..." }
-//    - string JSON: '{"banco":"...","clabe":"..."}'
-//    - array con un objeto adentro: [{ banco: "...", clabe: "..." }]
-//    - array con un string JSON adentro: ['{"banco":"...","clabe":"..."}']
 const normalizarDatosBancarios = (data) => {
   if (!data) return null;
-
   let valor = data;
-
-  // Si viene como string, intentar parsear a JSON
   if (typeof valor === 'string') {
-    try {
-      valor = JSON.parse(valor);
-    } catch {
-      return null;
-    }
+    try { valor = JSON.parse(valor); } catch { return null; }
   }
-
-  // Si viene como array, tomar el primer elemento
   if (Array.isArray(valor)) {
     valor = valor[0];
     if (typeof valor === 'string') {
-      try {
-        valor = JSON.parse(valor);
-      } catch {
-        return null;
-      }
+      try { valor = JSON.parse(valor); } catch { return null; }
     }
   }
-
   if (!valor || typeof valor !== 'object') return null;
   return valor;
 };
 
-// ✅ Convierte "numero_cuenta" -> "Número cuenta" para mostrarlo bonito
 const formatearEtiqueta = (clave) => {
-  const especiales = {
-    clabe: 'CLABE',
-    rfc: 'RFC',
-  };
+  const especiales = { clabe: 'CLABE', rfc: 'RFC' };
   if (especiales[clave.toLowerCase()]) return especiales[clave.toLowerCase()];
-  return clave
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return clave.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+// ✅ Catálogo de categorías de entrega (una sola fuente de verdad)
+const CATEGORIAS_ENTREGA = [
+  { key: 'TIENDA', label: '🏪 Recoger en tienda', tipoInterno: 'RECOGIDA_FISICA' },
+  { key: 'PUNTO_MEDIO', label: '📍 Punto medio de encuentro', tipoInterno: 'PUNTO_MEDIO' },
+  { key: 'ENVIO_LOCAL', label: '🚚 Envío a domicilio', tipoInterno: 'ENVIO_LOCAL' }
+];
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems = [], cartTotal = 0, refreshCart } = useCart();
-  
+
   const [loading, setLoading] = useState(false);
-  const [metodosEntrega, setMetodosEntrega] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  const [tiendasFisicas, setTiendasFisicas] = useState([]);
+  const [puntosMedios, setPuntosMedios] = useState([]);
+  const [colonias, setColonias] = useState([]);
   const [metodosPago, setMetodosPago] = useState([]);
+
+  // ✅ NUEVO: categoría de entrega elegida en el paso 1 ('' = nada elegido aún)
+  const [categoriaEntrega, setCategoriaEntrega] = useState('');
+
   const [formData, setFormData] = useState({
     metodo_entrega_id: '',
     metodo_pago_id: '',
     direccion_envio: '',
     distancia_km: 0
   });
+
   const [error, setError] = useState(null);
   const [costoEnvio, setCostoEnvio] = useState(0);
 
-  // Cargar métodos de entrega y pago
+  // ─── CARGAR DATOS ─────────────────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       const token = getToken();
@@ -81,41 +72,93 @@ const Checkout = () => {
       }
 
       try {
-        const [entregaRes, pagoRes] = await Promise.all([
-          axios.get(`${API_URL}/api/client/checkout/metodos-entrega`, {
+        setLoadingData(true);
+
+        const [
+          tiendasRes,
+          puntosRes,
+          coloniasRes,
+          pagoRes
+        ] = await Promise.all([
+          axios.get(`${API_URL}/api/client/checkout/tiendas-fisicas`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_URL}/api/client/checkout/puntos-medios`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_URL}/api/client/checkout/colonias`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
           axios.get(`${API_URL}/api/client/checkout/metodos-pago`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
-        
-        setMetodosEntrega(entregaRes.data || []);
+
+        setTiendasFisicas(tiendasRes.data || []);
+        setPuntosMedios(puntosRes.data || []);
+        setColonias(coloniasRes.data || []);
         setMetodosPago(pagoRes.data || []);
+
       } catch (err) {
         console.error(err);
         setError('Error al cargar métodos');
+      } finally {
+        setLoadingData(false);
       }
     };
     fetchData();
   }, [navigate]);
 
-  // Calcular costo de envío
+  // ─── CALCULAR COSTO DE ENVÍO ─────────────────────────────────
   useEffect(() => {
-    const metodo = metodosEntrega.find(m => m.id === parseInt(formData.metodo_entrega_id));
+    const todos = [...tiendasFisicas, ...puntosMedios, ...colonias];
+    const metodo = todos.find(m => m.id === parseInt(formData.metodo_entrega_id));
+
     if (!metodo) {
       setCostoEnvio(0);
       return;
     }
 
-    if (metodo.es_dinamico_km && formData.distancia_km > 0) {
-      const costo = formData.distancia_km * metodo.costo_por_km;
-      setCostoEnvio(Math.max(costo, metodo.costo_minimo));
-    } else {
-      setCostoEnvio(parseFloat(metodo.costo) || 0);
-    }
-  }, [formData.metodo_entrega_id, formData.distancia_km, metodosEntrega]);
+    setCostoEnvio(parseFloat(metodo.costo) || 0);
 
+  }, [formData.metodo_entrega_id, tiendasFisicas, puntosMedios, colonias]);
+
+  // ─── HELPER: Obtener método seleccionado ──────────────────────
+  const getMetodoSeleccionado = () => {
+    const todos = [...tiendasFisicas, ...puntosMedios, ...colonias];
+    return todos.find(m => m.id === parseInt(formData.metodo_entrega_id));
+  };
+
+  const metodoSeleccionado = getMetodoSeleccionado();
+
+  // ✅ Lista de opciones específicas según la categoría elegida en el paso 1
+  const opcionesPorCategoria = {
+    TIENDA: tiendasFisicas,
+    PUNTO_MEDIO: puntosMedios,
+    ENVIO_LOCAL: colonias
+  };
+  const opcionesActuales = opcionesPorCategoria[categoriaEntrega] || [];
+
+  // ✅ Solo mostrar categorías que realmente tengan opciones disponibles
+  const categoriasDisponibles = CATEGORIAS_ENTREGA.filter(cat => {
+    if (cat.key === 'TIENDA') return tiendasFisicas.length > 0;
+    if (cat.key === 'PUNTO_MEDIO') return puntosMedios.length > 0;
+    if (cat.key === 'ENVIO_LOCAL') return colonias.length > 0;
+    return false;
+  });
+
+  // ✅ Cambiar de categoría reinicia la opción específica y la dirección
+  const handleCategoriaChange = (key) => {
+    setCategoriaEntrega(key);
+    setFormData(prev => ({
+      ...prev,
+      metodo_entrega_id: '',
+      direccion_envio: ''
+    }));
+    setError(null);
+  };
+
+  // ─── FORMATOS ──────────────────────────────────────────────────
   const formatPrice = (value) => {
     const num = parseFloat(value) || 0;
     return num.toFixed(2);
@@ -132,6 +175,13 @@ const Checkout = () => {
   );
   const datosBancarios = normalizarDatosBancarios(metodoPagoSeleccionado?.datos_bancarios);
 
+  // ─── DETERMINAR TIPO DE ENTREGA ──────────────────────────────
+  const esEnvioLocal = metodoSeleccionado?.tipo === 'ENVIO_LOCAL';
+  const esPuntoMedio = metodoSeleccionado?.tipo === 'PUNTO_MEDIO';
+  const esTiendaFisica = metodoSeleccionado?.tipo === 'RECOGIDA_FISICA';
+  const requiereDireccion = esEnvioLocal;
+
+  // ─── SUBMIT ────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -139,13 +189,51 @@ const Checkout = () => {
 
     try {
       const token = getToken();
+
+      if (!categoriaEntrega) {
+        setError('⚠️ Elige primero cómo quieres recibir tu pedido');
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.metodo_entrega_id) {
+        setError('⚠️ Selecciona una opción de entrega');
+        setLoading(false);
+        return;
+      }
+
+      if (esEnvioLocal) {
+        if (!formData.direccion_envio || formData.direccion_envio.trim() === '') {
+          setError('⚠️ La dirección de envío es requerida para envío a domicilio');
+          setLoading(false);
+          const direccionInput = document.getElementById('direccion-envio');
+          if (direccionInput) {
+            direccionInput.focus();
+            direccionInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+
+        if (formData.direccion_envio.trim().length < 5) {
+          setError('⚠️ La dirección debe ser más específica (mínimo 5 caracteres)');
+          setLoading(false);
+          return;
+        }
+      }
+
+      let direccionEnvio = formData.direccion_envio;
+
+      if (esTiendaFisica || esPuntoMedio) {
+        direccionEnvio = metodoSeleccionado?.descripcion || 'Dirección disponible en la confirmación del pedido';
+      }
+
       const response = await axios.post(
         `${API_URL}/api/client/checkout/crear-pedido`,
         {
           metodo_entrega_id: parseInt(formData.metodo_entrega_id),
           metodo_pago_id: parseInt(formData.metodo_pago_id),
-          direccion_envio: formData.direccion_envio,
-          distancia_km: formData.distancia_km || 0
+          direccion_envio: direccionEnvio,
+          distancia_km: 0
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -153,12 +241,22 @@ const Checkout = () => {
       refreshCart();
       navigate(`/cliente/pedido/${response.data.pedido_id}/pago`);
     } catch (err) {
-      console.error(err);
+      console.error('❌ Error:', err);
       setError(err.response?.data?.message || 'Error al crear el pedido');
     } finally {
       setLoading(false);
     }
   };
+
+  // ─── RENDER ────────────────────────────────────────────────────
+  if (loadingData) {
+    return (
+      <div className="checkout-loading">
+        <div className="spinner"></div>
+        <p>Cargando opciones de pago y entrega...</p>
+      </div>
+    );
+  }
 
   if (!hasItems) {
     return (
@@ -179,29 +277,103 @@ const Checkout = () => {
       <div className="checkout-contenido">
         <div className="checkout-form">
           <form onSubmit={handleSubmit}>
-            {/* Método de entrega */}
+
+            {/* ─── PASO 1: CATEGORÍA DE ENTREGA (combo) ───────── */}
             <div className="form-group">
-              <label>Método de entrega *</label>
+              <label htmlFor="categoria-entrega">¿Cómo quieres recibir tu pedido? *</label>
               <select
-                value={formData.metodo_entrega_id}
-                onChange={(e) => setFormData({ ...formData, metodo_entrega_id: e.target.value })}
+                id="categoria-entrega"
+                value={categoriaEntrega}
+                onChange={(e) => handleCategoriaChange(e.target.value)}
                 required
               >
-                <option value="">Selecciona un método</option>
-                {metodosEntrega.map(m => (
-                  <option key={m.id} value={m.id}>
-                    {m.nombre} - {m.es_dinamico_km ? 'Por Km' : `$${formatPrice(m.costo)}`}
+                <option value="">Selecciona una opción</option>
+                {categoriasDisponibles.map(cat => (
+                  <option key={cat.key} value={cat.key}>
+                    {cat.label}
                   </option>
                 ))}
               </select>
-              {formData.metodo_entrega_id && (
-                <small className="metodo-descripcion">
-                  {metodosEntrega.find(m => m.id === parseInt(formData.metodo_entrega_id))?.descripcion}
-                </small>
-              )}
             </div>
 
-            {/* Método de pago */}
+            {/* ─── PASO 2: OPCIÓN ESPECÍFICA (combo) ──────────── */}
+            {categoriaEntrega && (
+              <div className="form-group">
+                <label htmlFor="metodo-entrega">Selecciona una opción *</label>
+                {opcionesActuales.length === 0 ? (
+                  <p className="entrega-sin-opciones">
+                    No hay opciones disponibles para esta categoría por el momento.
+                  </p>
+                ) : (
+                  <select
+                    id="metodo-entrega"
+                    value={formData.metodo_entrega_id}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      metodo_entrega_id: e.target.value,
+                      direccion_envio: ''
+                    })}
+                    required
+                  >
+                    <option value="">Selecciona un método</option>
+                    {opcionesActuales.map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.nombre} — {parseFloat(m.costo) === 0 ? 'Gratis' : `$${formatPrice(m.costo)}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {metodoSeleccionado?.descripcion && (
+                  <small className="entrega-option-desc">{metodoSeleccionado.descripcion}</small>
+                )}
+              </div>
+            )}
+
+            {/* ─── DIRECCIÓN (solo para ENVIO_LOCAL, tras elegir colonia) ── */}
+            {requiereDireccion && (
+              <div className="form-group">
+                <label>Dirección de envío *</label>
+                <textarea
+                  id="direccion-envio"
+                  value={formData.direccion_envio}
+                  onChange={(e) => setFormData({ ...formData, direccion_envio: e.target.value })}
+                  onBlur={(e) => {
+                    if (esEnvioLocal && !e.target.value.trim()) {
+                      setError('⚠️ La dirección de envío es requerida');
+                    } else if (esEnvioLocal && e.target.value.trim().length < 5) {
+                      setError('⚠️ La dirección debe ser más específica');
+                    } else {
+                      setError(null);
+                    }
+                  }}
+                  placeholder="Calle, número, colonia, CP, ciudad"
+                  required
+                  rows="3"
+                />
+                <small>Ingresa la dirección completa donde deseas recibir tu pedido</small>
+              </div>
+            )}
+
+            {/* ─── PUNTO MEDIO / TIENDA: mostrar información ── */}
+            {(esPuntoMedio || esTiendaFisica) && metodoSeleccionado && (
+              <div className="form-group direccion-fija">
+                <label>📍 {esPuntoMedio ? 'Punto de encuentro' : 'Dirección de recogida'}</label>
+                <div className="direccion-fija-info">
+                  <p><strong>{metodoSeleccionado.nombre}</strong></p>
+                  {metodoSeleccionado.descripcion && (
+                    <p className="direccion-descripcion">{metodoSeleccionado.descripcion}</p>
+                  )}
+                  <small className="direccion-hint">
+                    {esPuntoMedio
+                      ? '📌 Este es el punto de encuentro acordado.'
+                      : '🏪 Puedes recoger tu pedido en nuestra tienda.'}
+                  </small>
+                </div>
+              </div>
+            )}
+
+            {/* ─── MÉTODO DE PAGO (se elige una sola vez, aquí) ── */}
             <div className="form-group">
               <label>Método de pago *</label>
               <select
@@ -232,7 +404,6 @@ const Checkout = () => {
                     </div>
                   )}
 
-                  {/* ✅ Datos bancarios formateados (ya no JSON crudo) */}
                   {metodoPagoSeleccionado.datos_bancarios && (
                     <div className="datos-bancarios">
                       <strong>🏦 Datos bancarios</strong>
@@ -256,35 +427,6 @@ const Checkout = () => {
               )}
             </div>
 
-            {/* Dirección */}
-            <div className="form-group">
-              <label>Dirección de envío *</label>
-              <textarea
-                value={formData.direccion_envio}
-                onChange={(e) => setFormData({ ...formData, direccion_envio: e.target.value })}
-                placeholder="Calle, número, colonia, CP, ciudad"
-                required
-                rows="3"
-              />
-            </div>
-
-            {/* Distancia (si aplica) */}
-            {formData.metodo_entrega_id && 
-             metodosEntrega.find(m => m.id === parseInt(formData.metodo_entrega_id))?.es_dinamico_km && (
-              <div className="form-group">
-                <label>Distancia en Km</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={formData.distancia_km}
-                  onChange={(e) => setFormData({ ...formData, distancia_km: parseFloat(e.target.value) || 0 })}
-                  placeholder="Ej: 5.5"
-                />
-                <small>La distancia se calculará automáticamente con Google Maps</small>
-              </div>
-            )}
-
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="btn-crear-pedido" disabled={loading}>
@@ -293,6 +435,7 @@ const Checkout = () => {
           </form>
         </div>
 
+        {/* ─── RESUMEN ──────────────────────────────────────────── */}
         <div className="checkout-resumen">
           <h3>Resumen del pedido</h3>
           <div className="resumen-items">

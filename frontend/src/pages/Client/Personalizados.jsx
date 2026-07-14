@@ -34,7 +34,7 @@ const Personalizados = () => {
     return (
         <div className="personalizados-wrapper">
             <div className="personalizados-header">
-                <h2>🎨 Productos personalizados</h2>
+                <h2>Productos personalizados</h2>
                 <p>Explora nuestra galería de trabajos realizados</p>
             </div>
 

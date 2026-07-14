@@ -46,7 +46,6 @@ const MisDisenos = () => {
     if (disenos.length === 0) {
         return (
             <div className="md-empty">
-                <span>🎨</span>
                 <p>Aún no has enviado ningún diseño.</p>
                 <button onClick={() => navigate('/cliente/catalogo')}>
                     Ver catálogo

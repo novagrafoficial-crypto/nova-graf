@@ -43,7 +43,7 @@ import SubirDiseno from './pages/Client/SubirDiseno';
 import EditorDiseno from './pages/Client/EditorDiseno';
 import VerPrevias from './pages/Client/VerPrevias';
 import Personalizados from './pages/Client/Personalizados';
-
+import PagoFinal from './pages/Client/PagoFinal';
 
 
 
@@ -112,7 +112,7 @@ function App() {
           <Route path="/cliente/pedido/:id/editor" element={<EditorDiseno />} />
           <Route path="/cliente/pedido/:id/previas" element={<VerPrevias />} />
           <Route path="/cliente/personalizados" element={<Personalizados />} />
-
+          <Route path="/cliente/pedido/:id/pago-final" element={<PagoFinal />} />
         </Route>
 
         {/* Rutas admin */}

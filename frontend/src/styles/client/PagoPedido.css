@@ -925,3 +925,432 @@
     align-items: flex-start;
   }
 }
+
+/* src/styles/client/PagoPedido.css - AGREGAR AL FINAL DEL ARCHIVO */
+
+/* ─── Select de método de pago ────────────────────────────────────── */
+.pago-metodo-select {
+  margin-bottom: 20px;
+}
+
+.pago-metodo-select label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.pago-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.pago-select:focus {
+  outline: none;
+  border-color: #35BA99;
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.15);
+}
+
+.pago-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+/* ─── Ticket para pago en tienda ──────────────────────────────────── */
+.pago-ticket {
+  background: #f8f9fa;
+  border: 2px dashed #35BA99;
+  border-radius: 12px;
+  padding: 24px 20px;
+  margin: 16px 0;
+}
+
+.pago-ticket-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.pago-ticket-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #35BA99;
+  font-weight: 600;
+  display: block;
+}
+
+.pago-ticket-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 4px 0;
+  color: #1A6163;
+}
+
+.pago-ticket-sub {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.pago-ticket-folio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.pago-ticket-folio-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pago-ticket-folio-valor {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A6163;
+  letter-spacing: 0.04em;
+}
+
+.pago-ticket-linea {
+  border-top: 1.5px dashed #ddd;
+  margin: 12px 0;
+}
+
+.pago-ticket-monto {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.pago-ticket-monto-label {
+  display: block;
+  font-size: 12px;
+  color: #999;
+}
+
+.pago-ticket-monto-valor {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1A6163;
+}
+
+.pago-ticket-monto-detalle {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.pago-tienda-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.pago-tienda-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #333;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pago-tienda-fila:last-child {
+  border-bottom: none;
+}
+
+.pago-tienda-label {
+  color: #888;
+}
+
+.pago-ticket-nota {
+  font-size: 11.5px;
+  color: #888;
+  text-align: center;
+  margin: 16px 0 0;
+  line-height: 1.5;
+}
+
+/* ─── Botón de ticket ───────────────────────────────────────────────── */
+.pago-btn-ticket {
+  width: 100%;
+  padding: 12px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #1a1a1a;
+  margin-top: 8px;
+}
+
+.pago-btn-ticket:hover {
+  background: #e8e8e8;
+  border-color: #bbb;
+}
+
+.pago-btn-ticket:active {
+  transform: scale(0.98);
+}
+
+/* ─── Inputs para pago en tienda ──────────────────────────────────── */
+.pago-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.pago-input:focus {
+  outline: none;
+  border-color: #35BA99;
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.15);
+}
+
+.pago-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color 0.3s;
+}
+
+.pago-textarea:focus {
+  outline: none;
+  border-color: #35BA99;
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.15);
+}
+
+/* ─── Impresión ────────────────────────────────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #ticket-imprimible-anticipo,
+  #ticket-imprimible-anticipo * {
+    visibility: visible;
+  }
+  
+  #ticket-imprimible-anticipo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+    border: none !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+  }
+
+  .pago-btn-ticket,
+  .pago-btn-submit,
+  .pago-form,
+  .pago-metodo-select,
+  .pago-actions,
+  .pago-btn,
+  .pago-btn-primary,
+  .pago-btn-secondary {
+    display: none !important;
+  }
+
+  .pago-wrapper {
+    padding: 0 !important;
+  }
+
+  .pago-card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .pago-ticket {
+    border: none !important;
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  .pago-ticket-folio {
+    background: #f8f9fa !important;
+  }
+}
+
+/* src/styles/client/PagoPedido.css - AGREGAR AL FINAL */
+
+/* ─── BADGE DE MÉTODO DE PAGO ──────────────────────────────────── */
+.pago-metodo-fijo {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+}
+
+.pago-metodo-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pago-metodo-icon {
+  font-size: 24px;
+}
+
+.pago-metodo-nombre {
+  font-size: 16px;
+}
+
+.pago-metodo-nombre strong {
+  color: #1A6163;
+}
+
+.pago-metodo-tipo {
+  font-size: 12px;
+  color: #888;
+  background: #f0f0f0;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+/* ─── INSTRUCCIONES ────────────────────────────────────────────── */
+.pago-instrucciones {
+  margin-top: 10px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  border-left: 3px solid #35BA99;
+}
+
+.pago-instrucciones strong {
+  display: block;
+  font-size: 13px;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.pago-instrucciones p {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.pago-instrucciones-detalle {
+  background: #f0f7f5;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.pago-instrucciones-detalle p {
+  margin: 0;
+  font-size: 14px;
+  color: #1A6163;
+}
+
+/* ─── DATOS BANCARIOS VACÍOS ──────────────────────────────────── */
+.banco-info-vacio {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #fff3cd;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  margin: 8px 0;
+}
+
+.banco-info-vacio-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.banco-info-vacio p {
+  margin: 0;
+  font-size: 14px;
+  color: #856404;
+}
+
+.banco-info-vacio p strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.banco-info-vacio-ayuda {
+  font-size: 13px;
+  color: #856404;
+  opacity: 0.8;
+}
+
+/* ─── MONTO EN BANCO ───────────────────────────────────────────── */
+.pago-banco-monto {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: #e8f5f0;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.pago-banco-monto span {
+  display: block;
+  font-size: 13px;
+  color: #555;
+}
+
+.pago-banco-monto strong {
+  display: block;
+  font-size: 22px;
+  color: #1A6163;
+  margin: 4px 0;
+}
+
+.pago-banco-monto small {
+  display: block;
+  font-size: 12px;
+  color: #888;
+}
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .pago-metodo-badge {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .pago-metodo-tipo {
+    align-self: flex-start;
+  }
+
+  .banco-info-vacio {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
