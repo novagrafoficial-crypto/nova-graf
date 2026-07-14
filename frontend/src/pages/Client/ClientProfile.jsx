@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MiPerfil from "./profile/MiPerfil";
 import MisPedidos from "./profile/MisPedidos";
-// import MisDisenos from "./profile/MisDisenos";     // ← COMENTADO (no existe)
+import MisDisenos from "./profile/MisDisenos";     // ← COMENTADO (no existe)
 // import Solicitud from "./profile/Solicitud";       // ← COMENTADO (no existe)
 // import Facturacion from "./profile/Facturacion";   // ← COMENTADO (no existe)
 // import Historial from "./profile/Historial";       // ← COMENTADO (no existe)
@@ -13,7 +13,7 @@ import "../../styles/client/Clientprofile.css";
 const MENU = [
   { id: "mi-perfil", icon: "👤", label: "Mi perfil" },
   { id: "pedidos", icon: "🛒", label: "Pedidos" },
-  // { id: "mis-disenos", icon: "🎨", label: "Mis diseños" },   // ← COMENTADO
+  { id: "mis-disenos", icon: "🎨", label: "Mis diseños" },   // ← COMENTADO
   // { id: "Solicitud", icon: "💰", label: "Solicitud" },       // ← COMENTADO
   // { id: "facturacion", icon: "🧾", label: "Facturación" },   // ← COMENTADO
   // { id: "historial", icon: "📜", label: "Historial" },       // ← COMENTADO
@@ -60,7 +60,7 @@ const EnConstruccion = () => (
 const VISTAS = {
   "mi-perfil": <MiPerfil />,
   "pedidos": <MisPedidos />,
-  // "mis-disenos": <MisDisenos />,
+  "mis-disenos": <MisDisenos />,
   // "Solicitud": <Solicitud />,
   // "facturacion": <Facturacion />,
   // "historial": <Historial />,

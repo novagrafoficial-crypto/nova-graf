@@ -6,7 +6,6 @@ import "../../styles/client/PedidosUsuario.css";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
-// ✅ ESTADOS DEL PEDIDO
 const ESTADO_CONFIG = {
   PENDIENTE_VERIFICACION: { texto: "⏳ Anticipo pendiente", color: "#f59e0b", bg: "#fef3c7" },
   EN_DISENO: { texto: "🎨 En diseño", color: "#3b82f6", bg: "#eff6ff" },
@@ -18,67 +17,9 @@ const ESTADO_CONFIG = {
   ENVIADO: { texto: "📦 Enviado", color: "#16a34a", bg: "#dcfce7" },
   CANCELADO: { texto: "❌ Cancelado", color: "#dc2626", bg: "#fee2e2" },
 
-  // Estados del pago
   PENDIENTE: { texto: "⏳ En verificación", color: "#f59e0b", bg: "#fef3c7" },
   APROBADO: { texto: "✅ Aprobado", color: "#16a34a", bg: "#dcfce7" },
   RECHAZADO: { texto: "❌ Rechazado", color: "#dc2626", bg: "#fee2e2" }
-};
-
-// ─── MODAL DE CONFIRMACIÓN ──────────────────────────────────────
-const ModalConfirmacion = ({ visible, mensaje, onConfirmar, onCancelar }) => {
-  if (!visible) return null;
-
-  return (
-    <div className="ped-modal-overlay" onClick={onCancelar}>
-      <div className="ped-modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="ped-modal-icon" style={{ background: '#fee2e2' }}>
-          <span style={{ fontSize: '28px' }}>⚠️</span>
-        </div>
-        <h2 className="ped-modal-titulo">Confirmar acción</h2>
-        <p className="ped-modal-mensaje">{mensaje}</p>
-        <div className="ped-modal-aviso">
-          <span>ℹ️</span>
-          <span>Esta acción no se puede deshacer.</span>
-        </div>
-        <div className="ped-modal-botones">
-          <button className="ped-modal-btn ped-modal-btn--cancelar" onClick={onCancelar}>
-            Cancelar
-          </button>
-          <button className="ped-modal-btn ped-modal-btn--confirmar" onClick={onConfirmar}>
-            Sí, cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── MODAL DE NOTIFICACIÓN ──────────────────────────────────────
-const ModalNotificacion = ({ visible, tipo, titulo, mensaje, onCerrar }) => {
-  if (!visible) return null;
-
-  const esExito = tipo === 'exito';
-  const icono = esExito ? '✅' : '❌';
-  const fondoIcono = esExito ? '#dcfce7' : '#fee2e2';
-
-  return (
-    <div className="ped-modal-overlay" onClick={onCerrar}>
-      <div className="ped-modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="ped-modal-icon" style={{ background: fondoIcono }}>
-          <span style={{ fontSize: '28px' }}>{icono}</span>
-        </div>
-        <h2 className="ped-modal-titulo">{titulo}</h2>
-        <p className="ped-modal-mensaje">{mensaje}</p>
-        <div className="ped-modal-aviso">
-          <span>ℹ️</span>
-          <span>{esExito ? 'La acción se completó correctamente.' : 'Por favor, intenta de nuevo.'}</span>
-        </div>
-        <button className="ped-modal-boton" onClick={onCerrar}>
-          Aceptar
-        </button>
-      </div>
-    </div>
-  );
 };
 
 function PedidosUsuario() {
@@ -87,36 +28,6 @@ function PedidosUsuario() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Estados para modales
-  const [confirmModal, setConfirmModal] = useState({
-    visible: false,
-    pedidoId: null,
-    mensaje: ''
-  });
-  const [notifModal, setNotifModal] = useState({
-    visible: false,
-    tipo: 'exito',
-    titulo: '',
-    mensaje: ''
-  });
-
-  const mostrarConfirmacion = (pedidoId, mensaje) => {
-    setConfirmModal({ visible: true, pedidoId, mensaje });
-  };
-
-  const cerrarConfirmacion = () => {
-    setConfirmModal({ visible: false, pedidoId: null, mensaje: '' });
-  };
-
-  const mostrarNotificacion = (tipo, titulo, mensaje) => {
-    setNotifModal({ visible: true, tipo, titulo, mensaje });
-  };
-
-  const cerrarNotificacion = () => {
-    setNotifModal({ ...notifModal, visible: false });
-  };
-
-  // ─── OBTENER PEDIDOS ──────────────────────────────────────────
   const fetchPedidos = async () => {
     const token = getToken();
     if (!token) { setLoading(false); return; }
@@ -132,57 +43,6 @@ function PedidosUsuario() {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // ─── CANCELAR PEDIDO ──────────────────────────────────────────
-  const handleCancelarPedido = async () => {
-    const { pedidoId } = confirmModal;
-    cerrarConfirmacion();
-
-    try {
-      const token = getToken();
-      if (!token) {
-        mostrarNotificacion('error', 'Sesión no iniciada', 'Debes iniciar sesión para cancelar pedidos.');
-        return;
-      }
-
-      const res = await fetch(`${API_BASE}/api/client/pedidos/${pedidoId}/cancelar`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error('Error al cancelar pedido');
-
-      mostrarNotificacion('exito', 'Pedido cancelado', 'El pedido ha sido cancelado exitosamente.');
-      await fetchPedidos();
-    } catch (err) {
-      console.error(err);
-      mostrarNotificacion('error', 'Error', 'No se pudo cancelar el pedido. Intenta de nuevo.');
-    }
-  };
-
-  // ─── ELIMINAR PEDIDO ──────────────────────────────────────────
-  const handleEliminarPedido = async (pedidoId) => {
-    try {
-      const token = getToken();
-      if (!token) {
-        mostrarNotificacion('error', 'Sesión no iniciada', 'Debes iniciar sesión para eliminar pedidos.');
-        return;
-      }
-
-      const res = await fetch(`${API_BASE}/api/client/pedidos/${pedidoId}/eliminar`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error('Error al eliminar pedido');
-
-      mostrarNotificacion('exito', 'Pedido eliminado', 'El pedido ha sido eliminado exitosamente.');
-      await fetchPedidos();
-    } catch (err) {
-      console.error(err);
-      mostrarNotificacion('error', 'Error', 'No se pudo eliminar el pedido. Intenta de nuevo.');
     }
   };
 
@@ -202,21 +62,6 @@ function PedidosUsuario() {
 
   return (
     <div className="cp-pedidos-list">
-      {/* Modales */}
-      <ModalConfirmacion
-        visible={confirmModal.visible}
-        mensaje={confirmModal.mensaje}
-        onConfirmar={handleCancelarPedido}
-        onCancelar={cerrarConfirmacion}
-      />
-      <ModalNotificacion
-        visible={notifModal.visible}
-        tipo={notifModal.tipo}
-        titulo={notifModal.titulo}
-        mensaje={notifModal.mensaje}
-        onCerrar={cerrarNotificacion}
-      />
-
       {pedidos.map(pedido => {
         const estadoInfo = ESTADO_CONFIG[pedido.estado] || {
           texto: pedido.estado,
@@ -227,12 +72,9 @@ function PedidosUsuario() {
         const pagoAnticipo = pedido.pagos?.find(p => p.tipo_pago === 'ANTICIPO');
         const pagoFinal = pedido.pagos?.find(p => p.tipo_pago === 'SALDO_FINAL');
 
-        const puedeCancelar = ['PENDIENTE_VERIFICACION', 'EN_DISENO', 'EN_REVISION'].includes(pedido.estado);
-        const puedeEliminar = ['CANCELADO', 'ENVIADO'].includes(pedido.estado);
-
         return (
           <div key={pedido.id} className="cp-pedido-card">
-            {/* ─── HEADER ─── */}
+            {/* HEADER */}
             <div className="cp-pedido-header">
               <div className="cp-pedido-info-left">
                 <span className="cp-pedido-id">Pedido #{pedido.id}</span>
@@ -261,32 +103,10 @@ function PedidosUsuario() {
                 >
                   👁️ Ver detalle
                 </button>
-                {puedeCancelar && (
-                  <button
-                    className="cp-btn-cancelar"
-                    onClick={() => mostrarConfirmacion(pedido.id, `¿Estás seguro de cancelar el pedido #${pedido.id}?`)}
-                    title="Cancelar pedido"
-                  >
-                    ❌ Cancelar
-                  </button>
-                )}
-                {puedeEliminar && (
-                  <button
-                    className="cp-btn-eliminar"
-                    onClick={() => {
-                      if (window.confirm(`¿Eliminar el pedido #${pedido.id}?`)) {
-                        handleEliminarPedido(pedido.id);
-                      }
-                    }}
-                    title="Eliminar pedido"
-                  >
-                    🗑️ Eliminar
-                  </button>
-                )}
               </div>
             </div>
 
-            {/* ─── ITEMS ─── */}
+            {/* ITEMS */}
             <div className="cp-pedido-items">
               {(pedido.detalles || []).map((item, idx) => (
                 <div key={idx} className="cp-pedido-item">
@@ -311,7 +131,7 @@ function PedidosUsuario() {
               ))}
             </div>
 
-            {/* ─── FOOTER ─── */}
+            {/* FOOTER */}
             <div className="cp-pedido-footer">
               <div className="cp-pedido-totales">
                 <span>Subtotal: <strong>${Number(pedido.total_productos).toFixed(2)}</strong></span>
@@ -323,7 +143,7 @@ function PedidosUsuario() {
               </div>
             </div>
 
-            {/* ─── SECCIÓN DE PAGO ─── */}
+            {/* SECCIÓN DE PAGO */}
             <div className="cp-pedido-pago-section">
               {pedido.estado === 'PENDIENTE_VERIFICACION' && !pagoAnticipo && (
                 <div className="cp-pago-pendiente">

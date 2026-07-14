@@ -17,7 +17,6 @@ router.get('/catalogo',      mostrarCatalogo);
 router.get('/categorias',    mostrarCategorias);
 router.get('/subcategorias', mostrarSubcategorias); // ✅ agregado
 router.get('/marcas',        mostrarMarcas);        // ✅ agregado
-router.post('/personalizados', verificarToken, crearProductoPersonalizado);
 router.get('/:productoId/portafolio', mostrarPortafolioPorProducto);
 
 // Ruta dinámica al final

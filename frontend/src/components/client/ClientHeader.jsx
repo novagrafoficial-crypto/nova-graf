@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import NotificationBell from './NotificationBell';
 import "../../styles/client/ClientHeader.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -51,12 +52,15 @@ function ClientHeader({ user }) {
         <nav className="ch-nav">
           <Link to="/cliente/home" className="ch-nav__link">Inicio</Link>
           <Link to="/cliente/catalogo" className="ch-nav__link">Catálogo</Link>
+           <Link to="/cliente/personalizados" className="ch-nav__link">Personalizados</Link>
           {/* 👇 Redirige a "En construcción" */}
           <Link to="/cliente/en-construccion" className="ch-nav__link">Ofertas</Link>
-          <Link to="/cliente/pedidos" className="ch-nav__link">Mis Pedidos</Link>
+          <Link to="/cliente/compras" className="ch-nav__link">Mis Compras</Link>
         </nav>
 
         <div className="ch-actions">
+            {/* 🔔 Campanita de notificaciones */}
+          <NotificationBell />
           <Link to="/cliente/carrito" className="ch-cart" aria-label="Carrito">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
               stroke="currentColor" strokeWidth="2">
@@ -98,8 +102,9 @@ function ClientHeader({ user }) {
           {[
             { to: "/cliente/home", label: "Inicio" },
             { to: "/cliente/catalogo", label: "Catálogo" },
+            { to: "/cliente/personalizados", label: "Personalizados" },
             { to: "/cliente/en-construccion", label: "Ofertas" }, // 👈 Ruta cambiada
-            { to: "/cliente/pedidos", label: "Mis compras" },
+            { to: "/cliente/compras", label: "Mis compras" },
           ].map(({ to, label }) => (
             <Link key={to} to={to} className="ch-mobile__link" onClick={() => setMenuOpen(false)}>
               {label}

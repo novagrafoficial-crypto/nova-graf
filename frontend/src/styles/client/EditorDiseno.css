@@ -1,0 +1,391 @@
+/* src/styles/client/EditorDiseno.css */
+
+.editor-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  min-height: 90vh;
+}
+
+.editor-header {
+  margin-bottom: 1.5rem;
+}
+
+.editor-back {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.editor-back:hover {
+  color: #1d4ed8;
+}
+
+.editor-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0.3rem 0;
+}
+
+.editor-header p {
+  color: #6b7280;
+}
+
+.editor-contenido {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+}
+
+/* ─── ESCENA ─── */
+.editor-scene-wrap {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.editor-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 600px;
+}
+
+.editor-producto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.editor-fallback-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 3rem;
+  color: #d1d5db;
+  background: #f3f4f6;
+}
+
+.editor-hint {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* ─── ELEMENTOS ─── */
+.editor-elem {
+  position: absolute;
+  border: 2px solid transparent;
+  transition: none;
+}
+
+.editor-elem.selected {
+  border-color: #2563eb;
+  outline: 2px solid rgba(37, 99, 235, 0.3);
+  border-radius: 4px;
+}
+
+.editor-del-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.editor-resize-handle {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  background: #2563eb;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  z-index: 60;
+}
+
+/* ─── HERRAMIENTAS ─── */
+.editor-tools {
+  background: white;
+  border-radius: 12px;
+  padding: 1.2rem;
+  border: 1px solid #e5e7eb;
+  max-height: 700px;
+  overflow-y: auto;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.editor-tab {
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.editor-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.editor-tab:hover {
+  color: #1a1a1a;
+}
+
+.tool-section {
+  margin-bottom: 1.2rem;
+}
+
+.tool-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.3rem;
+}
+
+.tool-input {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.tool-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.btn-agregar {
+  width: 100%;
+  padding: 0.5rem;
+  background: #f3f4f6;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4b5563;
+  transition: all 0.3s ease;
+}
+
+.btn-agregar:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.color-row {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.color-dot.active {
+  border-color: #1a1a1a;
+  transform: scale(1.15);
+}
+
+.color-dot:hover {
+  transform: scale(1.1);
+}
+
+.style-buttons {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.5rem 0;
+}
+
+.style-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.style-btn.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.style-btn:hover {
+  background: #f3f4f6;
+}
+
+/* ─── CAPAS ─── */
+.capa-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 0.2rem;
+  background: #f8f9fa;
+  border: 2px solid transparent;
+}
+
+.capa-item.active {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+.capa-item:hover {
+  background: #f3f4f6;
+}
+
+.capa-del {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.capa-del:hover {
+  color: #dc2626;
+}
+
+/* ─── ACCIONES ─── */
+.acciones {
+  border-top: 2px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+.btn-guardar {
+  width: 100%;
+  padding: 0.8rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancelar {
+  width: 100%;
+  padding: 0.6rem;
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background: #f3f4f6;
+}
+
+.editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 968px) {
+  .editor-contenido {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-tools {
+    max-height: none;
+  }
+
+  .editor-scene {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 600px) {
+  .editor-page {
+    padding: 1rem;
+  }
+
+  .editor-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .editor-tabs {
+    flex-wrap: wrap;
+  }
+
+  .editor-tab {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .editor-scene {
+    max-height: 300px;
+  }
+}

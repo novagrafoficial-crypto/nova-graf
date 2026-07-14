@@ -1,0 +1,563 @@
+/* src/styles/client/PagoFinal.css */
+
+:root {
+  --teal-deep:     #1A6163;
+  --teal-vivid:    #35BA99;
+  --gray-warm:     #DBDBD3;
+  --ink:           #000000;
+
+  --teal-deep-10:  rgba(26, 97, 99, 0.10);
+  --teal-deep-20:  rgba(26, 97, 99, 0.20);
+  --teal-vivid-10: rgba(53, 186, 153, 0.10);
+  --teal-vivid-20: rgba(53, 186, 153, 0.22);
+  --gray-soft:     #f4f4f2;
+  --gray-mid:      #9f9f99;
+  --white:         #ffffff;
+}
+
+/* ─── Layout general ─────────────────────────────── */
+
+.pf-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 16px 64px;
+  background: var(--gray-soft);
+}
+
+.pf-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--gray-warm);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+/* ─── Header ──────────────────────────────────────── */
+
+.pf-header {
+  margin-bottom: 20px;
+}
+
+.pf-back {
+  background: none;
+  border: none;
+  color: var(--gray-mid);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.pf-back:hover {
+  color: var(--teal-deep);
+}
+
+.pf-eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--teal-vivid);
+  margin-bottom: 4px;
+}
+
+.pf-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* ─── Resumen ─────────────────────────────────────── */
+
+.pf-resumen {
+  background: var(--gray-soft);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+
+.pf-resumen-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--gray-mid);
+  padding: 4px 0;
+}
+
+.pf-resumen-fila span:last-child {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.pf-resumen-fila--total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--gray-warm);
+  font-size: 15px;
+}
+
+.pf-resumen-fila--total span {
+  color: var(--teal-deep) !important;
+  font-weight: 700 !important;
+}
+
+/* ─── Grupos de formulario ────────────────────────── */
+
+.pf-group {
+  margin-bottom: 18px;
+}
+
+.pf-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.pf-select,
+.pf-textarea {
+  width: 100%;
+  border: 1px solid var(--gray-warm);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--white);
+  font-family: inherit;
+}
+
+.pf-select:focus,
+.pf-textarea:focus {
+  outline: none;
+  border-color: var(--teal-vivid);
+  box-shadow: 0 0 0 3px var(--teal-vivid-10);
+}
+
+.pf-textarea {
+  resize: vertical;
+}
+
+/* ─── Sección "Cómo pagar" ────────────────────────── */
+
+.pf-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  margin-bottom: 8px;
+}
+
+.pf-banco {
+  border: 1px solid var(--teal-deep-20);
+  background: var(--teal-deep-10);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.pf-banco-nombre {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  margin-bottom: 6px;
+}
+
+.pf-banco-instrucciones {
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.75;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.pf-banco-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.pf-dato {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--gray-warm);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.pf-dato:hover {
+  border-color: var(--teal-vivid);
+}
+
+.pf-dato-label {
+  font-size: 12px;
+  color: var(--gray-mid);
+}
+
+.pf-dato-valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pf-dato-copiar {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--teal-vivid);
+}
+
+.pf-banco-vacio {
+  font-size: 13px;
+  color: var(--gray-mid);
+  margin: 0 0 20px;
+}
+
+.pf-banco-monto {
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--white);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.pf-banco-monto strong {
+  color: var(--teal-deep);
+}
+
+/* ─── Subir comprobante ───────────────────────────── */
+
+.pf-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1.5px dashed var(--gray-warm);
+  border-radius: 12px;
+  padding: 22px 12px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.pf-dropzone:hover {
+  border-color: var(--teal-vivid);
+  background: var(--teal-vivid-10);
+}
+
+.pf-file-input {
+  display: none;
+}
+
+.pf-dropzone-icon {
+  font-size: 18px;
+  color: var(--teal-vivid);
+}
+
+.pf-dropzone-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pf-dropzone-hint {
+  font-size: 11px;
+  color: var(--gray-mid);
+}
+
+.pf-preview {
+  position: relative;
+  border: 1px solid var(--gray-warm);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pf-preview img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-preview-pdf {
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.pf-preview-quitar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal-deep);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Botones ─────────────────────────────────────── */
+
+.pf-btn {
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pf-btn--primary {
+  background: var(--teal-vivid);
+  color: var(--white);
+}
+
+.pf-btn--primary:hover {
+  background: var(--teal-deep);
+}
+
+.pf-btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pf-btn--ghost {
+  background: var(--gray-soft);
+  color: var(--ink);
+}
+
+.pf-btn--block {
+  width: 100%;
+}
+
+/* ─── Error / nota final ──────────────────────────── */
+
+.pf-error {
+  background: #fdeceb;
+  color: #b3261e;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.pf-nota-tiempo {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray-mid);
+  margin: 12px 0 0;
+}
+
+/* ─── Estados: loading / error / éxito ────────────── */
+
+.pf-loading,
+.pf-status {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 24px;
+  background: var(--gray-soft);
+}
+
+.pf-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--gray-warm);
+  border-top-color: var(--teal-vivid);
+  border-radius: 50%;
+  animation: pf-spin 0.8s linear infinite;
+}
+
+@keyframes pf-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pf-status-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.pf-status--success .pf-status-icon {
+  background: var(--teal-vivid);
+}
+
+.pf-status--error .pf-status-icon {
+  background: #b3261e;
+}
+
+.pf-status h2 {
+  font-size: 18px;
+  margin: 4px 0 0;
+  color: var(--ink);
+}
+
+.pf-status p {
+  font-size: 14px;
+  color: var(--gray-mid);
+  max-width: 320px;
+}
+
+.pf-success-monto {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  margin: 4px 0 8px;
+}
+
+/* ─── Modo ticket: pago en tienda física ──────────── */
+
+.pf-ticket {
+  padding-top: 4px;
+}
+
+.pf-ticket-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.pf-ticket-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.pf-folio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--teal-deep-10);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 4px;
+}
+
+.pf-folio-label {
+  font-size: 11px;
+  color: var(--gray-mid);
+}
+
+.pf-folio-valor {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--teal-deep);
+}
+
+.pf-linea-punteada {
+  border-top: 1.5px dashed var(--gray-warm);
+  margin: 14px 0;
+}
+
+.pf-monto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.pf-monto-label {
+  font-size: 12px;
+  color: var(--gray-mid);
+}
+
+.pf-monto-valor {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--teal-deep);
+}
+
+.pf-tienda-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pf-tienda-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.pf-tienda-label {
+  color: var(--gray-mid);
+  flex-shrink: 0;
+}
+
+.pf-nota-ticket {
+  margin: 18px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--gray-mid);
+  text-align: center;
+}
+
+/* ─── Responsive ──────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .pf-page {
+    padding: 16px 12px 48px;
+  }
+
+  .pf-card {
+    padding: 18px;
+    border-radius: 12px;
+  }
+}
+
+/* ─── Impresión: solo el ticket, sin el resto de la página ── */
+
+@media print {
+  .pf-noprint {
+    display: none !important;
+  }
+
+  .pf-page {
+    background: var(--white);
+    padding: 0;
+  }
+
+  .pf-card {
+    box-shadow: none;
+    border: none;
+    max-width: 100%;
+  }
+}

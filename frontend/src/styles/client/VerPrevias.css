@@ -1,0 +1,398 @@
+/* src/styles/client/VerPrevias.css */
+
+.previas-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    min-height: 80vh;
+}
+
+/* ─── HEADER ─── */
+.previas-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.btn-volver-simple {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+.btn-volver-simple:hover {
+    color: #1d4ed8;
+    transform: translateX(-3px);
+}
+
+.previas-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0.5rem 0 0.2rem;
+}
+
+.previas-subtitle {
+    color: #6b7280;
+    font-size: 1.05rem;
+}
+
+/* ─── MENSAJE ─── */
+.previas-mensaje {
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.previas-mensaje.exito {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.previas-mensaje.info {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── CONTENIDO ─── */
+.previas-contenido {
+    display: flex;
+    justify-content: center;
+}
+
+.previa-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 550px;
+    width: 100%;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.previa-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── BADGES ─── */
+.previa-badges {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.badge-opcion {
+    background: #f3e8ff;
+    color: #6b21a5;
+    padding: 0.3rem 1rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-rechazadas {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.3rem 1rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* ─── IMAGEN ─── */
+.previa-imagen-container {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.previa-imagen {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* ─── ACCIONES ─── */
+.previa-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-aprobar {
+    padding: 1rem;
+    background: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-aprobar:hover {
+    background: #15803d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.3);
+}
+
+.btn-rechazar {
+    padding: 1rem;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-rechazar:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+}
+
+/* ─── AYUDA ─── */
+.previa-ayuda {
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.previa-ayuda p {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0.2rem 0;
+}
+
+/* ─── ESTADO APROBADO ─── */
+.previas-aprobada {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f0fdf4;
+    border-radius: 16px;
+    border: 2px solid #86efac;
+}
+
+.previas-aprobada-icon {
+    font-size: 4rem;
+}
+
+.previas-aprobada h2 {
+    font-size: 1.8rem;
+    color: #16a34a;
+    margin: 0.5rem 0;
+}
+
+.previas-aprobada p {
+    color: #4b5563;
+}
+
+.previas-aprobada-imagen {
+    margin: 1.5rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #86efac;
+    max-height: 300px;
+}
+
+.previas-aprobada-imagen img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.previas-aprobada button {
+    padding: 0.8rem 2rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.previas-aprobada button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+}
+
+/* ─── ESTADO VACÍO ─── */
+.previas-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.previas-empty-icon {
+    font-size: 4rem;
+}
+
+.previas-empty h2 {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin: 0.5rem 0;
+}
+
+.previas-empty p {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+.previas-empty button {
+    padding: 0.8rem 2rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.previas-empty button:hover {
+    background: #e5e7eb;
+}
+
+/* ─── ESTADO AGOTADO ─── */
+.previas-agotadas {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fef2f2;
+    border-radius: 16px;
+    border: 2px solid #fca5a5;
+}
+
+.previas-agotadas-icon {
+    font-size: 4rem;
+}
+
+.previas-agotadas h2 {
+    font-size: 1.5rem;
+    color: #dc2626;
+    margin: 0.5rem 0;
+}
+
+.previas-agotadas p {
+    color: #4b5563;
+    margin: 0.3rem 0;
+}
+
+.previas-agotadas-botones {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.previas-agotadas-botones button {
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-volver {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+.btn-volver:hover {
+    background: #e5e7eb;
+}
+
+.btn-chat {
+    background: #7c3aed;
+    border: none;
+    color: white;
+}
+
+.btn-chat:hover {
+    background: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+/* ─── LOADING ─── */
+.previas-loading {
+    text-align: center;
+    padding: 4rem;
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.previas-error {
+    text-align: center;
+    padding: 4rem;
+    color: #dc2626;
+    font-size: 1.1rem;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 640px) {
+    .previas-wrapper {
+        padding: 1rem;
+    }
+
+    .previas-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .previa-card {
+        padding: 1.2rem;
+    }
+
+    .previa-imagen {
+        max-height: 250px;
+    }
+
+    .btn-aprobar, .btn-rechazar {
+        font-size: 0.95rem;
+        padding: 0.8rem;
+    }
+
+    .previas-agotadas-botones {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .previas-agotadas-botones button {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .previas-aprobada-imagen {
+        max-height: 200px;
+    }
+}
