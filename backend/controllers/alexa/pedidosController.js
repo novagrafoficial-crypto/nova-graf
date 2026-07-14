@@ -1,40 +1,43 @@
 // backend/controllers/alexa/pedidosController.js
 const PedidosModel = require('../../models/alexa/pedidosModel');
 
-// ─── FORMATEADORES PARA ALEXA ───────────────────────────
+const LOGO_URL = 'https://dobgpjhgmenqysikaete.supabase.co/storage/v1/object/public/portafolio/NOVA.png';
 
-// Formateo para lista (resumen)
+// ─── FORMATEADORES PARA ALEXA ───────────────────────────
+// OJO: pool.query (pg) devuelve columnas PLANAS (pedido.nombre,
+// pedido.correo_electronico...), NO objetos anidados como Supabase JS
+// (pedido.usuarios.nombre). Por eso se leen directo del row.
+
+const nombreCompleto = (row) => {
+    const partes = [row.nombre, row.apellido_paterno, row.apellido_materno]
+        .filter(p => p && p.trim().length > 0);
+    return partes.length > 0 ? partes.join(' ') : 'Cliente';
+};
+
+// Formateo para lista (resumen) — ahora incluye imagen
 const formatearPedidoLista = (pedido) => {
-    const usuario = pedido.usuarios || {};
-    const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido_paterno || ''} ${usuario.apellido_materno || ''}`.trim();
-    
     return {
         id: pedido.id,
-        cliente: nombreCompleto || 'Cliente',
+        cliente: nombreCompleto(pedido),
         fecha: new Date(pedido.fecha_pedido).toLocaleDateString('es-MX', {
             day: '2-digit',
             month: 'short',
             year: 'numeric'
         }),
         total: `$${Number(pedido.total_general).toFixed(2)}`,
-        estado: pedido.estado.replace(/_/g, ' '),
+        estado: (pedido.estado || '').replace(/_/g, ' '),
         estadoOriginal: pedido.estado,
         anticipo: `$${Number(pedido.monto_anticipo || 0).toFixed(2)}`,
         restante: `$${Number(pedido.monto_restante || 0).toFixed(2)}`,
-        // Para mostrar en la lista
         estadoCorto: pedido.estado,
-        colorEstado: getColorEstado(pedido.estado)
+        colorEstado: getColorEstado(pedido.estado),
+        imagen: pedido.imagen || LOGO_URL
     };
 };
 
-// Formateo para detalle completo
+// Formateo para detalle completo — lee campos planos de d y de pedido
 const formatearDetalleCompleto = (data) => {
     const { pedido, detalles, pagos } = data;
-    const usuario = pedido.usuarios || {};
-    const metodoEntrega = pedido.metodos_entrega || {};
-    const metodoPago = pedido.metodos_pago || {};
-    
-    const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido_paterno || ''} ${usuario.apellido_materno || ''}`.trim();
 
     return {
         // Información básica
@@ -45,63 +48,60 @@ const formatearDetalleCompleto = (data) => {
             year: 'numeric'
         }),
         fechaCompleta: new Date(pedido.fecha_pedido).toLocaleString('es-MX'),
-        
+
         // Cliente
-        cliente: nombreCompleto || 'Cliente',
-        correo: usuario.correo_electronico || 'Sin correo',
-        telefono: usuario.telefono || 'Sin teléfono',
-        domicilio: usuario.domicilio || 'Sin domicilio registrado',
-        
+        cliente: nombreCompleto(pedido),
+        correo: pedido.correo_electronico || 'Sin correo',
+        telefono: pedido.telefono || 'Sin teléfono',
+        domicilio: pedido.domicilio || 'Sin domicilio registrado',
+
         // Económico
         total: `$${Number(pedido.total_general).toFixed(2)}`,
         anticipo: `$${Number(pedido.monto_anticipo || 0).toFixed(2)}`,
         restante: `$${Number(pedido.monto_restante || 0).toFixed(2)}`,
         totalProductos: `$${Number(pedido.total_productos || 0).toFixed(2)}`,
         costoEnvio: `$${Number(pedido.costo_envio || 0).toFixed(2)}`,
-        
+
         // Estado
-        estado: pedido.estado.replace(/_/g, ' '),
+        estado: (pedido.estado || '').replace(/_/g, ' '),
         estadoOriginal: pedido.estado,
         colorEstado: getColorEstado(pedido.estado),
-        
+
         // Entrega
         direccion: pedido.direccion_envio || 'No especificada',
-        metodoEntrega: metodoEntrega.nombre || 'No especificado',
-        descripcionEntrega: metodoEntrega.descripcion || '',
+        metodoEntrega: pedido.metodo_entrega || 'No especificado',
+        descripcionEntrega: pedido.descripcion_entrega || '',
         distanciaKm: pedido.distancia_km_calculada || 0,
         codigoRastreo: pedido.codigo_rastreo || 'Sin código',
-        fechaEntregaEstimada: pedido.fecha_entrega_estimada ? 
-            new Date(pedido.fecha_entrega_estimada).toLocaleDateString('es-MX') : 
+        fechaEntregaEstimada: pedido.fecha_entrega_estimada ?
+            new Date(pedido.fecha_entrega_estimada).toLocaleDateString('es-MX') :
             'No estimada',
-        
+
         // Pago
-        metodoPago: metodoPago.nombre || 'No especificado',
-        tipoPago: metodoPago.tipo || '',
-        instruccionesPago: metodoPago.instrucciones || '',
-        
-        // Productos
-        productos: detalles.map(d => {
-            const variante = d.producto_variantes || {};
-            const producto = variante.productos || {};
-            return {
-                nombre: producto.nombre || 'Producto',
-                descripcion: producto.descripcion || '',
-                categoria: producto.categorias?.nombre || 'Sin categoría',
-                cantidad: d.cantidad,
-                precio: `$${Number(d.precio_unitario).toFixed(2)}`,
-                subtotal: `$${Number(d.cantidad * d.precio_unitario).toFixed(2)}`,
-                imagen: variante.imagen_url || null,
-                sku: variante.sku || ''
-            };
-        }),
+        metodoPago: pedido.metodo_pago || 'No especificado',
+        tipoPago: pedido.tipo_pago || '',
+        instruccionesPago: pedido.instrucciones_pago || '',
+
+        // Productos — campos planos: producto_nombre, producto_descripcion,
+        // categoria_nombre, imagen_url, sku (así los nombró el JOIN en el modelo)
+        productos: detalles.map(d => ({
+            nombre: d.producto_nombre || 'Producto',
+            descripcion: d.producto_descripcion || '',
+            categoria: d.categoria_nombre || 'Sin categoría',
+            cantidad: d.cantidad,
+            precio: `$${Number(d.precio_unitario).toFixed(2)}`,
+            subtotal: `$${Number(d.cantidad * d.precio_unitario).toFixed(2)}`,
+            imagen: d.imagen_url || null, // null real = falta subir imagen a esa variante
+            sku: d.sku || ''
+        })),
         totalProductosCount: detalles.length,
-        
+
         // Pagos realizados
         pagos: pagos.map(p => ({
             tipo: p.tipo_pago,
             monto: `$${Number(p.monto).toFixed(2)}`,
             estado: p.estado_pago,
-            fecha: new Date(p.fecha_pago).toLocaleDateString('es-MX'),
+            fecha: p.fecha_pago ? new Date(p.fecha_pago).toLocaleDateString('es-MX') : 'Sin fecha',
             comprobante: p.comprobante_url || null,
             notas: p.notas_admin || ''
         })),
@@ -109,7 +109,7 @@ const formatearDetalleCompleto = (data) => {
     };
 };
 
-// Colores para estados en pantalla
+// Colores para estados en pantalla (los mismos que ya tenías)
 function getColorEstado(estado) {
     const colores = {
         'PENDIENTE_VERIFICACION': '#F59E0B',
@@ -145,6 +145,7 @@ exports.obtenerPorEstado = async (req, res) => {
         const pedidos = await PedidosModel.obtenerPorEstado(estado);
         res.json(pedidos.map(formatearPedidoLista));
     } catch (error) {
+        console.error('❌ Error en obtenerPorEstado:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -156,6 +157,7 @@ exports.obtenerPorCliente = async (req, res) => {
         const pedidos = await PedidosModel.obtenerPorCliente(nombre);
         res.json(pedidos.map(formatearPedidoLista));
     } catch (error) {
+        console.error('❌ Error en obtenerPorCliente:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -167,6 +169,7 @@ exports.obtenerPorFecha = async (req, res) => {
         const pedidos = await PedidosModel.obtenerPorFecha(fecha);
         res.json(pedidos.map(formatearPedidoLista));
     } catch (error) {
+        console.error('❌ Error en obtenerPorFecha:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -176,11 +179,11 @@ exports.obtenerDetalleCompleto = async (req, res) => {
     try {
         const { id } = req.params;
         const data = await PedidosModel.obtenerDetalleCompleto(parseInt(id));
-        
+
         if (!data || !data.pedido) {
             return res.status(404).json({ error: 'Pedido no encontrado' });
         }
-        
+
         res.json(formatearDetalleCompleto(data));
     } catch (error) {
         console.error('❌ Error en obtenerDetalleCompleto:', error);
@@ -193,19 +196,19 @@ exports.actualizarEstado = async (req, res) => {
     try {
         const { id } = req.params;
         const { estado } = req.body;
-        
+
         if (!estado) {
             return res.status(400).json({ error: 'Estado es requerido' });
         }
-        
+
         const pedidoActualizado = await PedidosModel.actualizarEstado(parseInt(id), estado);
         if (!pedidoActualizado) {
             return res.status(404).json({ error: 'Pedido no encontrado' });
         }
-        
+
         res.json({
             mensaje: `✅ Pedido ${id} actualizado a "${estado.replace(/_/g, ' ')}"`,
-            pedido: formatearPedidoLista(pedidoActualizado)
+            pedido: pedidoActualizado
         });
     } catch (error) {
         console.error('❌ Error en actualizarEstado:', error);
@@ -214,31 +217,29 @@ exports.actualizarEstado = async (req, res) => {
 };
 
 // OBTENER ESTADÍSTICAS
+// (antes contaba FILAS en vez de sumar "cantidad", lo que daba un total
+// incorrecto si había pocos estados distintos; ya usa el cantidad real)
 exports.obtenerEstadisticas = async (req, res) => {
     try {
-        const pedidos = await PedidosModel.obtenerEstadisticas();
-        
-        const stats = {};
-        pedidos.forEach(p => {
-            stats[p.estado] = (stats[p.estado] || 0) + 1;
-        });
+        const filas = await PedidosModel.obtenerEstadisticas(); // [{estado, cantidad}]
+        const total = filas.reduce((suma, f) => suma + parseInt(f.cantidad), 0);
 
-        // Ordenar por cantidad
-        const statsOrdenadas = Object.entries(stats)
-            .sort((a, b) => b[1] - a[1])
-            .map(([estado, cantidad]) => ({
-                estado: estado.replace(/_/g, ' '),
-                estadoOriginal: estado,
-                cantidad,
-                color: getColorEstado(estado)
-            }));
+        const statsOrdenadas = filas
+            .map(f => ({
+                estado: (f.estado || '').replace(/_/g, ' '),
+                estadoOriginal: f.estado,
+                cantidad: parseInt(f.cantidad),
+                color: getColorEstado(f.estado)
+            }))
+            .sort((a, b) => b.cantidad - a.cantidad);
 
         res.json({
-            total: pedidos.length,
+            total,
             porEstado: statsOrdenadas,
-            resumen: `📊 ${pedidos.length} pedidos en total`
+            resumen: `📊 ${total} pedidos en total`
         });
     } catch (error) {
+        console.error('❌ Error en obtenerEstadisticas:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -248,11 +249,12 @@ exports.obtenerUltimosPendientes = async (req, res) => {
     try {
         const { limit = 5 } = req.query;
         const pedidos = await PedidosModel.obtenerUltimosPorEstado(
-            'PENDIENTE_VERIFICACION', 
+            'PENDIENTE_VERIFICACION',
             parseInt(limit)
         );
         res.json(pedidos.map(formatearPedidoLista));
     } catch (error) {
+        console.error('❌ Error en obtenerUltimosPendientes:', error);
         res.status(500).json({ error: error.message });
     }
 };
