@@ -1,578 +1,413 @@
-import { useEffect, useState, useCallback } from "react";
-import "../../styles/admin/AdminInventario.css";
+import { useEffect, useState } from "react";
 
-// ─── API ──────────────────────────────────────────────────────────────────────
-const API_URL = import.meta.env.VITE_API_URL;
+const API_PROV = `${import.meta.env.VITE_API_URL}/api/admin/proveedores`;
+const API_COMP = `${import.meta.env.VITE_API_URL}/api/admin/compras`;
+const API_PROD = `${import.meta.env.VITE_API_URL}/api/admin/productos`;
 
-const API      = `${API_URL}/api/admin/inventario`;
-const API_PROD = `${API_URL}/api/admin/productos`;
+const TABS = ["Proveedores", "Compras"];
 
-// ─── Fórmulas (internas, el usuario nunca las ve directamente) ────────────────
-const calcEOQ = (D, S, H) =>
-  D > 0 && S > 0 && H > 0 ? Math.round(Math.sqrt((2 * D * S) / H)) : 0;
-const calcSS = (Z, sigma, L) =>
-  Z > 0 && sigma > 0 && L > 0 ? Math.round(Z * sigma * Math.sqrt(L)) : 0;
-const calcROP = (d, L, SS) => Math.round(d * L + SS);
+const FORM_PROV = { nombre_proveedor: "", contacto_nombre: "", telefono: "", correo_electronico: "", direccion: "", activo: true };
 
-const NIVEL_MAP = [
-  { z: 1.04, pct: "85%", label: "Básica",  desc: "Puede que te falte stock 1 de cada 7 semanas" },
-  { z: 1.28, pct: "90%", label: "Normal",  desc: "Pequeñas faltas ocasionales, aceptable para la mayoría" },
-  { z: 1.65, pct: "95%", label: "Buena",   desc: "Recomendado — faltas muy poco frecuentes" },
-  { z: 2.05, pct: "98%", label: "Alta",    desc: "Casi nunca te falta stock, pero guardas más en bodega" },
-  { z: 2.33, pct: "99%", label: "Máxima",  desc: "Prácticamente nunca falta, mayor inversión en almacén" },
-];
-const getNivel = (z) =>
-  NIVEL_MAP.reduce((a, b) => (Math.abs(b.z - z) < Math.abs(a.z - z) ? b : a));
-
-const FORM_INIT = {
-  variante_id: "", cantidad_disponible: "", ventas_diarias: "",
-  tiempo_entrega: "", nivel_servicio: 1.65,
-  costo_pedido: 100, costo_mantenimiento: 5, desviacion_demanda: "",
-};
-
-// ─── Componente principal ─────────────────────────────────────────────────────
 export default function AdminInventario() {
-  const [step, setStep]               = useState(0);
-  const [form, setForm]               = useState(FORM_INIT);
-  const [variantes, setVariantes]     = useState([]);
-  const [loadingVar, setLoadingVar]   = useState(false);
-  const [inventario, setInventario]   = useState([]);
-  const [loading, setLoading]         = useState(false);
-  const [guardando, setGuardando]     = useState(false);
-  const [toast, setToast]             = useState({ visible: false, msg: "", error: false });
+  const [tab, setTab] = useState("Proveedores");
+  const [proveedores, setProveedores] = useState([]);
+  const [compras, setCompras] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [status, setStatus] = useState(null);
 
-  const showToast = (msg, error = false) => {
-    setToast({ visible: true, msg, error });
-    setTimeout(() => setToast((t) => ({ ...t, visible: false })), 3200);
+  const [formProv, setFormProv] = useState(FORM_PROV);
+  const [editandoProv, setEditandoProv] = useState(null);
+  const [mostrarFormProv, setMostrarFormProv] = useState(false);
+
+  const [mostrarFormComp, setMostrarFormComp] = useState(false);
+  const [proveedorSeleccionado, setProveedorSeleccionado] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [detalleCompra, setDetalleCompra] = useState([]);
+
+  useEffect(() => { cargarProveedores(); cargarCompras(); cargarProductos(); }, []);
+
+  const cargarProveedores = async () => {
+    const res = await fetch(API_PROV);
+    const data = await res.json();
+    setProveedores(Array.isArray(data) ? data : []);
   };
 
-  // ── Calcular resultados en tiempo real ─────────────────────────────────────
-  const d   = parseFloat(form.ventas_diarias)     || 0;
-  const L   = parseFloat(form.tiempo_entrega)      || 1;
-  const S   = parseFloat(form.costo_pedido)        || 100;
-  const H   = parseFloat(form.costo_mantenimiento) || 5;
-  const Z   = parseFloat(form.nivel_servicio)      || 1.65;
-  const sm  = parseFloat(form.desviacion_demanda);
-  const sig = isNaN(sm) || sm === 0 ? parseFloat((d * 0.3).toFixed(2)) : sm;
-  const D   = d * 365;
-  const SS  = calcSS(Z, sig, L);
-  const r   = { d, L, S, H, Z, sigma: sig, D, EOQ: calcEOQ(D, S, H), SS, ROP: calcROP(d, L, SS) };
+  const cargarCompras = async () => {
+    const res = await fetch(API_COMP);
+    const data = await res.json();
+    setCompras(Array.isArray(data) ? data : []);
+  };
 
-  // ── Cargar variantes desde la API ──────────────────────────────────────────
-  const cargarVariantes = useCallback(async () => {
-    setLoadingVar(true);
+  const cargarProductos = async () => {
+    const res = await fetch(API_PROD);
+    const data = await res.json();
+    setProductos(Array.isArray(data) ? data : []);
+  };
+
+  const mostrarStatus = (tipo, msg) => {
+    setStatus({ tipo, msg });
+    setTimeout(() => setStatus(null), 3000);
+  };
+
+  const guardarProveedor = async () => {
+    if (!formProv.nombre_proveedor.trim()) {
+      mostrarStatus("error", "El nombre es requerido");
+      return;
+    }
     try {
-      const res      = await fetch(API_PROD);
-      const productos = await res.json();
-      const detalles  = await Promise.all(
-        productos.map((p) => fetch(`${API_PROD}/${p.id}`).then((r) => r.json()))
-      );
-      const lista = [];
-      detalles.forEach((p) => {
-        (p.variantes || []).forEach((v) => {
-          const color = v.color_nombre || "";
-          const atrs  = (v.atributos || []).map((a) => a.valor_nombre).join(" ");
-          const desc  = [color, atrs].filter(Boolean).join(" ") || `variante ${v.id}`;
-          lista.push({ id: v.id, label: `${p.nombre} — ${desc} (${v.sku || "sin SKU"})` });
-        });
+      const url = editandoProv ? `${API_PROV}/${editandoProv}` : API_PROV;
+      const method = editandoProv ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formProv),
       });
-      setVariantes(lista);
-    } catch {
-      showToast("No se pudieron cargar los productos", true);
-    } finally {
-      setLoadingVar(false);
+      if (!res.ok) throw new Error("Error al guardar");
+      mostrarStatus("ok", editandoProv ? "Proveedor actualizado" : "Proveedor creado");
+      setFormProv(FORM_PROV);
+      setEditandoProv(null);
+      setMostrarFormProv(false);
+      cargarProveedores();
+    } catch (err) {
+      mostrarStatus("error", err.message);
     }
-  }, []);
+  };
 
-  useEffect(() => { cargarVariantes(); }, [cargarVariantes]);
+  const abrirEditarProv = (p) => {
+    setFormProv({
+      nombre_proveedor: p.nombre_proveedor,
+      contacto_nombre: p.contacto_nombre || "",
+      telefono: p.telefono || "",
+      correo_electronico: p.correo_electronico || "",
+      direccion: p.direccion || "",
+      activo: p.activo,
+    });
+    setEditandoProv(p.proveedor_id);
+    setMostrarFormProv(true);
+  };
 
-  // ── Cargar inventario ──────────────────────────────────────────────────────
-  const cargarInventario = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API}/reabastecimiento`);
-      if (!res.ok) throw new Error();
-      setInventario(await res.json());
-    } catch {
-      showToast("No se pudo cargar el inventario", true);
-    } finally {
-      setLoading(false);
+  const eliminarProveedor = async (id) => {
+    if (!window.confirm("¿Eliminar este proveedor?")) return;
+    await fetch(`${API_PROV}/${id}`, { method: "DELETE" });
+    cargarProveedores();
+  };
+
+  const agregarProductoDetalle = (producto) => {
+    const existe = detalleCompra.find(d => d.producto_nombre === producto.nombre);
+    if (existe) return;
+    setDetalleCompra(prev => [...prev, {
+      variante_id: null,
+      producto_id: producto.id,
+      producto_nombre: producto.nombre,
+      sku: "—",
+      cantidad: 1,
+      precio_unitario: 0,
+    }]);
+  };
+
+  const actualizarDetalle = (producto_id, campo, valor) => {
+    setDetalleCompra(prev => prev.map(d =>
+      d.producto_id === producto_id ? { ...d, [campo]: valor } : d
+    ));
+  };
+
+  const quitarDetalle = (producto_id) => {
+    setDetalleCompra(prev => prev.filter(d => d.producto_id !== producto_id));
+  };
+
+  const guardarCompra = async () => {
+    if (!proveedorSeleccionado || detalleCompra.length === 0) {
+      mostrarStatus("error", "Selecciona un proveedor y agrega productos");
+      return;
     }
-  }, []);
-
-  useEffect(() => { if (step === 3) cargarInventario(); }, [step, cargarInventario]);
-
-  // ── Cambios de form ────────────────────────────────────────────────────────
-  const setF    = (name, value) => setForm((p) => ({ ...p, [name]: value }));
-  const handleNum = (e) => setF(e.target.name, e.target.value === "" ? "" : Number(e.target.value));
-  const handleRaw = (e) => setF(e.target.name, e.target.value);
-
-  // ── Guardar ────────────────────────────────────────────────────────────────
-  const guardar = async () => {
-    if (!form.variante_id)         return showToast("Selecciona un producto primero", true);
-    if (!form.cantidad_disponible) return showToast("Ingresa el stock actual", true);
-    if (!form.ventas_diarias)      return showToast("Ingresa las ventas diarias", true);
-    if (!form.tiempo_entrega)      return showToast("Ingresa el tiempo de entrega", true);
-
-    setGuardando(true);
-    const payload = {
-      variante_id:          Number(form.variante_id),
-      cantidad_disponible:  Number(form.cantidad_disponible),
-      ventas_diarias:       Number(form.ventas_diarias),
-      tiempo_entrega:       Number(form.tiempo_entrega),
-      nivel_servicio:       Number(form.nivel_servicio),
-      costo_pedido:         Number(form.costo_pedido),
-      costo_mantenimiento:  Number(form.costo_mantenimiento),
-      ...(form.desviacion_demanda !== "" && { desviacion_demanda: Number(form.desviacion_demanda) }),
-    };
     try {
-      const res = await fetch(API, {
+      const res = await fetch(API_COMP, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          proveedor_id: proveedorSeleccionado,
+          observaciones,
+          detalle: detalleCompra.map(d => ({
+            variante_id: d.variante_id,
+            producto_id: d.producto_id,
+            cantidad: d.cantidad,
+            precio_unitario: d.precio_unitario,
+          })),
+        }),
       });
-      if (res.status === 409) {
-        const json = await res.json();
-        showToast(json.error || "Este producto ya tiene inventario registrado", true);
-        return;
-      }
-      if (!res.ok) throw new Error();
-      showToast("¡Listo! Inventario guardado correctamente");
-      setForm(FORM_INIT);
-      setStep(3);
-    } catch {
-      showToast("Ocurrió un error al guardar. Intenta de nuevo.", true);
-    } finally {
-      setGuardando(false);
+      if (!res.ok) throw new Error("Error al guardar compra");
+      mostrarStatus("ok", "Compra registrada correctamente");
+      setMostrarFormComp(false);
+      setProveedorSeleccionado("");
+      setObservaciones("");
+      setDetalleCompra([]);
+      cargarCompras();
+    } catch (err) {
+      mostrarStatus("error", err.message);
     }
   };
 
-  const nivel = getNivel(parseFloat(form.nivel_servicio) || 1.65);
+  const eliminarCompra = async (id) => {
+    if (!window.confirm("¿Eliminar esta compra?")) return;
+    await fetch(`${API_COMP}/${id}`, { method: "DELETE" });
+    cargarCompras();
+  };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  const totalCompra = detalleCompra.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+  const formatMoney = (n) => Number(n).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+  const formatFecha = (f) => f ? new Date(f).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+
   return (
-    <div className="inv-page">
+    <div style={{ padding: "1.5rem" }}>
 
-      {/* ── STEPPER ──────────────────────────────────────────────────────── */}
-      <div className="inv-stepper">
-        {["¿Qué producto?", "¿Cómo van las ventas?", "Revisar y guardar", "Mi inventario"].map((label, i) => (
-          <div key={i} className="inv-step-wrap">
-            <div className={`inv-step-dot ${i === step ? "active" : i < step ? "done" : ""}`}>
-              {i < step ? "✓" : i + 1}
-            </div>
-            <span className={`inv-step-lbl ${i === step ? "active" : ""}`}>{label}</span>
-            {i < 3 && <div className="inv-step-line" />}
-          </div>
+      {status && (
+        <div style={{
+          padding: "12px 16px", borderRadius: "10px", marginBottom: "1rem", fontSize: "13px", fontWeight: 500,
+          background: status.tipo === "ok" ? "#d4f5eb" : "#ffd6d6",
+          color: status.tipo === "ok" ? "#0F6E56" : "#8b0000",
+          borderLeft: `3px solid ${status.tipo === "ok" ? "#35BA99" : "#dc3545"}`,
+        }}>{status.msg}</div>
+      )}
+
+      <div style={{ display: "flex", gap: "4px", marginBottom: "1.5rem", background: "#f0fafa", borderRadius: "10px", padding: "4px", width: "fit-content" }}>
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: "8px 20px", borderRadius: "8px", border: "none", cursor: "pointer",
+            fontWeight: 600, fontSize: "13px",
+            background: tab === t ? "#1A6163" : "transparent",
+            color: tab === t ? "#fff" : "#666",
+          }}>{t}</button>
         ))}
       </div>
 
-      {/* ── PASO 1 — ¿Qué producto? ──────────────────────────────────────── */}
-      {step === 0 && (
-        <div className="inv-card">
-          <div className="inv-step-header">
-            <h2>¿A qué producto le vas a llevar el inventario?</h2>
-            <p>Selecciona el producto y dinos cuántas unidades tienes ahorita en bodega.</p>
-          </div>
-
-          <div className="inv-field" style={{ marginBottom: "1.25rem" }}>
-            <label className="inv-field-label">Producto</label>
-            <select name="variante_id" value={form.variante_id} onChange={handleNum}>
-              <option value="">{loadingVar ? "Cargando productos…" : "— Elige un producto —"}</option>
-              {variantes.map((v) => (
-                <option key={v.id} value={v.id}>{v.label}</option>
-              ))}
-            </select>
-            <span className="inv-field-hint">
-              Si no ves el producto, verifica que tenga variantes registradas en Gestión de Productos.
-            </span>
-          </div>
-
-          <div className="inv-field">
-            <label className="inv-field-label">¿Cuántas unidades tienes ahora mismo en bodega?</label>
-            <input name="cantidad_disponible" type="number" min="0"
-              placeholder="Ej: 80" value={form.cantidad_disponible} onChange={handleNum} />
-            <div className="inv-field-example">
-              Cuenta físicamente lo que tienes en almacén.
-              Ejemplo: 3 cajas de 20 piezas = escribe <strong>60</strong>.
-            </div>
-          </div>
-
-          <div className="inv-btn-row" style={{ marginTop: "1.5rem" }}>
-            <button className="btn-primary"
-              disabled={!form.variante_id || form.cantidad_disponible === ""}
-              onClick={() => setStep(1)}>
-              Siguiente →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── PASO 2 — ¿Cómo van las ventas? ──────────────────────────────── */}
-      {step === 1 && (
-        <div className="inv-card">
-          <div className="inv-step-header">
-            <h2>¿Cómo van las ventas de este producto?</h2>
-            <p>Con esto el sistema sabrá cuándo avisarte que es momento de pedir más.</p>
-          </div>
-
-          <div className="inv-grid-2">
-            <div className="inv-field">
-              <label className="inv-field-label">¿Cuánto vendes por día?</label>
-              <input name="ventas_diarias" type="number" min="0"
-                placeholder="Ej: 10" value={form.ventas_diarias} onChange={handleNum} />
-              <div className="inv-field-example">
-                Si en un mes normal vendes 300 piezas,
-                divide entre 30 = <strong>10 por día</strong>.
-              </div>
-            </div>
-
-            <div className="inv-field">
-              <label className="inv-field-label">¿Cuántos días tarda tu proveedor en surtirte?</label>
-              <input name="tiempo_entrega" type="number" min="1"
-                placeholder="Ej: 7" value={form.tiempo_entrega} onChange={handleNum} />
-              <div className="inv-field-example">
-                Desde que llamas al proveedor hasta que llega la mercancía a tu puerta.
-                Si tarda una semana, escribe <strong>7</strong>.
-              </div>
-            </div>
-          </div>
-
-          {/* Nivel de servicio en lenguaje simple */}
-          <div className="inv-nivel-card" style={{ marginTop: "1.25rem" }}>
-            <div className="inv-nivel-top">
-              <span className="inv-nivel-nombre">¿Con qué frecuencia quieres tener producto disponible?</span>
-              <span className="inv-nivel-pct">{nivel.pct}</span>
-            </div>
-            <div className="inv-nivel-badges">
-              {NIVEL_MAP.map((n) => (
-                <button key={n.z}
-                  className={`inv-nivel-btn ${parseFloat(form.nivel_servicio) === n.z ? "selected" : ""}`}
-                  onClick={() => setF("nivel_servicio", n.z)}>
-                  {n.label}
-                </button>
-              ))}
-            </div>
-            <div className="inv-nivel-desc">{nivel.desc}</div>
-          </div>
-
-          {/* Costos avanzados — colapsable */}
-          <details className="inv-costos-detalle" style={{ marginTop: "1.25rem" }}>
-            <summary>Configuración avanzada (opcional)</summary>
-            <div className="inv-grid-2" style={{ marginTop: "1rem" }}>
-              <div className="inv-field">
-                <label className="inv-field-label">
-                  ¿Cuánto te cuesta hacer un pedido al proveedor?
-                  <span className="lbl-optional">opcional</span>
-                </label>
-                <input name="costo_pedido" type="number" min="0"
-                  placeholder="Ej: 100" value={form.costo_pedido} onChange={handleNum} />
-                <div className="inv-field-example">
-                  Suma llamadas, papelería, envío y tiempo. Si no lo sabes exacto, deja <strong>100</strong>.
-                </div>
-              </div>
-              <div className="inv-field">
-                <label className="inv-field-label">
-                  ¿Cuánto te cuesta guardar una unidad todo un año?
-                  <span className="lbl-optional">opcional</span>
-                </label>
-                <input name="costo_mantenimiento" type="number" min="0"
-                  placeholder="Ej: 5" value={form.costo_mantenimiento} onChange={handleNum} />
-                <div className="inv-field-example">
-                  Renta de bodega + luz + seguro, dividido entre cuántas piezas guardas.
-                  Si no lo sabes, deja <strong>5</strong>.
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <div className="inv-btn-row" style={{ marginTop: "1.5rem" }}>
-            <button className="btn-back" onClick={() => setStep(0)}>← Atrás</button>
-            <button className="btn-primary"
-              disabled={!form.ventas_diarias || !form.tiempo_entrega}
-              onClick={() => setStep(2)}>
-              Ver recomendación →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── PASO 3 — Recomendación ────────────────────────────────────────── */}
-      {step === 2 && (
-        <div className="inv-card">
-          <div className="inv-step-header">
-            <h2>Esto es lo que el sistema recomienda</h2>
-            <p>Basado en tus ventas diarias y el tiempo de entrega de tu proveedor.</p>
-          </div>
-
-          {/* 3 tarjetas amigables */}
-          <div className="inv-result-cards">
-            <div className="inv-result-card irc-blue">
-              <div className="irc-icon">📦</div>
-              <div className="irc-big">{r.EOQ}</div>
-              <div className="irc-titulo">unidades por pedido</div>
-              <div className="irc-explicacion">
-                Cada vez que le pidas a tu proveedor,
-                ordena <strong>{r.EOQ} unidades</strong>.
-                Es la cantidad perfecta para no gastar de más
-                ni en pedir ni en guardar.
-              </div>
-            </div>
-
-            <div className="inv-result-card irc-amber">
-              <div className="irc-icon">🛡️</div>
-              <div className="irc-big">{r.SS}</div>
-              <div className="irc-titulo">unidades de reserva</div>
-              <div className="irc-explicacion">
-                Guarda siempre <strong>{r.SS} unidades</strong> que
-                no tocarás en condiciones normales.
-                Son tu colchón para emergencias: ventas que suben
-                de golpe o proveedor que se retrasa.
-              </div>
-            </div>
-
-            <div className="inv-result-card irc-red">
-              <div className="irc-icon">🔔</div>
-              <div className="irc-big">{r.ROP}</div>
-              <div className="irc-titulo">unidades = momento de pedir</div>
-              <div className="irc-explicacion">
-                En cuanto tu inventario llegue
-                a <strong>{r.ROP} unidades</strong>, llama
-                a tu proveedor de inmediato. Si esperas más,
-                te puedes quedar sin stock antes de que llegue el pedido.
-              </div>
-            </div>
-          </div>
-
-          {/* Línea de tiempo del ciclo */}
-          <div className="inv-timeline">
-            <div className="itl-paso itl-blue">
-              <span className="itl-num">1</span>
-              <span>Tienes stock, vas vendiendo ~{r.d} u/día</span>
-            </div>
-            <div className="itl-flecha">↓</div>
-            <div className="itl-paso itl-red">
-              <span className="itl-num">2</span>
-              <span>Stock llega a <strong>{r.ROP} u</strong> → llamas a tu proveedor</span>
-            </div>
-            <div className="itl-flecha">↓</div>
-            <div className="itl-paso itl-amber">
-              <span className="itl-num">3</span>
-              <span>Esperas {r.L} {r.L === 1 ? "día" : "días"} — usas las {r.SS} u de reserva si hace falta</span>
-            </div>
-            <div className="itl-flecha">↓</div>
-            <div className="itl-paso itl-green">
-              <span className="itl-num">4</span>
-              <span>Llegan <strong>{r.EOQ} u</strong> → el ciclo se repite</span>
-            </div>
-          </div>
-
-          {/* Fórmulas matemáticas — colapsable para la maestra */}
-          <details className="inv-detalle-tecnico" style={{ marginTop: "1rem" }}>
-            <summary>Ver fórmulas matemáticas (detalle técnico)</summary>
-            <div style={{ padding: "1rem" }}>
-              <div className="inv-formula-grid">
-                <FormulaCard title="EOQ — Cantidad económica de pedido" formula="√( 2 × D × S / H )"
-                  result={r.EOQ} unit="unidades por orden" colorClass="f-eoq"
-                  vars={[
-                    { sym: "D (demanda anual)", val: `${r.D.toLocaleString()} u/año` },
-                    { sym: "S (costo pedido)",  val: `$${r.S}` },
-                    { sym: "H (costo mant.)",   val: `$${r.H}/u/año` },
-                  ]} />
-                <FormulaCard title="SS — Stock de seguridad" formula="Z × σd × √L"
-                  result={r.SS} unit="unidades de reserva" colorClass="f-ss"
-                  vars={[
-                    { sym: "Z (nivel servicio)", val: r.Z.toFixed(2) },
-                    { sym: "σd (desv. demanda)", val: `${r.sigma.toFixed(1)} u` },
-                    { sym: "L (días entrega)",   val: `${r.L} días` },
-                  ]} />
-                <FormulaCard title="ROP — Punto de reorden" formula="( d × L ) + SS"
-                  result={r.ROP} unit="unidades — pedir aquí" colorClass="f-rop"
-                  vars={[
-                    { sym: "d (ventas/día)",   val: `${r.d} u/día` },
-                    { sym: "L (días entrega)", val: `${r.L} días` },
-                    { sym: "SS (stock seg.)",  val: `${r.SS} u` },
-                  ]} />
-              </div>
-              <CicloDiagrama eoq={r.EOQ} rop={r.ROP} ss={r.SS} />
-            </div>
-          </details>
-
-          <div className="inv-btn-row" style={{ marginTop: "1.5rem" }}>
-            <button className="btn-back" onClick={() => setStep(1)}>← Atrás</button>
-            <button className="btn-save" onClick={guardar} disabled={guardando}>
-              {guardando ? "Guardando…" : "Guardar y ver inventario →"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── PASO 4 — Mi inventario ────────────────────────────────────────── */}
-      {step === 3 && (
-        <>
-          <AlertasStrip data={inventario} />
-
-          <div className="inv-card" style={{ padding: 0, overflow: "hidden" }}>
-            <div className="inv-card-header">
-              <div>
-                <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700 }}>Mis productos</h3>
-                <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
-                  La tabla te dice cuándo y cuánto pedir de cada uno
-                </p>
-              </div>
-              <button className="btn-back" onClick={cargarInventario}>↻ Actualizar</button>
-            </div>
-
-            {loading ? (
-              <div className="inv-empty">Cargando inventario…</div>
-            ) : inventario.length === 0 ? (
-              <div className="inv-empty">
-                Aún no hay productos registrados. Agrega el primero con el botón de abajo.
-              </div>
-            ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table className="inv-table">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>
-                        Stock actual
-                        <span className="inv-th-sub">Lo que tienes ahora</span>
-                      </th>
-                      <th>
-                        Pide cuando llegues a
-                        <span className="inv-th-sub">Punto de reorden</span>
-                      </th>
-                      <th>
-                        Cantidad a pedir
-                        <span className="inv-th-sub">EOQ</span>
-                      </th>
-                      <th>
-                        Mínimo en bodega
-                        <span className="inv-th-sub">Reserva de emergencia</span>
-                      </th>
-                      <th>Estado</th>
-                      <th>¿Qué hacer ahora?</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventario.map((item) => {
-                      const critico = item.cantidad_disponible <= (item.stock_seguridad || 0);
-                      const rowCls  = critico ? "row-danger" : item.alerta ? "row-warn" : "";
-                      return (
-                        <tr key={item.id} className={rowCls}>
-                          <td>
-                            <div className="td-prod">{item.producto_nombre || `Producto #${item.id}`}</div>
-                            <div className="td-sku">{item.sku}</div>
-                          </td>
-                          <td className="td-num">{item.cantidad_disponible} u</td>
-                          <td className="td-num td-rop">{item.punto_reorden} u</td>
-                          <td className="td-num td-eoq">{item.EOQ} u</td>
-                          <td className="td-num td-ss">{item.stock_seguridad} u</td>
-                          <td>
-                            {critico
-                              ? <span className="inv-badge inv-badge-danger">¡Urgente!</span>
-                              : item.alerta
-                              ? <span className="inv-badge inv-badge-warn">Pedir pronto</span>
-                              : <span className="inv-badge inv-badge-ok">OK</span>}
-                          </td>
-                          <td className="td-rec">
-                            {critico
-                              ? `⚠️ Pide ${item.EOQ} unidades hoy`
-                              : item.alerta
-                              ? `Pide ${item.EOQ} unidades a tu proveedor`
-                              : "No necesitas pedir nada por ahora"}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+      {/* ── TAB PROVEEDORES ── */}
+      {tab === "Proveedores" && (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h2 style={{ color: "#1A6163", fontSize: "18px", margin: 0 }}>Proveedores ({proveedores.length})</h2>
+            {!mostrarFormProv && (
+              <button onClick={() => { setMostrarFormProv(true); setFormProv(FORM_PROV); setEditandoProv(null); }}
+                style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #1A6163, #35BA99)", color: "#fff", cursor: "pointer", fontWeight: 600 }}>
+                + Nuevo proveedor
+              </button>
             )}
           </div>
 
-          <div className="inv-btn-row">
-            <button className="btn-back" onClick={() => { setForm(FORM_INIT); setStep(0); }}>
-              + Agregar otro producto
-            </button>
+          {mostrarFormProv && (
+            <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", padding: "1.25rem", marginBottom: "1rem" }}>
+              <h3 style={{ color: "#1A6163", fontSize: "15px", marginBottom: "1rem" }}>
+                {editandoProv ? "Editar proveedor" : "Nuevo proveedor"}
+              </h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+                {[
+                  { label: "Nombre *", key: "nombre_proveedor", placeholder: "Ej: Imprenta XYZ" },
+                  { label: "Contacto", key: "contacto_nombre", placeholder: "Nombre del contacto" },
+                  { label: "Teléfono", key: "telefono", placeholder: "+52 123 456 7890" },
+                  { label: "Correo", key: "correo_electronico", placeholder: "correo@ejemplo.com" },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key}>
+                    <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>{label}</label>
+                    <input value={formProv[key]} onChange={e => setFormProv(f => ({ ...f, [key]: e.target.value }))}
+                      placeholder={placeholder}
+                      style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #d4eeea", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                ))}
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Dirección</label>
+                  <input value={formProv.direccion} onChange={e => setFormProv(f => ({ ...f, direccion: e.target.value }))}
+                    placeholder="Dirección del proveedor"
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #d4eeea", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={guardarProveedor} style={{
+                  padding: "10px 24px", borderRadius: "8px", border: "none",
+                  background: "linear-gradient(135deg, #1A6163, #35BA99)", color: "#fff", cursor: "pointer", fontWeight: 600
+                }}>
+                  {editandoProv ? "Actualizar" : "Guardar"}
+                </button>
+                <button onClick={() => { setMostrarFormProv(false); setEditandoProv(null); setFormProv(FORM_PROV); }}
+                  style={{ padding: "10px 24px", borderRadius: "8px", border: "1.5px solid #d4eeea", background: "#fff", cursor: "pointer" }}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {proveedores.length === 0 ? (
+              <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>No hay proveedores registrados.</p>
+            ) : proveedores.map(p => (
+              <div key={p.proveedor_id} style={{
+                background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px",
+                padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "1rem"
+              }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: "14px" }}>{p.nombre_proveedor}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#666" }}>
+                    {[p.contacto_nombre, p.telefono, p.correo_electronico].filter(Boolean).join(" · ") || "Sin datos de contacto"}
+                  </p>
+                </div>
+                <span style={{
+                  padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                  background: p.activo ? "#d4f5eb" : "#f0f0f0",
+                  color: p.activo ? "#0F6E56" : "#666"
+                }}>
+                  {p.activo ? "Activo" : "Inactivo"}
+                </span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => abrirEditarProv(p)} style={{
+                    padding: "6px 14px", borderRadius: "8px", border: "1.5px solid #35BA99",
+                    background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "12px", fontWeight: 600
+                  }}>Editar</button>
+                  <button onClick={() => eliminarProveedor(p.proveedor_id)} style={{
+                    padding: "6px 14px", borderRadius: "8px", border: "none",
+                    background: "#ffd6d6", color: "#8b0000", cursor: "pointer", fontSize: "12px", fontWeight: 600
+                  }}>Eliminar</button>
+                </div>
+              </div>
+            ))}
           </div>
-        </>
+        </div>
       )}
 
-      {/* Toast */}
-      <div className={`inv-toast${toast.error ? " error" : ""}${toast.visible ? " show" : ""}`}>
-        {toast.msg}
-      </div>
-    </div>
-  );
-}
-
-// ─── Sub-componentes ──────────────────────────────────────────────────────────
-
-function FormulaCard({ title, formula, result, unit, colorClass, vars }) {
-  return (
-    <div className={`inv-formula-card ${colorClass}`}>
-      <div className="f-title">{title}</div>
-      <div className="f-eq">{formula}</div>
-      <div className="f-result">{result} u</div>
-      <div className="f-unit">{unit}</div>
-      <div className="f-vars">
-        {vars.map((v) => (
-          <div key={v.sym} className="f-var-row">
-            <span className="f-var-sym">{v.sym}</span>
-            <span className="f-var-val">{v.val}</span>
+      {/* ── TAB COMPRAS ── */}
+      {tab === "Compras" && (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h2 style={{ color: "#1A6163", fontSize: "18px", margin: 0 }}>Compras ({compras.length})</h2>
+            {!mostrarFormComp && (
+              <button onClick={() => setMostrarFormComp(true)}
+                style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #1A6163, #35BA99)", color: "#fff", cursor: "pointer", fontWeight: 600 }}>
+                + Nueva compra
+              </button>
+            )}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-function CicloDiagrama({ eoq, rop, ss }) {
-  return (
-    <svg width="100%" viewBox="0 0 620 100" className="inv-ciclo-svg">
-      <defs>
-        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M2 1L8 5L2 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </marker>
-      </defs>
-      <line x1="30" y1="78" x2="590" y2="78" className="ciclo-axis" />
-      <polyline points="30,15 190,62 240,62 420,15 580,62" className="ciclo-stock" fill="none" />
-      <line x1="30" y1="62" x2="590" y2="62" className="ciclo-rop-line" />
-      <line x1="30"  y1="15" x2="30"  y2="78" className="ciclo-brace" />
-      <line x1="420" y1="15" x2="420" y2="78" className="ciclo-brace" />
-      <line x1="30" y1="19" x2="420" y2="19" className="ciclo-brace" markerEnd="url(#arr)" markerStart="url(#arr)" />
-      <line x1="580" y1="62" x2="580" y2="78" className="ciclo-ss-line" />
-      <text x="225" y="13" className="ciclo-label ciclo-label-eoq">EOQ = {eoq} u</text>
-      <text x="595" y="66" className="ciclo-label ciclo-label-rop">ROP = {rop} u</text>
-      <text x="580" y="95" textAnchor="middle" className="ciclo-label ciclo-label-ss">SS = {ss} u</text>
-      <text x="30"  y="93" textAnchor="middle" className="ciclo-label ciclo-label-ped">Pedido</text>
-      <text x="420" y="93" textAnchor="middle" className="ciclo-label ciclo-label-ped">Pedido</text>
-    </svg>
-  );
-}
+          {mostrarFormComp && (
+            <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", padding: "1.25rem", marginBottom: "1rem" }}>
+              <h3 style={{ color: "#1A6163", fontSize: "15px", marginBottom: "1rem" }}>Nueva compra</h3>
 
-function AlertasStrip({ data }) {
-  const ok      = data.filter((d) => !d.alerta).length;
-  const warn    = data.filter((d) => d.alerta && d.cantidad_disponible > (d.stock_seguridad || 0)).length;
-  const critico = data.filter((d) => d.cantidad_disponible <= (d.stock_seguridad || 0)).length;
-  return (
-    <div className="inv-alertas-strip">
-      <div className="inv-alerta-card ok">
-        <div className="iac-num">{ok}</div>
-        <div className="iac-label">Con stock suficiente</div>
-        <div className="iac-desc">No necesitan atención por ahora</div>
-      </div>
-      <div className="inv-alerta-card warn">
-        <div className="iac-num">{warn}</div>
-        <div className="iac-label">Hay que pedir pronto</div>
-        <div className="iac-desc">El stock bajó del punto de aviso</div>
-      </div>
-      <div className="inv-alerta-card danger">
-        <div className="iac-num">{critico}</div>
-        <div className="iac-label">¡Atención urgente!</div>
-        <div className="iac-desc">Stock por debajo del mínimo</div>
-      </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+                <div>
+                  <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Proveedor *</label>
+                  <select value={proveedorSeleccionado} onChange={e => setProveedorSeleccionado(e.target.value)}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #d4eeea", fontSize: "13px", outline: "none" }}>
+                    <option value="">Seleccionar...</option>
+                    {proveedores.filter(p => p.activo).map(p => (
+                      <option key={p.proveedor_id} value={p.proveedor_id}>{p.nombre_proveedor}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Observaciones</label>
+                  <input value={observaciones} onChange={e => setObservaciones(e.target.value)}
+                    placeholder="Notas opcionales"
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #d4eeea", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Agregar producto</label>
+                <select
+                  onChange={e => {
+                    const producto = productos.find(p => p.id === parseInt(e.target.value));
+                    if (producto) { agregarProductoDetalle(producto); e.target.value = ""; }
+                  }}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #d4eeea", fontSize: "13px", outline: "none" }}
+                >
+                  <option value="">Seleccionar producto...</option>
+                  {productos
+                    .filter(p => !detalleCompra.find(d => d.producto_id === p.id))
+                    .map(p => (
+                      <option key={p.id} value={p.id}>{p.nombre}</option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              {detalleCompra.length > 0 && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                    <thead>
+                      <tr style={{ background: "#f0fafa" }}>
+                        {["Producto", "Cantidad", "Precio unitario", "Total", ""].map(h => (
+                          <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#1A6163" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detalleCompra.map(d => (
+                        <tr key={d.producto_id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                          <td style={{ padding: "8px 12px" }}>{d.producto_nombre}</td>
+                          <td style={{ padding: "8px 12px" }}>
+                            <input type="number" min="1" value={d.cantidad}
+                              onChange={e => actualizarDetalle(d.producto_id, "cantidad", parseInt(e.target.value) || 1)}
+                              style={{ width: "70px", padding: "6px", borderRadius: "6px", border: "1px solid #d4eeea", outline: "none" }} />
+                          </td>
+                          <td style={{ padding: "8px 12px" }}>
+                            <input type="number" min="0" step="0.01" value={d.precio_unitario}
+                              onChange={e => actualizarDetalle(d.producto_id, "precio_unitario", parseFloat(e.target.value) || 0)}
+                              style={{ width: "90px", padding: "6px", borderRadius: "6px", border: "1px solid #d4eeea", outline: "none" }} />
+                          </td>
+                          <td style={{ padding: "8px 12px", fontWeight: 600, color: "#1A6163" }}>
+                            {formatMoney(d.cantidad * d.precio_unitario)}
+                          </td>
+                          <td style={{ padding: "8px 12px" }}>
+                            <button onClick={() => quitarDetalle(d.producto_id)}
+                              style={{ background: "#ffd6d6", color: "#8b0000", border: "none", borderRadius: "6px", padding: "4px 10px", cursor: "pointer", fontSize: "12px" }}>
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div style={{ textAlign: "right", marginTop: "8px", fontWeight: 700, color: "#1A6163", fontSize: "15px" }}>
+                    Total: {formatMoney(totalCompra)}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={guardarCompra} style={{
+                  padding: "10px 24px", borderRadius: "8px", border: "none",
+                  background: "linear-gradient(135deg, #1A6163, #35BA99)", color: "#fff", cursor: "pointer", fontWeight: 600
+                }}>
+                  Guardar compra
+                </button>
+                <button onClick={() => { setMostrarFormComp(false); setDetalleCompra([]); setProveedorSeleccionado(""); setObservaciones(""); }}
+                  style={{ padding: "10px 24px", borderRadius: "8px", border: "1.5px solid #d4eeea", background: "#fff", cursor: "pointer" }}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {compras.length === 0 ? (
+              <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>No hay compras registradas.</p>
+            ) : compras.map(c => (
+              <div key={c.id} style={{
+                background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px",
+                padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "1rem"
+              }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: "14px" }}>Compra #{c.id} — {c.nombre_proveedor}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#666" }}>
+                    {formatFecha(c.fecha_compra)} · {c.observaciones || "Sin observaciones"}
+                  </p>
+                </div>
+                <p style={{ margin: 0, fontWeight: 700, color: "#1A6163", fontSize: "15px" }}>{formatMoney(c.total_compra)}</p>
+                <button onClick={() => eliminarCompra(c.id)} style={{
+                  padding: "6px 14px", borderRadius: "8px", border: "none",
+                  background: "#ffd6d6", color: "#8b0000", cursor: "pointer", fontSize: "12px", fontWeight: 600
+                }}>Eliminar</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

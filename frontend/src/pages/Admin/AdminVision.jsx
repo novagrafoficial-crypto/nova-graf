@@ -84,7 +84,7 @@ export default function AdminVision() {
         </button>
         {editandoId && (
           <button className="btn-guardar" onClick={handleCancelar}
-            style={{ background: "var(--surface2)", boxShadow: "none" }}>
+            style={{ background: "#e0f0ee", color: "#1A6163", boxShadow: "none" }}>
             Cancelar
           </button>
         )}
@@ -93,9 +93,11 @@ export default function AdminVision() {
       <div className="empresa-item-list" style={{ marginTop: "16px" }}>
         {visiones.map((v) => (
           <div key={v.id} className="empresa-item">
-            <span className="empresa-item-text">{v.descripcion}</span>
-            <button className="btn-agregar" onClick={() => handleEditar(v)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(v.id)}>Eliminar</button>
+            <p className="empresa-item-text">{v.descripcion}</p>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(v)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(v.id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

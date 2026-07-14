@@ -76,26 +76,38 @@ export default function AdminUbicacion() {
 
       {error && <p className="empresa-status error">{error}</p>}
 
-      <div className="empresa-add-row">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
         <input className="empresa-input" name="direccion" placeholder="Dirección" value={form.direccion} onChange={handleChange} />
         <input className="empresa-input" name="ciudad" placeholder="Ciudad" value={form.ciudad} onChange={handleChange} />
         <input className="empresa-input" name="pais" placeholder="País" value={form.pais} onChange={handleChange} />
-        <input className="empresa-input" name="codigo_postal" placeholder="Código Postal" value={form.codigo_postal} onChange={handleChange} style={{ maxWidth: "150px" }} />
-        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
-        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
+        <input className="empresa-input" name="codigo_postal" placeholder="Código Postal" value={form.codigo_postal} onChange={handleChange} />
+      </div>
+
+      <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+        <button className="btn-guardar" onClick={guardar}>
+          {editandoId ? "Actualizar" : "Agregar"}
+        </button>
+        {editandoId && (
+          <button className="btn-guardar" onClick={handleCancelar}
+            style={{ background: "#e0f0ee", color: "#1A6163", boxShadow: "none" }}>
+            Cancelar
+          </button>
+        )}
       </div>
 
       <div className="empresa-item-list">
         {ubicaciones.map((u) => (
           <div key={u.ubicacion_id} className="empresa-item">
             <div className="empresa-item-text">
-              <strong>{u.direccion}</strong>
+              <strong style={{ color: "#1A6163" }}>{u.direccion}</strong>
               <div className="empresa-item-sub">
                 {[u.ciudad, u.pais, u.codigo_postal].filter(Boolean).join(", ")}
               </div>
             </div>
-            <button className="btn-agregar" onClick={() => handleEditar(u)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(u.ubicacion_id)}>Eliminar</button>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(u)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(u.ubicacion_id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

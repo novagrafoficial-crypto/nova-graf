@@ -1,182 +1,183 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const COLORS = {
-  teal2: "#35BA99",
-  teal1: "#1A6163",
-  black: "#000000",
-  red: "#FF0000",
-  white: "#FFFFFF",
-  border: "#D9D9D6",
-  tealLight: "rgba(53, 186, 153, 0.12)",
+const API = `${import.meta.env.VITE_API_URL}/api/admin/pedidos`;
+
+const ESTADOS = [
+  "PENDIENTE_VERIFICACION",
+  "EN_DISENO",
+  "EN_REVISION",
+  "PREVIAS_ENVIADAS",
+  "EN_PRODUCCION",
+  "PENDIENTE_PAGO_FINAL",
+  "ENVIADO",
+  "CANCELADO",
+];
+
+const COLORES = {
+  PENDIENTE_VERIFICACION: { bg: "#FFF3CD", color: "#7d5a00" },
+  EN_DISENO:              { bg: "#d0eaff", color: "#0a4a7c" },
+  EN_REVISION:            { bg: "#ffe8d0", color: "#7a3500" },
+  PREVIAS_ENVIADAS:       { bg: "#e8d5ff", color: "#4a0080" },
+  EN_PRODUCCION:          { bg: "#d4f5eb", color: "#0F6E56" },
+  PENDIENTE_PAGO_FINAL:   { bg: "#ffd6d6", color: "#8b0000" },
+  ENVIADO:                { bg: "#e0f5e0", color: "#1a6163" },
+  CANCELADO:              { bg: "#f0f0f0", color: "#555" },
 };
 
-export default function PaginaEnProceso({ titulo = "Página en construcción", mensaje = "Estamos trabajando para traerte esta funcionalidad muy pronto." }) {
-  const [progreso, setProgreso] = useState(0);
+export default function AdminPedidos() {
+  const [pedidos, setPedidos] = useState([]);
+  const [filtro, setFiltro] = useState("TODOS");
+  const [busqueda, setBusqueda] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgreso(prev => (prev >= 100 ? 100 : prev + 2));
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => { cargar(); }, []);
+
+  const cargar = async () => {
+    try {
+      const res = await fetch(API);
+      const data = await res.json();
+      setPedidos(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setPedidos([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pedidosFiltrados = pedidos.filter((p) => {
+    const coincideFiltro = filtro === "TODOS" || p.estado === filtro;
+    const coincideBusqueda =
+      p.cliente_nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      String(p.id).includes(busqueda);
+    return coincideFiltro && coincideBusqueda;
+  });
+
+  const formatFecha = (f) =>
+    new Date(f).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
+
+  const formatMoney = (n) =>
+    Number(n).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        {/* Icono animado */}
-        <div style={styles.iconContainer}>
-          <span style={styles.icon}>🚧</span>
-        </div>
+    <div style={{ padding: "1.5rem" }}>
 
-        {/* Título */}
-        <h1 style={styles.title}>{titulo}</h1>
-
-        {/* Mensaje */}
-        <p style={styles.message}>{mensaje}</p>
-
-        {/* Barra de progreso animada */}
-        <div style={styles.progressBarContainer}>
-          <div style={{ ...styles.progressBarFill, width: `${progreso}%` }} />
-        </div>
-        <p style={styles.progressText}>{progreso}% completado</p>
-
-        {/* Separador decorativo */}
-        <div style={styles.separator} />
-
-        {/* Estado del sistema */}
-        <div style={styles.statusContainer}>
-          <span style={styles.statusDot} />
-          <span style={styles.statusText}>Sistema en desarrollo activo</span>
-        </div>
-
-        {/* Fecha estimada (opcional) */}
-        <p style={styles.estimatedDate}>📅 Fecha estimada: Próximamente</p>
-
-        {/* Botón de volver (opcional) */}
-        <button style={styles.button} onClick={() => window.history.back()}>
-          ← Volver atrás
-        </button>
+      {/* Encabezado */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ fontSize: "22px", fontWeight: 500, color: "#1A6163", margin: "0 0 4px" }}>
+          Gestión de Pedidos
+        </h1>
+        <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>
+          {pedidos.length} pedidos en total
+        </p>
       </div>
+
+      {/* Filtros */}
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "1rem" }}>
+        <button
+          onClick={() => setFiltro("TODOS")}
+          style={{
+            padding: "6px 16px", borderRadius: "20px", border: "1.5px solid",
+            cursor: "pointer", fontSize: "12px", fontWeight: 500,
+            background: filtro === "TODOS" ? "#1A6163" : "transparent",
+            color: filtro === "TODOS" ? "#fff" : "#1A6163",
+            borderColor: "#1A6163",
+          }}
+        >
+          Todos
+        </button>
+        {ESTADOS.map((e) => (
+          <button
+            key={e}
+            onClick={() => setFiltro(e)}
+            style={{
+              padding: "6px 16px", borderRadius: "20px", border: "1.5px solid",
+              cursor: "pointer", fontSize: "12px", fontWeight: 500,
+              background: filtro === e ? COLORES[e].color : "transparent",
+              color: filtro === e ? "#fff" : COLORES[e].color,
+              borderColor: COLORES[e].color,
+            }}
+          >
+            {e.replace(/_/g, " ")}
+          </button>
+        ))}
+      </div>
+
+      {/* Buscador */}
+      <input
+        type="text"
+        placeholder="Buscar por cliente o # de pedido..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        style={{
+          width: "100%", padding: "10px 16px", borderRadius: "10px",
+          border: "1.5px solid #d4eeea", fontSize: "14px",
+          marginBottom: "1rem", boxSizing: "border-box", outline: "none",
+        }}
+      />
+
+      {/* Tabla */}
+      {loading ? (
+        <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>Cargando pedidos...</p>
+      ) : pedidosFiltrados.length === 0 ? (
+        <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>No hay pedidos que mostrar.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {pedidosFiltrados.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => navigate(`/admin/pedidos/${p.id}`)}
+              style={{
+                background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px",
+                padding: "1rem 1.25rem", display: "flex", alignItems: "center",
+                gap: "1rem", cursor: "pointer", transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = "#35BA99"}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = "#d4eeea"}
+            >
+              {/* ID */}
+              <div style={{ minWidth: "48px", textAlign: "center" }}>
+                <span style={{ fontSize: "11px", color: "#999" }}>#</span>
+                <p style={{ margin: 0, fontWeight: 600, color: "#1A6163", fontSize: "16px" }}>{p.id}</p>
+              </div>
+
+              <div style={{ width: "1px", height: "40px", background: "#e0f0ee" }} />
+
+              {/* Cliente */}
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontWeight: 500, fontSize: "14px" }}>{p.cliente_nombre}</p>
+                <span style={{ fontSize: "12px", color: "#999" }}>{p.cliente_correo}</span>
+              </div>
+
+              {/* Fecha */}
+              <div style={{ textAlign: "right", minWidth: "90px" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Fecha</p>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 500 }}>{formatFecha(p.fecha_pedido)}</p>
+              </div>
+
+              {/* Total */}
+              <div style={{ textAlign: "right", minWidth: "100px" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Total</p>
+                <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#1A6163" }}>{formatMoney(p.total_general)}</p>
+              </div>
+
+              {/* Estado */}
+              <span style={{
+                padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                background: COLORES[p.estado]?.bg || "#f0f0f0",
+                color: COLORES[p.estado]?.color || "#333",
+                whiteSpace: "nowrap",
+              }}>
+                {p.estado?.replace(/_/g, " ")}
+              </span>
+
+              <span style={{ color: "#35BA99", fontSize: "18px" }}>›</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "70vh",
-    padding: "40px 20px",
-    background: "linear-gradient(135deg, #F4F8F7 0%, #EDF3F1 100%)",
-  },
-  card: {
-    maxWidth: "500px",
-    width: "100%",
-    background: COLORS.white,
-    borderRadius: "28px",
-    padding: "48px 40px",
-    textAlign: "center",
-    boxShadow: "0 20px 40px -12px rgba(26, 97, 99, 0.12), 0 4px 12px rgba(0, 0, 0, 0.02)",
-    border: `1px solid ${COLORS.border}`,
-    transition: "all 0.3s ease",
-  },
-  iconContainer: {
-    marginBottom: "24px",
-  },
-  icon: {
-    fontSize: "64px",
-    display: "inline-block",
-    animation: "bounce 1s ease-in-out infinite",
-  },
-  title: {
-    fontSize: "28px",
-    fontWeight: 800,
-    fontFamily: "'Syne', sans-serif",
-    color: COLORS.teal1,
-    marginBottom: "16px",
-    letterSpacing: "-0.02em",
-  },
-  message: {
-    fontSize: "15px",
-    color: "#4A5568",
-    lineHeight: "1.6",
-    marginBottom: "32px",
-  },
-  progressBarContainer: {
-    height: "8px",
-    background: COLORS.tealLight,
-    borderRadius: "10px",
-    overflow: "hidden",
-    marginBottom: "12px",
-  },
-  progressBarFill: {
-    height: "100%",
-    background: `linear-gradient(90deg, ${COLORS.teal1}, ${COLORS.teal2})`,
-    borderRadius: "10px",
-    transition: "width 0.1s linear",
-  },
-  progressText: {
-    fontSize: "12px",
-    color: COLORS.teal2,
-    fontWeight: 600,
-    marginBottom: "32px",
-  },
-  separator: {
-    width: "60px",
-    height: "3px",
-    background: `linear-gradient(90deg, ${COLORS.teal1}, ${COLORS.teal2})`,
-    borderRadius: "3px",
-    margin: "0 auto 24px auto",
-  },
-  statusContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    marginBottom: "16px",
-  },
-  statusDot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    background: COLORS.teal2,
-    animation: "pulse 1.5s ease-in-out infinite",
-  },
-  statusText: {
-    fontSize: "12px",
-    color: COLORS.teal1,
-    fontWeight: 500,
-  },
-  estimatedDate: {
-    fontSize: "12px",
-    color: "#9AA5B4",
-    marginBottom: "24px",
-  },
-  button: {
-    background: `linear-gradient(135deg, ${COLORS.teal1}, ${COLORS.teal2})`,
-    color: COLORS.white,
-    border: "none",
-    padding: "10px 24px",
-    borderRadius: "12px",
-    fontSize: "13px",
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    boxShadow: "0 2px 8px rgba(53, 186, 153, 0.25)",
-  },
-};
-
-// Agregar keyframes al documento
-const styleSheet = document.createElement("style");
-styleSheet.textContent = `
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.2); }
-  }
-`;
-document.head.appendChild(styleSheet);

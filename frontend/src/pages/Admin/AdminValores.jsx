@@ -77,18 +77,25 @@ export default function AdminValores() {
         <input className="empresa-input" placeholder="Valor (ej. Calidad)" value={valor} onChange={(e) => setValor(e.target.value)} />
         <input className="empresa-input" placeholder="Descripción" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
         <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
-        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
+        {editandoId && (
+          <button className="btn-agregar" onClick={handleCancelar}
+            style={{ background: "#e0f0ee", color: "#1A6163", border: "1px solid #35BA99" }}>
+            Cancelar
+          </button>
+        )}
       </div>
 
       <div className="empresa-item-list">
         {valores.map((v) => (
           <div key={v.id} className="empresa-item">
             <div className="empresa-item-text">
-              <strong>{v.valor}</strong>
+              <strong style={{ color: "#1A6163" }}>{v.valor}</strong>
               <div className="empresa-item-sub">{v.descripcion}</div>
             </div>
-            <button className="btn-agregar" onClick={() => handleEditar(v)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(v.id)}>Eliminar</button>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(v)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(v.id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

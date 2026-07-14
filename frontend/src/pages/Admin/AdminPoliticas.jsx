@@ -74,16 +74,25 @@ export default function AdminPoliticas() {
           onChange={(e) => setDescripcion(e.target.value)}
           style={{ minHeight: "70px" }}
         />
-        <button className="btn-agregar" onClick={guardar}>{editandoId ? "Actualizar" : "Agregar"}</button>
-        {editandoId && <button className="btn-agregar" onClick={handleCancelar} style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Cancelar</button>}
+        <button className="btn-agregar" onClick={guardar}>
+          {editandoId ? "Actualizar" : "Agregar"}
+        </button>
+        {editandoId && (
+          <button className="btn-agregar" onClick={handleCancelar}
+            style={{ background: "#e0f0ee", color: "#1A6163", border: "1px solid #35BA99" }}>
+            Cancelar
+          </button>
+        )}
       </div>
 
       <div className="empresa-item-list">
         {politicas.map((p) => (
           <div key={p.id} className="empresa-item">
-            <span className="empresa-item-text">{p.descripcion}</span>
-            <button className="btn-agregar" onClick={() => handleEditar(p)}>Editar</button>
-            <button className="btn-eliminar-item" onClick={() => handleEliminar(p.id)}>Eliminar</button>
+            <p className="empresa-item-text">{p.descripcion}</p>
+            <div className="empresa-item-actions">
+              <button className="btn-agregar" onClick={() => handleEditar(p)}>Editar</button>
+              <button className="btn-eliminar-item" onClick={() => handleEliminar(p.id)}>Eliminar</button>
+            </div>
           </div>
         ))}
       </div>

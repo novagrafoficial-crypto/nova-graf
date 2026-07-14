@@ -134,11 +134,21 @@ const adminValoresRoutes        = require('./routes/admin/empresa/adminValoresRo
 const inventarioRoutes          = require('./routes/admin/inventarioRoutes');
 const adminVisionRoutes         = require('./routes/admin/empresa/adminVisionRoutes');
 const monitoreoRoutes           = require('./routes/admin/monitoreoRoutes');
-const proveedorRoutes           = require('./routes/admin/proveedorRoutes');
 const publicacionRoutes         = require('./routes/admin/publicacionRoutes');
 const reabastecimientoRoutes    = require('./routes/admin/reabastecimientoRoutes');
+const pedidosAdminRoutes = require('./routes/admin/pedidosAdminRoutes');
+const marketingRoutes = require('./routes/admin/marketingRoutes');
+const comprasRoutes = require('./routes/admin/comprasRoutes');
+const proveedorRoutes = require('./routes/admin/proveedoresRoutes');
+const metodosPagoRoutes = require('./routes/admin/metodosPagoRoutes');
+const metodosEntregaRoutes = require('./routes/admin/metodosEntregaRoutes');
 
 
+app.use('/api/admin/metodos-entrega', metodosEntregaRoutes);
+app.use('/api/admin/metodos-pago', metodosPagoRoutes);
+app.use('/api/admin/proveedores', proveedorRoutes);
+app.use('/api/admin/compras', comprasRoutes);
+app.use('/api/admin/marketing', marketingRoutes);
 app.use('/api/admin/antecedentes',     adminAntecedentesRoutes);
 app.use('/api/admin/vision',           adminVisionRoutes);
 app.use('/api/admin/contactos',        adminContactosRoutes);
@@ -149,7 +159,6 @@ app.use('/api/admin/valores',          adminValoresRoutes);
 app.use('/api/admin/mision',           adminMisionRoutes);
 app.use('/api/admin/inventario',       inventarioRoutes);
 app.use('/api/admin/monitoreo',        monitoreoRoutes);
-app.use('/api/admin/proveedores',      proveedorRoutes);
 app.use('/api/admin/marcas',           marcasRoutes);
 app.use('/api/admin/categorias',       categoriasRoutes);
 app.use('/api/admin/subcategorias',    subcategoriasRoutes);
@@ -158,6 +167,8 @@ app.use('/api/admin/usuarios',         usuariosRoutes);
 app.use('/api/admin/modulo',           moduloAdminRoutes);
 app.use('/api',                        publicacionRoutes);
 app.use('/api/admin/reabastecimiento', reabastecimientoRoutes);
+app.use('/api/admin/pedidos', pedidosAdminRoutes);
+
 
 // ─── 9. INICIAR SERVIDOR ───────────────────────────────────
 const PORT = process.env.PORT || 5000;
