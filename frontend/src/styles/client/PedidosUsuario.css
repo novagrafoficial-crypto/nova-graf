@@ -1,5 +1,21 @@
 /* frontend/src/styles/client/PedidosUsuario.css */
 
+/* ── TOKENS DE MARCA ── */
+:root {
+  --teal-deep:    #1A6163;
+  --teal-vivid:   #35BA99;
+  --gray-warm:    #DBDBD3;
+  --ink:          #000000;
+
+  --teal-deep-10: rgba(26, 97, 99, 0.10);
+  --teal-deep-20: rgba(26, 97, 99, 0.20);
+  --teal-vivid-10:rgba(53, 186, 153, 0.10);
+  --teal-vivid-20:rgba(53, 186, 153, 0.22);
+  --gray-soft:    #f4f4f2;
+  --gray-mid:     #9f9f99;
+  --white:        #ffffff;
+}
+
 /* ─── CONTENEDOR PRINCIPAL ────────────────────────────────────── */
 .cp-pedidos-list {
   display: flex;
@@ -10,17 +26,18 @@
 
 /* ─── TARJETA DEL PEDIDO ──────────────────────────────────────── */
 .cp-pedido-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-warm);
+  border-left: 4px solid var(--teal-deep);
+  border-radius: 14px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 10px rgba(26, 97, 99, 0.06);
   transition: all 0.3s ease;
 }
 
 .cp-pedido-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-color: #d1d5db;
+  box-shadow: 0 6px 20px rgba(26, 97, 99, 0.12);
+  border-left-color: var(--teal-vivid);
 }
 
 /* ─── HEADER ────────────────────────────────────────────────────── */
@@ -31,7 +48,7 @@
   flex-wrap: wrap;
   gap: 0.8rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--gray-soft);
   margin-bottom: 1rem;
 }
 
@@ -45,118 +62,119 @@
 .cp-pedido-info-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.9rem;
   flex-wrap: wrap;
 }
 
 .cp-pedido-id {
   font-weight: 700;
   font-size: 1rem;
-  color: #1a1a1a;
+  color: var(--teal-deep);
+  letter-spacing: 0.2px;
 }
 
 .cp-pedido-fecha {
-  color: #6b7280;
+  color: var(--gray-mid);
   font-size: 0.85rem;
 }
 
 /* ─── ESTADO ───────────────────────────────────────────────────── */
 .cp-pedido-estado {
   padding: 4px 14px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
+  border: 1px solid transparent;
 }
 
 /* ─── BOTONES DE ACCIÓN ───────────────────────────────────────── */
 .cp-btn-detalle {
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
-  padding: 4px 12px;
+  background: var(--white);
+  color: var(--teal-deep);
+  border: 1px solid var(--teal-deep-20);
+  padding: 6px 14px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .cp-btn-detalle:hover {
-  background: #e5e7eb;
-  transform: scale(1.02);
+  background: var(--teal-deep-10);
+  border-color: var(--teal-deep);
 }
 
 .cp-btn-cancelar {
-  background: #fee2e2;
-  color: #dc2626;
-  border: none;
-  padding: 4px 12px;
+  background: var(--white);
+  color: #b3261e;
+  border: 1px solid rgba(179, 38, 30, 0.25);
+  padding: 6px 14px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .cp-btn-cancelar:hover {
-  background: #fecaca;
-  transform: scale(1.02);
+  background: rgba(179, 38, 30, 0.08);
+  border-color: #b3261e;
 }
 
 .cp-btn-eliminar {
-  background: #f3f4f6;
-  color: #6b7280;
-  border: none;
+  background: var(--gray-soft);
+  color: var(--gray-mid);
+  border: 1px solid var(--gray-warm);
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .cp-btn-eliminar:hover {
-  background: #e5e7eb;
-  color: #374151;
-  transform: scale(1.02);
+  background: var(--gray-warm);
+  color: var(--ink);
 }
 
 .cp-btn-pago {
-  background: #2563eb;
-  color: white;
+  background: var(--teal-deep);
+  color: var(--white);
   border: none;
-  padding: 6px 16px;
+  padding: 7px 18px;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .cp-btn-pago:hover {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  background: var(--teal-vivid);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--teal-vivid-20);
 }
 
 .cp-btn-diseno {
-  background: #7c3aed;
-  color: white;
+  background: var(--teal-vivid);
+  color: var(--white);
   border: none;
-  padding: 6px 16px;
+  padding: 7px 18px;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .cp-btn-diseno:hover {
-  background: #6d28d9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  background: var(--teal-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--teal-deep-20);
 }
 
 /* ─── ITEMS DEL PEDIDO ────────────────────────────────────────── */
@@ -171,12 +189,17 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #f9fafb;
+  padding: 0.7rem 0.6rem;
+  border-radius: 10px;
+  transition: background 0.2s ease;
 }
 
-.cp-pedido-item:last-child {
-  border-bottom: none;
+.cp-pedido-item:hover {
+  background: var(--gray-soft);
+}
+
+.cp-pedido-item:not(:last-child) {
+  border-bottom: 1px solid var(--gray-soft);
 }
 
 .cp-pedido-item-img {
@@ -184,7 +207,8 @@
   height: 60px;
   object-fit: cover;
   border-radius: 10px;
-  background: #f3f4f6;
+  background: var(--gray-soft);
+  border: 1px solid var(--gray-warm);
   flex-shrink: 0;
 }
 
@@ -195,21 +219,21 @@
 
 .cp-pedido-item-info h4 {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 0.2rem 0;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .cp-pedido-item-info p {
   margin: 0;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--gray-mid);
 }
 
 .cp-pedido-item-total {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #1a1a1a;
+  color: var(--teal-deep);
   flex-shrink: 0;
 }
 
@@ -221,7 +245,7 @@
   flex-wrap: wrap;
   gap: 0.8rem;
   padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--gray-soft);
   margin-bottom: 1rem;
 }
 
@@ -233,22 +257,26 @@
 
 .cp-pedido-totales span {
   font-size: 0.9rem;
-  color: #4b5563;
+  color: var(--gray-mid);
 }
 
 .cp-pedido-totales strong {
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .cp-pedido-entrega {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--teal-deep);
+  font-weight: 600;
+  background: var(--teal-deep-10);
+  padding: 4px 12px;
+  border-radius: 6px;
 }
 
 /* ─── SECCIÓN DE PAGO ──────────────────────────────────────────── */
 .cp-pedido-pago-section {
   padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--gray-soft);
 }
 
 .cp-pago-pendiente {
@@ -257,31 +285,33 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.8rem;
-  background: #fef3c7;
-  padding: 0.8rem 1.2rem;
+  background: var(--gray-soft);
+  border: 1px dashed var(--gray-warm);
+  padding: 0.9rem 1.2rem;
   border-radius: 10px;
 }
 
 .cp-pago-pendiente p {
   margin: 0;
   font-size: 0.9rem;
-  color: #92400e;
+  color: var(--ink);
 }
 
 .cp-pago-pendiente strong {
-  color: #78350f;
+  color: var(--teal-deep);
 }
 
 .cp-pago-registrado {
-  background: #f8fafc;
-  padding: 0.8rem 1.2rem;
+  background: var(--teal-deep-10);
+  border: 1px solid var(--teal-deep-20);
+  padding: 0.9rem 1.2rem;
   border-radius: 10px;
 }
 
 .cp-pago-registrado p {
   margin: 0;
   font-size: 0.9rem;
-  color: #1e293b;
+  color: var(--ink);
 }
 
 /* ─── SECCIÓN VACÍA ────────────────────────────────────────────── */
@@ -292,22 +322,27 @@
   justify-content: center;
   padding: 3rem 2rem;
   text-align: center;
+  background: var(--gray-soft);
+  border-radius: 14px;
+  border: 1px dashed var(--gray-warm);
 }
 
 .cp-empty-section span {
   font-size: 3rem;
   margin-bottom: 0.5rem;
+  filter: grayscale(1) opacity(0.5);
 }
 
 .cp-empty-section p {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--gray-mid);
 }
 
 .cp-loading-inline {
   text-align: center;
   padding: 2rem;
-  color: #6b7280;
+  color: var(--teal-deep);
+  font-weight: 600;
 }
 
 /* ─── MODALES ───────────────────────────────────────────────────── */
@@ -317,7 +352,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,12 +361,13 @@
 }
 
 .ped-modal-card {
-  background: white;
+  background: var(--white);
   border-radius: 16px;
+  border-top: 4px solid var(--teal-deep);
   padding: 2rem;
   max-width: 420px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   animation: pedModalIn 0.3s ease;
 }
 
@@ -354,6 +390,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 1rem auto;
+  background: var(--teal-deep-10) !important;
 }
 
 .ped-modal-titulo {
@@ -361,18 +398,18 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: #1a1a1a;
+  color: var(--teal-deep);
 }
 
 .ped-modal-mensaje {
   text-align: center;
-  color: #4b5563;
+  color: var(--ink);
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
 }
 
 .ped-modal-aviso {
-  background: #f3f4f6;
+  background: var(--gray-soft);
   padding: 0.8rem;
   border-radius: 8px;
   display: flex;
@@ -380,7 +417,7 @@
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--gray-mid);
 }
 
 .ped-modal-botones {
@@ -396,25 +433,26 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .ped-modal-btn--cancelar {
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--gray-soft);
+  color: var(--ink);
+  border: 1px solid var(--gray-warm);
 }
 
 .ped-modal-btn--cancelar:hover {
-  background: #e5e7eb;
+  background: var(--gray-warm);
 }
 
 .ped-modal-btn--confirmar {
-  background: #dc2626;
-  color: white;
+  background: #b3261e;
+  color: var(--white);
 }
 
 .ped-modal-btn--confirmar:hover {
-  background: #b91c1c;
+  background: #8f1e18;
 }
 
 .ped-modal-boton {
@@ -425,13 +463,13 @@
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: #2563eb;
-  color: white;
+  transition: all 0.25s ease;
+  background: var(--teal-deep);
+  color: var(--white);
 }
 
 .ped-modal-boton:hover {
-  background: #1d4ed8;
+  background: var(--teal-vivid);
 }
 
 /* ─── RESPONSIVE ────────────────────────────────────────────────── */

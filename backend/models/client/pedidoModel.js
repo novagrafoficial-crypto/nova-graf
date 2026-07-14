@@ -8,7 +8,6 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
   try {
     await client.query('BEGIN');
     
-    // 1. Obtener datos del carrito
     const carritoQuery = `
       SELECT 
         cd.variante_id,
@@ -28,7 +27,6 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
       throw new Error('El carrito está vacío');
     }
     
-    // 2. Calcular totales
     let totalProductos = 0;
     const detalles = carritoItems.rows.map(item => {
       const precioUnitario = parseFloat(item.precio_unitario);
@@ -41,9 +39,8 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
       };
     });
     
-    // 3. Obtener costo de envío
     const metodoQuery = `
-      SELECT costo, es_dinamico_km, costo_por_km, costo_minimo
+      SELECT costo
       FROM ventas.metodos_entrega
       WHERE id = $1 AND activo = true
     `;
@@ -54,18 +51,12 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
     }
     
     const metodo = metodoResult.rows[0];
-    let costoEnvio = parseFloat(metodo.costo) || 0;
-    
-    if (metodo.es_dinamico_km && distanciaKm) {
-      const costoCalculado = distanciaKm * parseFloat(metodo.costo_por_km);
-      costoEnvio = Math.max(costoCalculado, parseFloat(metodo.costo_minimo) || 0);
-    }
+    const costoEnvio = parseFloat(metodo.costo) || 0;
     
     const totalGeneral = totalProductos + costoEnvio;
     const montoAnticipo = totalGeneral * 0.5;
     const montoRestante = totalGeneral * 0.5;
     
-    // 4. Crear pedido CON metodo_pago_id
     const pedidoQuery = `
       INSERT INTO ventas.pedidos_clientes (
         usuario_id, 
@@ -85,19 +76,18 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
     const pedidoValues = [
       usuarioId, 
       metodoEntregaId,
-      metodoPagoId,      // ← NUEVO
+      metodoPagoId,
       totalProductos, 
       costoEnvio,
       totalGeneral, 
       montoAnticipo, 
       montoRestante,
       direccionEnvio, 
-      distanciaKm || null
+      null
     ];
     const pedidoResult = await client.query(pedidoQuery, pedidoValues);
     const pedido = pedidoResult.rows[0];
     
-    // 5. Guardar detalles del pedido
     for (const detalle of detalles) {
       const detalleQuery = `
         INSERT INTO ventas.pedido_cliente_detalle (
@@ -112,7 +102,6 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
       ]);
     }
     
-    // 6. Vaciar carrito
     await client.query(
       'DELETE FROM ventas.carrito_detalle WHERE carrito_id = (SELECT id FROM ventas.carrito WHERE usuario_id = $1)',
       [usuarioId]
@@ -136,15 +125,15 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
   }
 };
 
-// ─── REGISTRAR PAGO CON METODO_PAGO_ID ─────────────────────────────
-const registrarPago = async (pedidoId, tipoPago, monto, metodoPagoId, comprobanteUrl) => {
+// ─── REGISTRAR PAGO ─────────────────────────────────────────────────
+const registrarPago = async (pedidoId, tipoPago, monto, comprobanteUrl, notasAdmin) => {
   const query = `
     INSERT INTO ventas.pagos_pedidos (
       pedido_cliente_id, 
       tipo_pago, 
       monto, 
-      metodo_pago_id,
-      comprobante_url, 
+      comprobante_url,
+      notas_admin,
       estado_pago
     ) VALUES ($1, $2, $3, $4, $5, 'PENDIENTE')
     RETURNING *
@@ -153,8 +142,8 @@ const registrarPago = async (pedidoId, tipoPago, monto, metodoPagoId, comprobant
     pedidoId, 
     tipoPago, 
     monto, 
-    metodoPagoId,  // ← ID del método de pago
     comprobanteUrl,
+    notasAdmin || null
   ]);
   return rows[0];
 };
@@ -174,6 +163,7 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
       p.direccion_envio,
       p.distancia_km_calculada,
       p.fecha_entrega_estimada,
+      p.metodo_pago_id,                     -- ← ✅ AGREGAR ESTA LÍNEA
       me.nombre AS metodo_entrega_nombre,
       me.tipo AS metodo_entrega_tipo,
       mp.nombre AS metodo_pago_nombre,
@@ -202,7 +192,6 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
             'id', pg.id,
             'tipo_pago', pg.tipo_pago,
             'monto', pg.monto,
-            'metodo_pago_id', pg.metodo_pago_id,
             'comprobante_url', pg.comprobante_url,
             'estado_pago', pg.estado_pago,
             'fecha_pago', pg.fecha_pago,
@@ -222,6 +211,7 @@ const obtenerDetallePedido = async (pedidoId, usuarioId) => {
 };
 
 // ─── OBTENER PEDIDOS DEL USUARIO ──────────────────────────────────
+// ✅ CORREGIDO: AGREGAR p.metodo_pago_id
 const obtenerPedidosUsuario = async (usuarioId) => {
   const query = `
     SELECT 
@@ -234,6 +224,7 @@ const obtenerPedidosUsuario = async (usuarioId) => {
       p.monto_restante,
       p.estado,
       p.direccion_envio,
+      p.metodo_pago_id,                     -- ← ✅ AGREGAR ESTA LÍNEA
       me.nombre AS metodo_entrega_nombre,
       mp.nombre AS metodo_pago_nombre,
       (
@@ -260,6 +251,7 @@ const obtenerPedidosUsuario = async (usuarioId) => {
             'id', pg.id,
             'tipo_pago', pg.tipo_pago,
             'monto', pg.monto,
+            'comprobante_url', pg.comprobante_url,
             'estado_pago', pg.estado_pago,
             'notas_admin', pg.notas_admin,
             'fecha_pago', pg.fecha_pago
@@ -278,9 +270,76 @@ const obtenerPedidosUsuario = async (usuarioId) => {
   return rows;
 };
 
+// ─── ACTUALIZAR ESTADO DEL PEDIDO ──────────────────────────────────
+const actualizarEstadoPedido = async (pedidoId, nuevoEstado) => {
+  const query = `
+    UPDATE ventas.pedidos_clientes 
+    SET estado = $1 
+    WHERE id = $2
+    RETURNING *
+  `;
+  const { rows } = await pool.query(query, [nuevoEstado, pedidoId]);
+  return rows[0];
+};
+
+// ─── CALCULAR MONTO PENDIENTE ──────────────────────────────────────
+const calcularMontoPendiente = async (pedidoId) => {
+  const query = `
+    SELECT 
+      p.total_general,
+      COALESCE(
+        (SELECT SUM(monto) 
+         FROM ventas.pagos_pedidos 
+         WHERE pedido_cliente_id = p.id 
+         AND estado_pago = 'APROBADO'),
+        0
+      ) as total_pagado
+    FROM ventas.pedidos_clientes p
+    WHERE p.id = $1
+  `;
+  const { rows } = await pool.query(query, [pedidoId]);
+  
+  if (rows.length === 0) {
+    throw new Error('Pedido no encontrado');
+  }
+  
+  const totalGeneral = parseFloat(rows[0].total_general);
+  const totalPagado = parseFloat(rows[0].total_pagado);
+  const pendiente = totalGeneral - totalPagado;
+  
+  return pendiente > 0 ? pendiente : 0;
+};
+// ─── REGISTRAR PAGO FINAL ──────────────────────────────────────────
+const registrarPagoFinal = async (pedidoId, tipoPago, monto, comprobanteUrl, notasAdmin) => {
+  const query = `
+    INSERT INTO ventas.pagos_pedidos (
+      pedido_cliente_id,
+      tipo_pago,
+      monto,
+      comprobante_url,
+      notas_admin,
+      estado_pago,
+      fecha_pago
+    ) VALUES ($1, $2, $3, $4, $5, 'PENDIENTE', CURRENT_TIMESTAMP)
+    RETURNING *
+  `;
+  const values = [
+    pedidoId,
+    tipoPago || 'SALDO_FINAL',
+    monto,
+    comprobanteUrl,
+    notasAdmin || null
+  ];
+  const { rows } = await pool.query(query, values);
+  return rows[0];
+};
+
 module.exports = {
   crearPedidoDesdeCarrito,
   registrarPago,
   obtenerDetallePedido,
-  obtenerPedidosUsuario
+  obtenerPedidosUsuario,
+  actualizarEstadoPedido,
+  calcularMontoPendiente,
+  registrarPagoFinal
 };

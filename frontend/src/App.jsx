@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { NotificationProvider } from './context/NotificationContext';
 import { CartProvider } from "./context/CartContext"; // <-- IMPORTANTE
 
 import PublicLayout from "./layouts/PublicLayout";
@@ -38,12 +39,13 @@ import Checkout from './pages/Client/Checkout';
 import UnderConstruction from './pages/Client/UnderConstruction';
 import PagoPedido from './pages/Client/PagoPedido';
 import DetallePedido from './pages/Client/DetallePedido';
+import SubirDiseno from './pages/Client/SubirDiseno';
+import EditorDiseno from './pages/Client/EditorDiseno';
+import VerPrevias from './pages/Client/VerPrevias';
+import Personalizados from './pages/Client/Personalizados';
+import PagoFinal from './pages/Client/PagoFinal';
 
 
-// Dentro del Router, junto a las otras rutas de cliente
-
-
-// Dentro de las rutas protegidas del cliente:
 
 
 // Páginas admin
@@ -96,7 +98,7 @@ function App() {
         </Route>
 
         {/* Rutas cliente */}
-        <Route element={<CartProvider><ClientLayout /></CartProvider>}>
+        <Route element={<CartProvider><NotificationProvider><ClientLayout /></NotificationProvider></CartProvider>}>
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
           <Route path="/cliente/carrito" element={<CarritoCliente/>} />
@@ -106,7 +108,11 @@ function App() {
           <Route path="/cliente/pedido/:id" element={<DetallePedido />} />
           <Route path="/cliente/pedido/:id/pago" element={<PagoPedido />} />
           <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
-
+          <Route path="/cliente/pedido/:id/diseno" element={<SubirDiseno />} />
+          <Route path="/cliente/pedido/:id/editor" element={<EditorDiseno />} />
+          <Route path="/cliente/pedido/:id/previas" element={<VerPrevias />} />
+          <Route path="/cliente/personalizados" element={<Personalizados />} />
+          <Route path="/cliente/pedido/:id/pago-final" element={<PagoFinal />} />
         </Route>
 
         {/* Rutas admin */}

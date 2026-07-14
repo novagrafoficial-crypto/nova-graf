@@ -1,292 +1,306 @@
 /* src/styles/client/Checkout.css */
 
-.checkout-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  min-height: 80vh;
+:root {
+  --teal-deep: #1A6163;
+  --teal-vivid: #35BA99;
+  --gray-warm: #DBDBD3;
+  --gray-text: #4A4A46;
+  --white: #FFFFFF;
+  --border-radius: 10px;
 }
 
-/* ─── HEADER ─────────────────────────────────────────────── */
+.checkout-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
 .checkout-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--gray-warm);
+  padding-bottom: 16px;
 }
 
 .checkout-header h2 {
-  font-size: 2.2rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
+  color: var(--teal-deep);
+  margin: 0 0 4px;
 }
 
 .checkout-header p {
-  font-size: 1.1rem;
-  color: #666;
+  color: var(--gray-text);
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-/* ─── CONTENIDO PRINCIPAL ────────────────────────────────── */
+/* ─── Layout de dos columnas, panel de resumen sticky ─── */
 .checkout-contenido {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 2.5rem;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
   align-items: start;
 }
 
-/* ─── FORMULARIO ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .checkout-contenido {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Formulario ─── */
 .checkout-form {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid #eee;
+  background: var(--white);
+  border: 1px solid var(--gray-warm);
+  border-radius: var(--border-radius);
+  padding: 28px;
 }
 
-.checkout-form .form-group {
-  margin-bottom: 1.8rem;
+.form-group {
+  margin-bottom: 22px;
 }
 
-.checkout-form .form-group label {
+.form-group label {
   display: block;
   font-weight: 600;
-  font-size: 0.95rem;
-  color: #333;
-  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--teal-deep);
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
 }
 
-.checkout-form .form-group select,
-.checkout-form .form-group input,
-.checkout-form .form-group textarea {
+.form-group select,
+.form-group textarea,
+.form-group input[type="text"] {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #fafafa;
-  font-family: inherit;
-}
-
-.checkout-form .form-group select:focus,
-.checkout-form .form-group input:focus,
-.checkout-form .form-group textarea:focus {
-  outline: none;
-  border-color: #4a90d9;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.1);
-}
-
-.checkout-form .form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.checkout-form .metodo-descripcion {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: #888;
-  font-style: italic;
-  padding: 0.5rem;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.checkout-form .form-group small {
-  display: block;
-  margin-top: 0.4rem;
-  font-size: 0.8rem;
-  color: #999;
-}
-
-.error-message {
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
+  padding: 11px 14px;
+  border: 1px solid var(--gray-warm);
+  border-radius: 8px;
   font-size: 0.95rem;
+  color: var(--gray-text);
+  background: var(--white);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.form-group select:focus,
+.form-group textarea:focus,
+.form-group input[type="text"]:focus {
+  outline: none;
+  border-color: var(--teal-vivid);
+  box-shadow: 0 0 0 3px rgba(53, 186, 153, 0.15);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--gray-text);
+}
+
+.entrega-sin-opciones {
+  font-size: 0.9rem;
+  color: var(--gray-text);
+  font-style: italic;
+  margin: 4px 0;
+}
+
+.entrega-option-desc {
+  color: var(--gray-text);
+}
+
+/* ─── Info fija (punto medio / tienda) ─── */
+.direccion-fija {
+  background: rgba(53, 186, 153, 0.06);
+  border: 1px solid rgba(53, 186, 153, 0.25);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.direccion-fija-info p {
+  margin: 0 0 6px;
+  color: var(--gray-text);
+}
+
+.direccion-fija-info strong {
+  color: var(--teal-deep);
+}
+
+.direccion-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--teal-deep);
+}
+
+/* ─── Método de pago: info expandida ─── */
+.metodo-pago-info {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--gray-warm);
+  border-radius: 8px;
+}
+
+.metodo-pago-info .metodo-descripcion {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.instrucciones-pago strong,
+.datos-bancarios strong {
+  display: block;
+  color: var(--teal-deep);
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.datos-bancarios-lista {
+  margin-top: 6px;
+}
+
+.datos-bancarios-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 0.9rem;
+}
+
+.datos-bancarios-fila:last-child {
+  border-bottom: none;
+}
+
+.datos-bancarios-vacio {
+  font-size: 0.85rem;
+  color: var(--gray-text);
+  font-style: italic;
+}
+
+/* ─── Error ─── */
+.error-message {
+  background: #FDECEC;
+  border: 1px solid #F3B6B6;
+  color: #B33A3A;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+/* ─── Botón principal ─── */
 .btn-crear-pedido {
   width: 100%;
-  padding: 1rem;
-  background: #1a1a1a;
-  color: white;
+  padding: 14px;
+  background: var(--teal-deep);
+  color: var(--white);
   border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.15s ease;
 }
 
 .btn-crear-pedido:hover:not(:disabled) {
-  background: #333;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: var(--teal-vivid);
 }
 
 .btn-crear-pedido:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
 
-/* ─── RESUMEN ────────────────────────────────────────────── */
+/* ─── Panel de resumen (sticky) ─── */
 .checkout-resumen {
-  background: #f8f9fa;
-  border-radius: 16px;
-  padding: 1.8rem;
   position: sticky;
-  top: 2rem;
-  border: 1px solid #eee;
+  top: 24px;
+  background: var(--teal-deep);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 26px;
 }
 
 .checkout-resumen h3 {
-  font-size: 1.3rem;
+  margin: 0 0 18px;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
 }
 
 .resumen-items {
-  margin-bottom: 1.5rem;
-  max-height: 300px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
 .resumen-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #eee;
-  font-size: 0.95rem;
-  color: #444;
+  font-size: 0.88rem;
+  padding: 6px 0;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.resumen-item:last-child {
-  border-bottom: none;
-}
-
-.resumen-item span:first-child {
-  flex: 1;
-  margin-right: 1rem;
-}
-
-.resumen-item span:last-child {
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.resumen-totales {
-  border-top: 2px solid #e0e0e0;
-  padding-top: 1.2rem;
-}
-
-.resumen-linea {
+.resumen-totales .resumen-linea {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  font-size: 0.95rem;
-  color: #555;
+  font-size: 0.9rem;
+  padding: 6px 0;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .resumen-linea.total {
-  font-size: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 8px;
+  padding-top: 12px;
   font-weight: 700;
-  color: #1a1a1a;
-  padding-top: 0.8rem;
-  border-top: 2px solid #e0e0e0;
-  margin-top: 0.5rem;
+  font-size: 1.05rem;
+  color: var(--white);
 }
 
 .resumen-linea.anticipo {
-  color: #2563eb;
+  color: var(--teal-vivid);
   font-weight: 600;
-  font-size: 1.05rem;
-  padding-top: 0.5rem;
 }
 
 .resumen-linea.restante {
-  color: #7c3aed;
-  font-weight: 600;
-  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
 }
 
-/* ─── PÁGINA VACÍA ───────────────────────────────────────── */
+/* ─── Loading / vacío ─── */
+.checkout-loading,
 .checkout-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  padding: 80px 24px;
   text-align: center;
-  padding: 2rem;
+  color: var(--gray-text);
 }
 
-.checkout-empty h2 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 1rem;
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-warm);
+  border-top-color: var(--teal-vivid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .checkout-empty button {
-  padding: 0.8rem 2.5rem;
-  background: #1a1a1a;
-  color: white;
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: var(--teal-deep);
+  color: var(--white);
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.checkout-empty button:hover {
-  background: #333;
-  transform: translateY(-2px);
-}
-
-/* ─── RESPONSIVE ──────────────────────────────────────────── */
-@media (max-width: 968px) {
-  .checkout-contenido {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .checkout-resumen {
-    position: static;
-  }
-
-  .checkout-header h2 {
-    font-size: 1.8rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .checkout-wrapper {
-    padding: 1rem;
-  }
-
-  .checkout-form {
-    padding: 1.5rem;
-  }
-
-  .checkout-resumen {
-    padding: 1.2rem;
-  }
-
-  .checkout-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .resumen-linea.total {
-    font-size: 1rem;
-  }
+  font-weight: 600;
 }
