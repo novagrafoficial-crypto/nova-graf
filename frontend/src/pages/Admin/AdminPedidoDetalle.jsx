@@ -24,14 +24,14 @@ export default function AdminPedidoDetalle() {
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState("");
   const [notasRechazo, setNotasRechazo] = useState("");
-  const [previa1, setPrevia1] = useState("");
-  const [previa2, setPrevia2] = useState("");
   const [status, setStatus] = useState(null);
+  const [riesgo, setRiesgo] = useState(null);
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const adminId = storedUser?.id_usuario || storedUser?.id;
 
   useEffect(() => { cargar(); }, [id]);
+  useEffect(() => { cargarRiesgo(); }, [id]);
 
   const cargar = async () => {
     try {
@@ -42,6 +42,16 @@ export default function AdminPedidoDetalle() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarRiesgo = async () => {
+    try {
+      const res = await fetch(`${API}/${id}/riesgo-cancelacion`);
+      const data = await res.json();
+      setRiesgo(data);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -74,44 +84,44 @@ export default function AdminPedidoDetalle() {
     }
   };
 
-    const enviarPrevias = async () => {
-      if (!archivoPrevia1) { setStatus({ tipo: "error", msg: "La previa 1 es requerida" }); return; }
-      setSubiendoPrevias(true);
-      try {
-        const url1 = await subirImagen(archivoPrevia1);
+  const enviarPrevias = async () => {
+    if (!archivoPrevia1) { setStatus({ tipo: "error", msg: "La previa 1 es requerida" }); return; }
+    setSubiendoPrevias(true);
+    try {
+      const url1 = await subirImagen(archivoPrevia1);
+      await fetch(`${API}/previas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pedido_cliente_id: id, numero_previa: 1, imagen_url: url1 }),
+      });
+      if (archivoPrevia2) {
+        const url2 = await subirImagen(archivoPrevia2);
         await fetch(`${API}/previas`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pedido_cliente_id: id, numero_previa: 1, imagen_url: url1 }),
+          body: JSON.stringify({ pedido_cliente_id: id, numero_previa: 2, imagen_url: url2 }),
         });
-        if (archivoPrevia2) {
-          const url2 = await subirImagen(archivoPrevia2);
-          await fetch(`${API}/previas`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pedido_cliente_id: id, numero_previa: 2, imagen_url: url2 }),
-          });
-        }
-        await actualizarEstado("PREVIAS_ENVIADAS");
-        setArchivoPrevia1(null);
-        setArchivoPrevia2(null);
-        setStatus({ tipo: "ok", msg: "Previas enviadas correctamente" });
-      } catch (err) {
-        setStatus({ tipo: "error", msg: err.message });
-      } finally {
-        setSubiendoPrevias(false);
       }
-    };
+      await actualizarEstado("PREVIAS_ENVIADAS");
+      setArchivoPrevia1(null);
+      setArchivoPrevia2(null);
+      setStatus({ tipo: "ok", msg: "Previas enviadas correctamente" });
+    } catch (err) {
+      setStatus({ tipo: "error", msg: err.message });
+    } finally {
+      setSubiendoPrevias(false);
+    }
+  };
 
-    const subirImagen = async (file) => {
-      const { supabase } = await import("../../supabaseClient");
-      const ext = file.name.split(".").pop();
-      const nombre = `previas/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("Previas").upload(nombre, file, { cacheControl: "3600", upsert: false });
-      if (error) throw new Error(`Error al subir imagen: ${error.message}`);
-      const { data } = supabase.storage.from("Previas").getPublicUrl(nombre);
-      return data.publicUrl;
-    };
+  const subirImagen = async (file) => {
+    const { supabase } = await import("../../supabaseClient");
+    const ext = file.name.split(".").pop();
+    const nombre = `previas/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("Previas").upload(nombre, file, { cacheControl: "3600", upsert: false });
+    if (error) throw new Error(`Error al subir imagen: ${error.message}`);
+    const { data } = supabase.storage.from("Previas").getPublicUrl(nombre);
+    return data.publicUrl;
+  };
 
   const enviarMensaje = async () => {
     if (!mensaje.trim()) return;
@@ -151,6 +161,29 @@ export default function AdminPedidoDetalle() {
         </div>
       )}
 
+      {/* 🤖 Predicción ML */}
+      {riesgo && (
+        <div style={{
+          background: riesgo.riesgo === 'ALTO' ? '#FEE2E2' : '#D1FAE5',
+          border: `2px solid ${riesgo.riesgo === 'ALTO' ? '#DC2626' : '#35BA99'}`,
+          borderRadius: 12, padding: '1rem 1.25rem',
+          display: 'flex', alignItems: 'center', gap: '1rem'
+        }}>
+          <span style={{ fontSize: 28 }}>{riesgo.riesgo === 'ALTO' ? '🔴' : '🟢'}</span>
+          <div>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: riesgo.riesgo === 'ALTO' ? '#DC2626' : '#0F6E56' }}>
+              {riesgo.riesgo === 'ALTO' ? 'Alto riesgo de cancelación' : 'Pedido en buen camino'}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#555' }}>
+              {riesgo.riesgo === 'ALTO'
+                ? 'El modelo predice que este pedido podría cancelarse. Se recomienda contactar al cliente.'
+                : 'El modelo predice que este pedido será completado correctamente.'}
+            </p>
+          </div>
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#999' }}>🤖 Predicción ML</span>
+        </div>
+      )}
+
       {/* Info del pedido */}
       <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", padding: "1.25rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
@@ -165,7 +198,6 @@ export default function AdminPedidoDetalle() {
             {pedido.estado?.replace(/_/g, " ")}
           </span>
         </div>
-
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
           <div>
             <p style={{ margin: "0 0 4px", fontSize: "12px", color: "#999" }}>Cliente</p>
@@ -208,18 +240,13 @@ export default function AdminPedidoDetalle() {
           {disenos.map((d) => (
             <div key={d.id} style={{ border: "1px solid #e0f0ee", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{
-                  padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                  background: "#d0eaff", color: "#0a4a7c"
-                }}>
+                <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, background: "#d0eaff", color: "#0a4a7c" }}>
                   {d.tipo_origen}
                 </span>
                 <span style={{ fontSize: "12px", color: "#999" }}>{formatFecha(d.fecha_envio)}</span>
               </div>
               {d.notas_cliente && (
-                <p style={{ margin: "0 0 10px", fontSize: "13px", color: "#555", fontStyle: "italic" }}>
-                  "{d.notas_cliente}"
-                </p>
+                <p style={{ margin: "0 0 10px", fontSize: "13px", color: "#555", fontStyle: "italic" }}>"{d.notas_cliente}"</p>
               )}
               {d.archivo_url && (
                 <a href={d.archivo_url} target="_blank" rel="noreferrer"
@@ -228,9 +255,7 @@ export default function AdminPedidoDetalle() {
                 </a>
               )}
               {d.simulador_json && (
-                <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
-                  Diseño creado con el simulador
-                </p>
+                <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Diseño creado con el simulador</p>
               )}
             </div>
           ))}
@@ -246,7 +271,7 @@ export default function AdminPedidoDetalle() {
           <div key={pago.id} style={{ border: "1px solid #e0f0ee", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <div>
-               <p style={{ margin: 0, fontWeight: 500 }}>{pago.tipo_pago} — {formatMoney(pago.monto)}</p>
+                <p style={{ margin: 0, fontWeight: 500 }}>{pago.tipo_pago} — {formatMoney(pago.monto)}</p>
                 <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>{formatFecha(pago.fecha_pago)}</p>
               </div>
               <span style={{
@@ -302,26 +327,26 @@ export default function AdminPedidoDetalle() {
             ))}
           </div>
         )}
-          {pedido.estado === "EN_REVISION" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div>
-                <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Previa 1 *</label>
-                <input type="file" accept="image/*" onChange={(e) => setArchivoPrevia1(e.target.files[0])}
-                  style={{ padding: "8px", border: "1px solid #d4eeea", borderRadius: "8px", width: "100%", fontSize: "13px" }} />
-                {archivoPrevia1 && <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#35BA99" }}>✓ {archivoPrevia1.name}</p>}
-              </div>
-              <div>
-                <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Previa 2 (opcional)</label>
-                <input type="file" accept="image/*" onChange={(e) => setArchivoPrevia2(e.target.files[0])}
-                  style={{ padding: "8px", border: "1px solid #d4eeea", borderRadius: "8px", width: "100%", fontSize: "13px" }} />
-                {archivoPrevia2 && <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#35BA99" }}>✓ {archivoPrevia2.name}</p>}
-              </div>
-              <button onClick={enviarPrevias} disabled={subiendoPrevias}
-                style={{ padding: "10px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #1A6163, #35BA99)", color: "#fff", cursor: "pointer", fontWeight: 600, opacity: subiendoPrevias ? 0.6 : 1 }}>
-                {subiendoPrevias ? "Subiendo imágenes..." : "Enviar previas"}
-              </button>
+        {pedido.estado === "EN_REVISION" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div>
+              <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Previa 1 *</label>
+              <input type="file" accept="image/*" onChange={(e) => setArchivoPrevia1(e.target.files[0])}
+                style={{ padding: "8px", border: "1px solid #d4eeea", borderRadius: "8px", width: "100%", fontSize: "13px" }} />
+              {archivoPrevia1 && <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#35BA99" }}>✓ {archivoPrevia1.name}</p>}
             </div>
-          )}
+            <div>
+              <label style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "6px" }}>Previa 2 (opcional)</label>
+              <input type="file" accept="image/*" onChange={(e) => setArchivoPrevia2(e.target.files[0])}
+                style={{ padding: "8px", border: "1px solid #d4eeea", borderRadius: "8px", width: "100%", fontSize: "13px" }} />
+              {archivoPrevia2 && <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#35BA99" }}>✓ {archivoPrevia2.name}</p>}
+            </div>
+            <button onClick={enviarPrevias} disabled={subiendoPrevias}
+              style={{ padding: "10px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #1A6163, #35BA99)", color: "#fff", cursor: "pointer", fontWeight: 600, opacity: subiendoPrevias ? 0.6 : 1 }}>
+              {subiendoPrevias ? "Subiendo imágenes..." : "Enviar previas"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Acciones */}

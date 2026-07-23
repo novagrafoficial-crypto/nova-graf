@@ -74,6 +74,9 @@ import AdminInventario from "./pages/Admin/AdminInventario";
 import AdminCatalogo from "./pages/Admin/AdminCatalogo";
 import AdminDatosBancarios from "./pages/Admin/AdminDatosBancarios";
 import AdminMetodosEntrega from "./pages/Admin/AdminMetodosEntrega";
+import AdminReportes from "./pages/Admin/AdminReportes";
+
+
 
 
 
@@ -140,6 +143,7 @@ function App() {
           <Route path="inventario" element={<AdminInventario />} />
           <Route path="datos-bancarios" element={<AdminDatosBancarios />} />
           <Route path="metodos-entrega" element={<AdminMetodosEntrega />} />
+          <Route path="reportes" element={<AdminReportes />} />
         </Route>
 
       </Routes>

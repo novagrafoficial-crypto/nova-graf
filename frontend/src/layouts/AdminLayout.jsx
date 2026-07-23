@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { to: "inventario", icon: "📦", label: "Inventario" },
   { to: "datos-bancarios", icon: "🏦", label: "Datos Bancarios" },
   { to: "metodos-entrega", icon: "🚚", label: "Métodos de Entrega" },
+  { to: "reportes", icon: "📊", label: "Reportes" },
 ];
 
 function AdminLayout() {
@@ -29,6 +30,18 @@ function AdminLayout() {
 
   const [notificaciones, setNotificaciones] = useState([]);
   const [mostrarNotifs, setMostrarNotifs] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
+
+  const [empresa, setEmpresa] = useState({ nombre_empresa: "", logo_url: "" });
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/empresa`)
+      .then((res) => res.json())
+      .then((json) => { if (json.success) setEmpresa(json.data); })
+      .catch((err) => console.error("Error al cargar logo:", err));
+  }, []);
 
   useEffect(() => {
     cargarNotificaciones();
@@ -53,18 +66,20 @@ function AdminLayout() {
 
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
+      <div className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`} onClick={() => setSidebarOpen(false)} />
 
-        <div className="sidebar-welcome">
-          <div className="welcome-avatar">
-            {adminName.charAt(0).toUpperCase()}
-          </div>
-          <div className="welcome-text">
-            <p className="welcome-name">{adminName}</p>
-          </div>
+      <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-brand">
+          {empresa.logo_url && (
+            <img
+              src={empresa.logo_url}
+              alt={empresa.nombre_empresa || "Logo"}
+              onError={(e) => { e.target.style.display = "none"; }}
+            />
+          )}
+          <span className="sidebar-brand-text">{empresa.nombre_empresa || "Nova Graf"}</span>
         </div>
 
-        <div className="sidebar-divider" />
         <p className="sidebar-section-label">Módulos</p>
 
         <nav className="sidebar-nav">
@@ -85,51 +100,53 @@ function AdminLayout() {
       </aside>
 
       <main className="admin-content">
-        <div className="content-banner">
-          <div className="banner-text">
-            <button onClick={() => navigate(-1)} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "rgba(255,255,255,0.8)", fontSize: "13px",
-              display: "flex", alignItems: "center", gap: "6px",
-              padding: 0, marginBottom: "8px"
-            }}>
+        <header className="admin-header">
+          <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Abrir menú">
+            ☰
+          </button>
+
+          <div className="admin-header-titles">
+            <button className="admin-header-back" onClick={() => navigate(-1)}>
               ← Regresar
             </button>
-            <h2 className="banner-title">{sectionTitle}</h2>
-            <p className="banner-subtitle">Panel de Administración</p>
+            <h2 className="admin-header-title">{sectionTitle}</h2>
+            <p className="admin-header-subtitle">Panel de Administración</p>
           </div>
 
-          <div className="notif-wrapper" style={{ marginLeft: "auto", zIndex: 10 }}>
-            <button onClick={() => setMostrarNotifs(!mostrarNotifs)} className="notif-btn">
-              🔔
-              {notificaciones.length > 0 && (
-                <span className="notif-badge">{notificaciones.length}</span>
-              )}
-            </button>
-            {mostrarNotifs && (
-              <div className="notif-dropdown">
-                <div className="notif-header">
-                  <p>Notificaciones ({notificaciones.length})</p>
-                </div>
-                {notificaciones.length === 0 ? (
-                  <p className="notif-empty">Sin notificaciones</p>
-                ) : notificaciones.map((n) => (
-                  <div key={n.id} className="notif-item"
-                    onClick={() => { marcarLeida(n.id); setMostrarNotifs(false); navigate(`/admin/pedidos/${n.pedido_id}`); }}
-                  >
-                    <p className="notif-titulo">{n.titulo}</p>
-                    <p className="notif-mensaje">{n.mensaje}</p>
-                    <p className="notif-fecha">
-                      {new Date(n.creado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                    </p>
+          <div className="admin-header-actions">
+            <div className="notif-wrapper">
+              <button onClick={() => setMostrarNotifs(!mostrarNotifs)} className="notif-btn" aria-label="Notificaciones">
+                🔔
+                {notificaciones.length > 0 && <span className="notif-badge">{notificaciones.length}</span>}
+              </button>
+              {mostrarNotifs && (
+                <div className="notif-dropdown">
+                  <div className="notif-header">
+                    <p>Notificaciones ({notificaciones.length})</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  {notificaciones.length === 0 ? (
+                    <p className="notif-empty">Sin notificaciones</p>
+                  ) : notificaciones.map((n) => (
+                    <div key={n.id} className="notif-item"
+                      onClick={() => { marcarLeida(n.id); setMostrarNotifs(false); navigate(`/admin/pedidos/${n.pedido_id}`); }}
+                    >
+                      <p className="notif-titulo">{n.titulo}</p>
+                      <p className="notif-mensaje">{n.mensaje}</p>
+                      <p className="notif-fecha">
+                        {new Date(n.creado_en).toLocaleDateString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="banner-decoration" aria-hidden="true" />
-        </div>
+            <div className="admin-user-chip">
+              <div className="admin-user-avatar">{adminName.charAt(0).toUpperCase()}</div>
+              <span className="admin-user-name">{adminName}</span>
+            </div>
+          </div>
+        </header>
 
         <div className="content-inner">
           <Outlet />

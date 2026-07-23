@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/admin/adminPedidos.css";
 
 const API = `${import.meta.env.VITE_API_URL}/api/admin/pedidos`;
 
 const ESTADOS = [
-  "PENDIENTE_VERIFICACION",
-  "EN_DISENO",
-  "EN_REVISION",
-  "PREVIAS_ENVIADAS",
-  "EN_PRODUCCION",
-  "PENDIENTE_PAGO_FINAL",
-  "ENVIADO",
-  "CANCELADO",
+  "PENDIENTE_VERIFICACION","EN_DISENO","EN_REVISION","PREVIAS_ENVIADAS",
+  "EN_PRODUCCION","PENDIENTE_PAGO_FINAL","ENVIADO","CANCELADO",
 ];
 
 const COLORES = {
@@ -30,6 +25,7 @@ export default function AdminPedidos() {
   const [filtro, setFiltro] = useState("TODOS");
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
+  const [clienteAbierto, setClienteAbierto] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => { cargar(); }, []);
@@ -47,12 +43,28 @@ export default function AdminPedidos() {
     }
   };
 
-  const pedidosFiltrados = pedidos.filter((p) => {
-    const coincideFiltro = filtro === "TODOS" || p.estado === filtro;
+  // Agrupar pedidos por cliente
+  const agrupadosPorCliente = pedidos.reduce((acc, p) => {
+    const key = p.cliente_correo;
+    if (!acc[key]) {
+      acc[key] = {
+        nombre: p.cliente_nombre,
+        correo: p.cliente_correo,
+        pedidos: [],
+      };
+    }
+    acc[key].pedidos.push(p);
+    return acc;
+  }, {});
+
+  // Filtrar clientes según búsqueda y filtro de estado
+  const clientesFiltrados = Object.values(agrupadosPorCliente).filter((c) => {
     const coincideBusqueda =
-      p.cliente_nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      String(p.id).includes(busqueda);
-    return coincideFiltro && coincideBusqueda;
+      c.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.correo?.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideFiltro =
+      filtro === "TODOS" || c.pedidos.some((p) => p.estado === filtro);
+    return coincideBusqueda && coincideFiltro;
   });
 
   const formatFecha = (f) =>
@@ -63,19 +75,18 @@ export default function AdminPedidos() {
 
   return (
     <div style={{ padding: "1.5rem" }}>
-
       {/* Encabezado */}
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ fontSize: "22px", fontWeight: 500, color: "#1A6163", margin: "0 0 4px" }}>
           Gestión de Pedidos
         </h1>
         <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>
-          {pedidos.length} pedidos en total
+          {pedidos.length} pedidos · {clientesFiltrados.length} clientes
         </p>
       </div>
 
       {/* Filtros */}
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "1rem" }}>
+      <div className="pedidos-filtros" style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "1rem" }}>
         <button
           onClick={() => setFiltro("TODOS")}
           style={{
@@ -108,7 +119,8 @@ export default function AdminPedidos() {
       {/* Buscador */}
       <input
         type="text"
-        placeholder="Buscar por cliente o # de pedido..."
+        className="pedidos-search"
+        placeholder="Buscar por cliente o correo..."
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
         style={{
@@ -118,64 +130,107 @@ export default function AdminPedidos() {
         }}
       />
 
-      {/* Tabla */}
+      {/* Lista agrupada por cliente */}
       {loading ? (
         <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>Cargando pedidos...</p>
-      ) : pedidosFiltrados.length === 0 ? (
+      ) : clientesFiltrados.length === 0 ? (
         <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>No hay pedidos que mostrar.</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {pedidosFiltrados.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => navigate(`/admin/pedidos/${p.id}`)}
-              style={{
-                background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px",
-                padding: "1rem 1.25rem", display: "flex", alignItems: "center",
-                gap: "1rem", cursor: "pointer", transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = "#35BA99"}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = "#d4eeea"}
-            >
-              {/* ID */}
-              <div style={{ minWidth: "48px", textAlign: "center" }}>
-                <span style={{ fontSize: "11px", color: "#999" }}>#</span>
-                <p style={{ margin: 0, fontWeight: 600, color: "#1A6163", fontSize: "16px" }}>{p.id}</p>
+          {clientesFiltrados.map((c) => {
+            const abierto = clienteAbierto === c.correo;
+            const pedidosFiltrados = filtro === "TODOS"
+              ? c.pedidos
+              : c.pedidos.filter((p) => p.estado === filtro);
+            const totalGastado = c.pedidos.reduce((acc, p) => acc + Number(p.total_general), 0);
+
+            return (
+              <div key={c.correo} className="cliente-card" style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", overflow: "hidden" }}>
+                {/* Fila del cliente */}
+                <div
+                  className="cliente-row"
+                  onClick={() => setClienteAbierto(abierto ? null : c.correo)}
+                  style={{
+                    padding: "1rem 1.25rem", display: "flex", alignItems: "center",
+                    gap: "1rem", cursor: "pointer", transition: "background 0.15s",
+                    background: abierto ? "#f0fafa" : "#fff",
+                  }}
+                >
+                  {/* Avatar */}
+                  <div style={{
+                    width: 40, height: 40, borderRadius: "50%",
+                    background: "#E1F5EE", display: "flex", alignItems: "center",
+                    justifyContent: "center", fontSize: "16px", fontWeight: 700,
+                    color: "#0F6E56", flexShrink: 0,
+                  }}>
+                    {c.nombre?.charAt(0).toUpperCase()}
+                  </div>
+
+                  {/* Info cliente */}
+                  <div className="cliente-info" style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: "14px" }}>{c.nombre}</p>
+                    <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>{c.correo}</p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="cliente-stats" style={{ display: "flex", gap: "1.5rem" }}>
+                    <div style={{ textAlign: "right", minWidth: "80px" }}>
+                      <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Pedidos</p>
+                      <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#1A6163" }}>{c.pedidos.length}</p>
+                    </div>
+                    <div style={{ textAlign: "right", minWidth: "100px" }}>
+                      <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Total gastado</p>
+                      <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#1A6163" }}>{formatMoney(totalGastado)}</p>
+                    </div>
+                  </div>
+
+                  {/* Flecha */}
+                  <span style={{ color: "#35BA99", fontSize: "18px", transform: abierto ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
+                </div>
+
+                {/* Pedidos del cliente */}
+                {abierto && (
+                  <div style={{ borderTop: "1px solid #e0f0ee" }}>
+                    {pedidosFiltrados.map((p) => (
+                      <div
+                        key={p.id}
+                        className="pedido-row"
+                        onClick={() => navigate(`/admin/pedidos/${p.id}`)}
+                        style={{
+                          padding: "0.75rem 1.25rem 0.75rem 4rem",
+                          display: "flex", alignItems: "center", gap: "1rem",
+                          cursor: "pointer", borderBottom: "1px solid #f0f0f0",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "#f4fdfb"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                      >
+                        <div style={{ minWidth: "40px" }}>
+                          <span style={{ fontSize: "11px", color: "#999" }}>#</span>
+                          <span style={{ fontWeight: 600, color: "#1A6163", fontSize: "14px" }}>{p.id}</span>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>{formatFecha(p.fecha_pedido)}</p>
+                        </div>
+                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "#1A6163" }}>
+                          {formatMoney(p.total_general)}
+                        </p>
+                        <span style={{
+                          padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                          background: COLORES[p.estado]?.bg || "#f0f0f0",
+                          color: COLORES[p.estado]?.color || "#333",
+                          whiteSpace: "nowrap",
+                        }}>
+                          {p.estado?.replace(/_/g, " ")}
+                        </span>
+                        <span style={{ color: "#35BA99", fontSize: "16px" }}>›</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              <div style={{ width: "1px", height: "40px", background: "#e0f0ee" }} />
-
-              {/* Cliente */}
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontWeight: 500, fontSize: "14px" }}>{p.cliente_nombre}</p>
-                <span style={{ fontSize: "12px", color: "#999" }}>{p.cliente_correo}</span>
-              </div>
-
-              {/* Fecha */}
-              <div style={{ textAlign: "right", minWidth: "90px" }}>
-                <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Fecha</p>
-                <p style={{ margin: 0, fontSize: "13px", fontWeight: 500 }}>{formatFecha(p.fecha_pedido)}</p>
-              </div>
-
-              {/* Total */}
-              <div style={{ textAlign: "right", minWidth: "100px" }}>
-                <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Total</p>
-                <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#1A6163" }}>{formatMoney(p.total_general)}</p>
-              </div>
-
-              {/* Estado */}
-              <span style={{
-                padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                background: COLORES[p.estado]?.bg || "#f0f0f0",
-                color: COLORES[p.estado]?.color || "#333",
-                whiteSpace: "nowrap",
-              }}>
-                {p.estado?.replace(/_/g, " ")}
-              </span>
-
-              <span style={{ color: "#35BA99", fontSize: "18px" }}>›</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
