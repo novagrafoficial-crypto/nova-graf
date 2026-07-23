@@ -122,7 +122,7 @@ function App() {
           <Route path="/cliente/personalizados" element={<Personalizados />} />
           <Route path="/cliente/pedido/:id/pago-final" element={<PagoFinal />} />
           <Route path="/cliente/ofertas" element={<OfertasPage />} />
-            <Route path="/cliente/compras" element={<MisCompras />} />
+          <Route path="/cliente/compras" element={<MisCompras />} />
         </Route>
 
         {/* Rutas admin */}
