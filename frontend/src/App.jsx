@@ -29,7 +29,7 @@ import Contactos from './pages/public/Contactos';
 
 
 
-// Páginas cliente con C mayuscula
+// Páginas volver a subir cambios 
 import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
