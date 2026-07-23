@@ -151,12 +151,6 @@ export default function ClienteHome() {
             </button>
           </div>
         </div>
-
-        {/* Tarjeta flotante decorativa */}
-        <div className="home-hero__scroll-hint">
-          <span>scroll</span>
-          <div className="home-hero__scroll-line" />
-        </div>
       </section>
 
       {/* ══ CATEGORÍAS ════════════════════════════════════════ */}
@@ -228,7 +222,6 @@ export default function ClienteHome() {
         </div>
         <div className="home-banner__body">
           <div className="home-banner__left">
-            <span className="home-banner__label">🖨️ Personalización</span>
             <h2>¿Tienes una idea<br />en mente?</h2>
             <p>Elige un producto, sube tu diseño o pídenos uno desde cero. Nuestro equipo lo hace realidad.</p>
             <button className="home-cta home-cta--white"

@@ -44,7 +44,8 @@ import EditorDiseno from './pages/Client/EditorDiseno';
 import VerPrevias from './pages/Client/VerPrevias';
 import Personalizados from './pages/Client/Personalizados';
 import PagoFinal from './pages/Client/PagoFinal';
-
+import OfertasPage from './pages/client/OfertasPage';
+import MisCompras from './components/client/MisCompras';
 
 
 
@@ -120,6 +121,8 @@ function App() {
           <Route path="/cliente/pedido/:id/previas" element={<VerPrevias />} />
           <Route path="/cliente/personalizados" element={<Personalizados />} />
           <Route path="/cliente/pedido/:id/pago-final" element={<PagoFinal />} />
+          <Route path="/cliente/ofertas" element={<OfertasPage />} />
+            <Route path="/cliente/compras" element={<MisCompras />} />
         </Route>
 
         {/* Rutas admin */}

@@ -8,33 +8,11 @@ import '../../styles/client/Checkout.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const normalizarDatosBancarios = (data) => {
-  if (!data) return null;
-  let valor = data;
-  if (typeof valor === 'string') {
-    try { valor = JSON.parse(valor); } catch { return null; }
-  }
-  if (Array.isArray(valor)) {
-    valor = valor[0];
-    if (typeof valor === 'string') {
-      try { valor = JSON.parse(valor); } catch { return null; }
-    }
-  }
-  if (!valor || typeof valor !== 'object') return null;
-  return valor;
-};
-
-const formatearEtiqueta = (clave) => {
-  const especiales = { clabe: 'CLABE', rfc: 'RFC' };
-  if (especiales[clave.toLowerCase()]) return especiales[clave.toLowerCase()];
-  return clave.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-};
-
 // ✅ Catálogo de categorías de entrega (una sola fuente de verdad)
 const CATEGORIAS_ENTREGA = [
-  { key: 'TIENDA', label: '🏪 Recoger en tienda', tipoInterno: 'RECOGIDA_FISICA' },
-  { key: 'PUNTO_MEDIO', label: '📍 Punto medio de encuentro', tipoInterno: 'PUNTO_MEDIO' },
-  { key: 'ENVIO_LOCAL', label: '🚚 Envío a domicilio', tipoInterno: 'ENVIO_LOCAL' }
+  { key: 'TIENDA', label: 'Recoger en tienda', tipoInterno: 'RECOGIDA_FISICA' },
+  { key: 'PUNTO_MEDIO', label: 'Punto medio de encuentro', tipoInterno: 'PUNTO_MEDIO' },
+  { key: 'ENVIO_LOCAL', label: 'Envío a domicilio', tipoInterno: 'ENVIO_LOCAL' }
 ];
 
 const Checkout = () => {
@@ -49,7 +27,6 @@ const Checkout = () => {
   const [colonias, setColonias] = useState([]);
   const [metodosPago, setMetodosPago] = useState([]);
 
-  // ✅ NUEVO: categoría de entrega elegida en el paso 1 ('' = nada elegido aún)
   const [categoriaEntrega, setCategoriaEntrega] = useState('');
 
   const [formData, setFormData] = useState({
@@ -131,7 +108,6 @@ const Checkout = () => {
 
   const metodoSeleccionado = getMetodoSeleccionado();
 
-  // ✅ Lista de opciones específicas según la categoría elegida en el paso 1
   const opcionesPorCategoria = {
     TIENDA: tiendasFisicas,
     PUNTO_MEDIO: puntosMedios,
@@ -139,7 +115,6 @@ const Checkout = () => {
   };
   const opcionesActuales = opcionesPorCategoria[categoriaEntrega] || [];
 
-  // ✅ Solo mostrar categorías que realmente tengan opciones disponibles
   const categoriasDisponibles = CATEGORIAS_ENTREGA.filter(cat => {
     if (cat.key === 'TIENDA') return tiendasFisicas.length > 0;
     if (cat.key === 'PUNTO_MEDIO') return puntosMedios.length > 0;
@@ -147,7 +122,6 @@ const Checkout = () => {
     return false;
   });
 
-  // ✅ Cambiar de categoría reinicia la opción específica y la dirección
   const handleCategoriaChange = (key) => {
     setCategoriaEntrega(key);
     setFormData(prev => ({
@@ -173,7 +147,6 @@ const Checkout = () => {
   const metodoPagoSeleccionado = metodosPago.find(
     m => m.id === parseInt(formData.metodo_pago_id)
   );
-  const datosBancarios = normalizarDatosBancarios(metodoPagoSeleccionado?.datos_bancarios);
 
   // ─── DETERMINAR TIPO DE ENTREGA ──────────────────────────────
   const esEnvioLocal = metodoSeleccionado?.tipo === 'ENVIO_LOCAL';
@@ -191,20 +164,20 @@ const Checkout = () => {
       const token = getToken();
 
       if (!categoriaEntrega) {
-        setError('⚠️ Elige primero cómo quieres recibir tu pedido');
+        setError('Elige primero cómo quieres recibir tu pedido');
         setLoading(false);
         return;
       }
 
       if (!formData.metodo_entrega_id) {
-        setError('⚠️ Selecciona una opción de entrega');
+        setError('Selecciona una opción de entrega');
         setLoading(false);
         return;
       }
 
       if (esEnvioLocal) {
         if (!formData.direccion_envio || formData.direccion_envio.trim() === '') {
-          setError('⚠️ La dirección de envío es requerida para envío a domicilio');
+          setError('La dirección de envío es requerida para envío a domicilio');
           setLoading(false);
           const direccionInput = document.getElementById('direccion-envio');
           if (direccionInput) {
@@ -215,7 +188,7 @@ const Checkout = () => {
         }
 
         if (formData.direccion_envio.trim().length < 5) {
-          setError('⚠️ La dirección debe ser más específica (mínimo 5 caracteres)');
+          setError('La dirección debe ser más específica (mínimo 5 caracteres)');
           setLoading(false);
           return;
         }
@@ -270,17 +243,20 @@ const Checkout = () => {
   return (
     <div className="checkout-wrapper">
       <div className="checkout-header">
-        <h2>Checkout</h2>
-        <p>Revisa tu pedido y elige método de entrega y pago</p>
+        <h2>Finalizar compra</h2>
+        <p>Elige cómo recibir tu pedido y con qué método vas a pagar</p>
       </div>
 
       <div className="checkout-contenido">
         <div className="checkout-form">
           <form onSubmit={handleSubmit}>
 
-            {/* ─── PASO 1: CATEGORÍA DE ENTREGA (combo) ───────── */}
+            {/* ─── PASO 1: CATEGORÍA DE ENTREGA ───────── */}
             <div className="form-group">
-              <label htmlFor="categoria-entrega">¿Cómo quieres recibir tu pedido? *</label>
+              <label htmlFor="categoria-entrega">
+                <span className="form-step">1</span>
+                ¿Cómo quieres recibir tu pedido?
+              </label>
               <select
                 id="categoria-entrega"
                 value={categoriaEntrega}
@@ -296,10 +272,13 @@ const Checkout = () => {
               </select>
             </div>
 
-            {/* ─── PASO 2: OPCIÓN ESPECÍFICA (combo) ──────────── */}
+            {/* ─── PASO 2: OPCIÓN ESPECÍFICA ──────────── */}
             {categoriaEntrega && (
               <div className="form-group">
-                <label htmlFor="metodo-entrega">Selecciona una opción *</label>
+                <label htmlFor="metodo-entrega">
+                  <span className="form-step">2</span>
+                  Selecciona una opción
+                </label>
                 {opcionesActuales.length === 0 ? (
                   <p className="entrega-sin-opciones">
                     No hay opciones disponibles para esta categoría por el momento.
@@ -330,19 +309,19 @@ const Checkout = () => {
               </div>
             )}
 
-            {/* ─── DIRECCIÓN (solo para ENVIO_LOCAL, tras elegir colonia) ── */}
+            {/* ─── DIRECCIÓN (solo para ENVIO_LOCAL) ── */}
             {requiereDireccion && (
               <div className="form-group">
-                <label>Dirección de envío *</label>
+                <label>Dirección de envío</label>
                 <textarea
                   id="direccion-envio"
                   value={formData.direccion_envio}
                   onChange={(e) => setFormData({ ...formData, direccion_envio: e.target.value })}
                   onBlur={(e) => {
                     if (esEnvioLocal && !e.target.value.trim()) {
-                      setError('⚠️ La dirección de envío es requerida');
+                      setError('La dirección de envío es requerida');
                     } else if (esEnvioLocal && e.target.value.trim().length < 5) {
-                      setError('⚠️ La dirección debe ser más específica');
+                      setError('La dirección debe ser más específica');
                     } else {
                       setError(null);
                     }
@@ -355,27 +334,30 @@ const Checkout = () => {
               </div>
             )}
 
-            {/* ─── PUNTO MEDIO / TIENDA: mostrar información ── */}
+            {/* ─── PUNTO MEDIO / TIENDA: información fija ── */}
             {(esPuntoMedio || esTiendaFisica) && metodoSeleccionado && (
               <div className="form-group direccion-fija">
-                <label>📍 {esPuntoMedio ? 'Punto de encuentro' : 'Dirección de recogida'}</label>
+                <label>{esPuntoMedio ? 'Punto de encuentro' : 'Dirección de recogida'}</label>
                 <div className="direccion-fija-info">
-                  <p><strong>{metodoSeleccionado.nombre}</strong></p>
+                  <p className="direccion-fija-nombre">{metodoSeleccionado.nombre}</p>
                   {metodoSeleccionado.descripcion && (
                     <p className="direccion-descripcion">{metodoSeleccionado.descripcion}</p>
                   )}
                   <small className="direccion-hint">
                     {esPuntoMedio
-                      ? '📌 Este es el punto de encuentro acordado.'
-                      : '🏪 Puedes recoger tu pedido en nuestra tienda.'}
+                      ? 'Este es el punto de encuentro acordado.'
+                      : 'Puedes recoger tu pedido en nuestra tienda.'}
                   </small>
                 </div>
               </div>
             )}
 
-            {/* ─── MÉTODO DE PAGO (se elige una sola vez, aquí) ── */}
+            {/* ─── PASO 3: MÉTODO DE PAGO ── */}
             <div className="form-group">
-              <label>Método de pago *</label>
+              <label>
+                <span className="form-step">3</span>
+                Método de pago
+              </label>
               <select
                 value={formData.metodo_pago_id}
                 onChange={(e) => setFormData({ ...formData, metodo_pago_id: e.target.value })}
@@ -384,45 +366,25 @@ const Checkout = () => {
                 <option value="">Selecciona un método</option>
                 {metodosPago.map(m => (
                   <option key={m.id} value={m.id}>
-                    {m.nombre} {m.requiere_comprobante ? '📎 (requiere comprobante)' : '✅ (pago directo)'}
+                    {m.nombre} {m.requiere_comprobante ? '(requiere comprobante)' : '(pago directo)'}
                   </option>
                 ))}
               </select>
 
+              {/* Solo una nota breve — las instrucciones y datos bancarios
+                  completos se muestran hasta la pantalla de pago, después
+                  de crear el pedido, para no repetir la misma información
+                  dos veces. */}
               {metodoPagoSeleccionado && (
                 <div className="metodo-pago-info">
                   {metodoPagoSeleccionado.descripcion && (
-                    <small className="metodo-descripcion">
-                      {metodoPagoSeleccionado.descripcion}
-                    </small>
+                    <p className="metodo-descripcion">{metodoPagoSeleccionado.descripcion}</p>
                   )}
-
-                  {metodoPagoSeleccionado.instrucciones && (
-                    <div className="instrucciones-pago">
-                      <strong>📌 Instrucciones</strong>
-                      <p>{metodoPagoSeleccionado.instrucciones}</p>
-                    </div>
-                  )}
-
-                  {metodoPagoSeleccionado.datos_bancarios && (
-                    <div className="datos-bancarios">
-                      <strong>🏦 Datos bancarios</strong>
-                      {datosBancarios ? (
-                        <div className="datos-bancarios-lista">
-                          {Object.entries(datosBancarios).map(([clave, valor]) => (
-                            <div className="datos-bancarios-fila" key={clave}>
-                              <span>{formatearEtiqueta(clave)}</span>
-                              <span>{String(valor)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="datos-bancarios-vacio">
-                          No se pudieron leer los datos bancarios de este método.
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <p className="metodo-pago-nota">
+                    {metodoPagoSeleccionado.requiere_comprobante
+                      ? 'Verás las instrucciones y datos de pago al confirmar tu pedido, en el siguiente paso.'
+                      : 'Este método se liquida directamente; los detalles se muestran al confirmar tu pedido.'}
+                  </p>
                 </div>
               )}
             </div>
@@ -430,7 +392,7 @@ const Checkout = () => {
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="btn-crear-pedido" disabled={loading}>
-              {loading ? 'Creando pedido...' : 'Crear pedido'}
+              {loading ? 'Creando pedido...' : 'Confirmar y crear pedido'}
             </button>
           </form>
         </div>
@@ -463,7 +425,7 @@ const Checkout = () => {
               <span>${formatPrice(totalGeneral)}</span>
             </div>
             <div className="resumen-linea anticipo">
-              <span>💰 Anticipo (50%)</span>
+              <span>Anticipo (50%)</span>
               <span>${formatPrice(montoAnticipo)}</span>
             </div>
             <div className="resumen-linea restante">
