@@ -2,7 +2,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export const ofertaService = {
-  // Obtener todas las ofertas
+
   async getOfertas() {
     try {
       const token = localStorage.getItem('token');
@@ -26,7 +26,7 @@ export const ofertaService = {
     }
   },
 
-  // Obtener detalle de una oferta
+
   async getOfertaDetalle(id) {
     try {
       const token = localStorage.getItem('token');
