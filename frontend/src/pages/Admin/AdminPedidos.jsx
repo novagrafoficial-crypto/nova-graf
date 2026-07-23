@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/admin/AdminPedidos.css";
+import "../../styles/admin/adminPedidos.css";
 
 const API = `${import.meta.env.VITE_API_URL}/api/admin/pedidos`;
 
