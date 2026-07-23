@@ -5,7 +5,7 @@ const API_CLUSTER = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/
 
 const SEGMENTO_STYLE = {
   "VIP":      { bg: "#D1FAE5", color: "#0F6E56", emoji: "⭐" },
-  "Ocasional":{ bg: "#DBEAFE", color: "#1D4ED8", emoji: "📦" },
+  "Ocasional":{ bg: "#e0f5e0", color: "#1A6163", emoji: "📦" },
   "Inactivo": { bg: "#F3F4F6", color: "#6B7280", emoji: "💤" },
 };
 
@@ -102,9 +102,10 @@ export default function AdminUsuarios() {
             style={{
               background: filtroSegmento === seg ? style.bg : "#fff",
               border: `1.5px solid ${filtroSegmento === seg ? style.color : "#d4eeea"}`,
-              borderRadius: "12px", padding: "1rem", cursor: "pointer",
+              borderRadius: "20px", padding: "1.1rem 1.3rem", cursor: "pointer",
               display: "flex", alignItems: "center", gap: "10px",
-              transition: "all 0.15s"
+              boxShadow: "0 2px 10px rgba(26, 97, 99, 0.07)",
+              transition: "all 0.2s"
             }}
           >
             <span style={{ fontSize: 24 }}>{style.emoji}</span>
@@ -131,12 +132,13 @@ export default function AdminUsuarios() {
       {loading ? (
         <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>Cargando usuarios...</p>
       ) : (
-        <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", overflow: "hidden" }}>
+        <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "20px", overflow: "hidden", boxShadow: "0 2px 10px rgba(26, 97, 99, 0.07)" }}>
+          <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
             <thead>
               <tr style={{ background: "#1A6163" }}>
                 {["ID", "Nombre", "Usuario", "Correo", "Rol", "Segmento ML", "Estado", "Acciones"].map(h => (
-                  <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "#fff", fontWeight: 600, fontSize: "12px" }}>{h}</th>
+                  <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "#fff", fontWeight: 600, fontSize: "12px", borderBottom: "2px solid #35BA99" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -169,8 +171,8 @@ export default function AdminUsuarios() {
                     <td style={{ padding: "12px 14px" }}>
                       <span style={{
                         padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                        background: u.rol === "administrador" ? "#1A6163" : "#d0eaff",
-                        color: u.rol === "administrador" ? "#fff" : "#0a4a7c",
+                        background: u.rol === "administrador" ? "#1A6163" : "rgba(53, 186, 153, 0.14)",
+                        color: u.rol === "administrador" ? "#fff" : "#1c7360",
                       }}>
                         {u.rol}
                       </span>
@@ -200,7 +202,8 @@ export default function AdminUsuarios() {
                       <div style={{ display: "flex", gap: "6px" }}>
                         <button onClick={() => cambiarRol(u.id_usuario, u.rol)} style={{
                           padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #35BA99",
-                          background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "11px", fontWeight: 600
+                          background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "11px", fontWeight: 600,
+                          transition: "background 0.15s"
                         }}>
                           {u.rol === "administrador" ? "→ Cliente" : "→ Admin"}
                         </button>
@@ -218,6 +221,7 @@ export default function AdminUsuarios() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
