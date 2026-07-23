@@ -29,14 +29,13 @@ import Contactos from './pages/public/Contactos';
 
 
 
-// Páginas cliente
+// Páginas volver a subir cambios 
 import ClienteHome from "./pages/Client/ClienteHome";
 import ClientProfile from "./pages/Client/ClientProfile";
 import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
 import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
-import UnderConstruction from './pages/Client/UnderConstruction';
 import PagoPedido from './pages/Client/PagoPedido';
 import DetallePedido from './pages/Client/DetallePedido';
 import SubirDiseno from './pages/Client/SubirDiseno';
@@ -44,7 +43,8 @@ import EditorDiseno from './pages/Client/EditorDiseno';
 import VerPrevias from './pages/Client/VerPrevias';
 import Personalizados from './pages/Client/Personalizados';
 import PagoFinal from './pages/Client/PagoFinal';
-
+import OfertasPage from './pages/Client/OfertasPage';
+import MisCompras from './components/client/MisCompras';
 
 
 
@@ -117,12 +117,13 @@ function App() {
           <Route path="/cliente/checkout" element={<Checkout />} />
           <Route path="/cliente/pedido/:id" element={<DetallePedido />} />
           <Route path="/cliente/pedido/:id/pago" element={<PagoPedido />} />
-          <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
           <Route path="/cliente/pedido/:id/diseno" element={<SubirDiseno />} />
           <Route path="/cliente/pedido/:id/editor" element={<EditorDiseno />} />
           <Route path="/cliente/pedido/:id/previas" element={<VerPrevias />} />
           <Route path="/cliente/personalizados" element={<Personalizados />} />
           <Route path="/cliente/pedido/:id/pago-final" element={<PagoFinal />} />
+          <Route path="/cliente/ofertas" element={<OfertasPage />} />
+          <Route path="/cliente/compras" element={<MisCompras />} />
         </Route>
 
         {/* Rutas admin */}

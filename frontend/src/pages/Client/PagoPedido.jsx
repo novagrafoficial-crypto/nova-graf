@@ -56,7 +56,7 @@ const PagoPedido = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [notas, setNotas] = useState('');
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(null);
-  const [metodosPago, setMetodosPago] = useState([]); // ✅ GUARDAR CATÁLOGO
+  const [metodosPago, setMetodosPago] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,27 +72,21 @@ const PagoPedido = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPedido(pedidoRes.data);
-        console.log('📦 Pedido:', pedidoRes.data);
 
-        // 2. ✅ OBTENER CATÁLOGO DE MÉTODOS DE PAGO
+        // 2. Obtener catálogo de métodos de pago
         const pagoRes = await axios.get(`${API_URL}/api/client/checkout/metodos-pago`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('💳 Catálogo métodos de pago:', pagoRes.data);
         setMetodosPago(pagoRes.data || []);
 
-        // 3. ✅ BUSCAR EL MÉTODO DE PAGO POR ID
+        // 3. Buscar el método de pago por ID
         const metodoId = pedidoRes.data?.metodo_pago_id;
-        console.log('🔍 Buscando método con ID:', metodoId);
-
         if (metodoId) {
           const metodoEncontrado = (pagoRes.data || []).find(
             m => m.id === metodoId
           );
-          console.log('✅ Método encontrado:', metodoEncontrado);
           setMetodoPagoSeleccionado(metodoEncontrado || null);
         } else {
-          console.warn('⚠️ El pedido no tiene metodo_pago_id');
           setMetodoPagoSeleccionado(null);
         }
 
@@ -250,17 +244,10 @@ const PagoPedido = () => {
     ? !requiereComprobante(metodoPagoSeleccionado)
     : false;
   
-  // ✅ OBTENER DATOS BANCARIOS
   const datosExtra = normalizarDatosExtra(metodoPagoSeleccionado?.datos_bancarios);
   const tieneDatosBancarios = datosExtra && Object.keys(datosExtra).length > 0;
   
   const folio = `NG-${String(id).padStart(5, '0')}`;
-
-  // ✅ DEBUG
-  console.log('🔍 DEBUG PagoPedido:');
-  console.log('  - metodoPagoSeleccionado:', metodoPagoSeleccionado);
-  console.log('  - datosExtra:', datosExtra);
-  console.log('  - tieneDatosBancarios:', tieneDatosBancarios);
 
   // ✅ Si ya existe pago de anticipo
   if (pagoExistente) {
@@ -358,235 +345,194 @@ const PagoPedido = () => {
   return (
     <div className="pago-wrapper">
       <div className="pago-card">
-        <h2>Pago del anticipo</h2>
-        <p className="pago-subtitulo">
+        <h2 className="pago-title">Pago del anticipo</h2>
+        <p className="pago-subtitle">
           {esPagoTienda
             ? 'Acude a nuestra tienda para realizar el pago del anticipo'
             : 'Realiza la transferencia y sube el comprobante para confirmar tu pedido'}
         </p>
 
-        {/* ✅ MOSTRAR MÉTODO DE PAGO */}
+        {/* ✅ MOSTRAR MÉTODO DE PAGO - VERSIÓN COMPACTA */}
         {metodoPagoSeleccionado && (
-          <div className="pago-metodo-fijo">
-            <div className="pago-metodo-badge">
+          <div className="pago-metodo-compacto">
+            <div className="pago-metodo-header">
               <span className="pago-metodo-icon">
-                {esPagoTienda ? '🏪' : '📎'}
+                {esPagoTienda ? '🏪' : '🏦'}
               </span>
               <span className="pago-metodo-nombre">
                 <strong>{metodoPagoSeleccionado.nombre}</strong>
               </span>
               <span className="pago-metodo-tipo">
-                {esPagoTienda ? 'Pago en tienda' : 'Requiere comprobante'}
+                {esPagoTienda ? 'Pago en tienda' : 'Transferencia'}
               </span>
             </div>
 
-            {metodoPagoSeleccionado.instrucciones && (
-              <div className="pago-instrucciones">
-                <strong>📌 Instrucciones:</strong>
+            {metodoPagoSeleccionado.instrucciones && !esPagoTienda && (
+              <div className="pago-instrucciones-compacto">
                 <p>{metodoPagoSeleccionado.instrucciones}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* ─── MODO TICKET: PAGO EN TIENDA ─────────────────────── */}
-        {esPagoTienda && metodoPagoSeleccionado ? (
-          <>
-            <div className="pago-ticket" id="ticket-imprimible-anticipo">
-              <div className="pago-ticket-header">
-                <span className="pago-ticket-eyebrow">Pago en tienda</span>
-                <h2>{metodoPagoSeleccionado.nombre}</h2>
-                <p className="pago-ticket-sub">Anticipo 50%</p>
-              </div>
-
-              <div className="pago-ticket-folio">
-                <span className="pago-ticket-folio-label">Folio</span>
-                <span className="pago-ticket-folio-valor">{folio}</span>
-              </div>
-
-              <div className="pago-ticket-linea" />
-
-              <div className="pago-ticket-monto">
-                <span className="pago-ticket-monto-label">Monto a pagar en tienda</span>
-                <span className="pago-ticket-monto-valor">${pedido.monto_anticipo} MXN</span>
-                <span className="pago-ticket-monto-detalle">50% del total del pedido</span>
-              </div>
-
-              {tieneDatosBancarios && (
-                <>
-                  <div className="pago-ticket-linea" />
-                  <div className="pago-tienda-info">
-                    {Object.entries(datosExtra).map(([clave, valor]) => (
-                      <div className="pago-tienda-fila" key={clave}>
-                        <span className="pago-tienda-label">{formatearEtiqueta(clave)}</span>
-                        <span>{String(valor)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <p className="pago-ticket-nota">
-                Presenta este ticket (impreso o en tu celular) al momento de pagar.
-                <br />
-                Tu pedido se marcará como pagado en cuanto el encargado registre el pago.
-              </p>
+        {/* ─── DATOS BANCARIOS ─────────────────────────────────────── */}
+        {!esPagoTienda && tieneDatosBancarios && (
+          <div className="pago-datos-bancarios">
+            <div className="banco-info">
+              {Object.entries(datosExtra).map(([clave, valor]) => (
+                <p key={clave}>
+                  <strong>{formatearEtiqueta(clave)}:</strong> 
+                  <span>{String(valor)}</span>
+                </p>
+              ))}
             </div>
 
-            <form onSubmit={handleSubmit} className="pago-form" style={{ marginTop: 16 }}>
-              <div className="form-group">
-                <label htmlFor="notas-tienda">Observaciones (opcional)</label>
-                <textarea
-                  id="notas-tienda"
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-                  placeholder="Ej: Voy a pasar por la tienda el lunes"
-                  className="pago-textarea"
-                  rows="2"
-                />
-              </div>
+            <div className="pago-banco-monto">
+              <span>Transfiere exactamente:</span>
+              <strong>${pedido.monto_anticipo} MXN</strong>
+              <small>(50% del total del pedido)</small>
+            </div>
+          </div>
+        )}
 
-              {error && <div className="error-message">{error}</div>}
+        {/* ─── TICKET PAGO EN TIENDA ──────────────────────────────── */}
+        {esPagoTienda && (
+          <div className="pago-ticket" id="ticket-imprimible-anticipo">
+            <div className="pago-ticket-header">
+              <span className="pago-ticket-eyebrow">Pago en tienda</span>
+              <h2>{metodoPagoSeleccionado?.nombre || 'Pago en tienda'}</h2>
+              <p className="pago-ticket-sub">Anticipo 50%</p>
+            </div>
 
-              <button 
-                type="submit" 
-                className="pago-btn-submit" 
-                disabled={subiendo}
-                style={{ backgroundColor: '#35BA99' }}
-              >
-                {subiendo ? '⏳ Procesando...' : '🏪 Confirmar pago en tienda'}
-              </button>
-            </form>
+            <div className="pago-ticket-folio">
+              <span className="pago-ticket-folio-label">Folio</span>
+              <span className="pago-ticket-folio-valor">{folio}</span>
+            </div>
 
-            <button
-              className="pago-btn-ticket"
-              onClick={handleDescargarTicket}
-              style={{ marginTop: 8 }}
-            >
-              🖨️ Descargar / imprimir ticket
-            </button>
-          </>
-        ) : (
-          /* ─── MODO FORMULARIO: TRANSFERENCIA ─────────────────── */
-          <>
-            <div className="pago-datos-bancarios">
-              <h3>
-                {metodoPagoSeleccionado?.nombre || 'Datos de transferencia'}
-              </h3>
-              
-              {metodoPagoSeleccionado?.instrucciones && (
-                <div className="pago-instrucciones-detalle">
-                  <p>{metodoPagoSeleccionado.instrucciones}</p>
-                </div>
-              )}
+            <div className="pago-ticket-linea" />
 
-              {tieneDatosBancarios ? (
-                <div className="banco-info">
+            <div className="pago-ticket-monto">
+              <span className="pago-ticket-monto-label">Monto a pagar en tienda</span>
+              <span className="pago-ticket-monto-valor">${pedido.monto_anticipo} MXN</span>
+              <span className="pago-ticket-monto-detalle">50% del total del pedido</span>
+            </div>
+
+            {tieneDatosBancarios && (
+              <>
+                <div className="pago-ticket-linea" />
+                <div className="pago-tienda-info">
                   {Object.entries(datosExtra).map(([clave, valor]) => (
-                    <p key={clave}>
-                      <strong>{formatearEtiqueta(clave)}:</strong> {String(valor)}
-                    </p>
+                    <div className="pago-tienda-fila" key={clave}>
+                      <span className="pago-tienda-label">{formatearEtiqueta(clave)}</span>
+                      <span>{String(valor)}</span>
+                    </div>
                   ))}
                 </div>
-              ) : (
-                <div className="banco-info-vacio">
-                  <span className="banco-info-vacio-icon">⚠️</span>
-                  <p>
-                    <strong>Este método de pago no tiene datos bancarios registrados.</strong>
-                    <br />
-                    <span className="banco-info-vacio-ayuda">
-                      Contacta al administrador para confirmar cómo realizar la transferencia.
-                    </span>
-                  </p>
-                </div>
-              )}
+              </>
 
-              <div className="pago-banco-monto">
-                <span>Transfiere exactamente:</span>
-                <strong>${pedido.monto_anticipo} MXN</strong>
-                <small>(50% del total del pedido)</small>
-              </div>
-            </div>
+            )}
 
-            <div className="pago-monto">
-              <h3>Monto a pagar</h3>
-              <p className="monto">${pedido.monto_anticipo}</p>
-              <p className="monto-detalle">50% del total del pedido</p>
-            </div>
+            <p className="pago-ticket-nota">
+              Presenta este ticket (impreso o en tu celular) al momento de pagar.
+              <br />
+              Tu pedido se marcará como pagado en cuanto el encargado registre el pago.
+            </p>
+          </div>
+        )}
 
-            <form onSubmit={handleSubmit} className="pago-form">
-              <div className="form-group">
-                <label htmlFor="comprobante">Comprobante de pago *</label>
+        {/* ─── FORMULARIO ──────────────────────────────────────────── */}
+        <form onSubmit={handleSubmit} className="pago-form">
+          {!esPagoTienda && (
+            <div className="form-group">
+              <label htmlFor="comprobante">Comprobante de pago *</label>
 
-                <div className="pago-file-area">
-                  <input
-                    type="file"
-                    id="comprobante"
-                    accept="image/*,application/pdf"
-                    onChange={handleFileChange}
-                    className="pago-file-input"
-                  />
+              <div className="pago-file-area">
+                <input
+                  type="file"
+                  id="comprobante"
+                  accept="image/*,application/pdf"
+                  onChange={handleFileChange}
+                  className="pago-file-input"
+                />
 
-                  {!comprobante ? (
-                    <div className="pago-file-placeholder">
-                      <span className="pago-file-icon">📎</span>
-                      <span>Seleccionar archivo</span>
-                      <span className="pago-file-hint">JPG, PNG, PDF (máx. 5MB)</span>
+                {!comprobante ? (
+                  <div className="pago-file-placeholder">
+                    <span className="pago-file-icon">📎</span>
+                    <span>Seleccionar archivo</span>
+                    <span className="pago-file-hint">JPG, PNG, PDF (máx. 5MB)</span>
+                  </div>
+                ) : (
+                  <div className="pago-file-selected">
+                    <div className="pago-file-info">
+                      <span className="pago-file-name">📄 {comprobante.name}</span>
+                      <span className="pago-file-size">
+                        {(comprobante.size / 1024).toFixed(1)} KB
+                      </span>
                     </div>
-                  ) : (
-                    <div className="pago-file-selected">
-                      <div className="pago-file-info">
-                        <span className="pago-file-name">📄 {comprobante.name}</span>
-                        <span className="pago-file-size">
-                          {(comprobante.size / 1024).toFixed(1)} KB
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        className="pago-file-remove"
-                        onClick={handleRemoveFile}
-                        title="Eliminar archivo"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {previewUrl && (
-                  <div className="preview-container">
-                    <img src={previewUrl} alt="Preview" className="preview-image" />
+                    <button
+                      type="button"
+                      className="pago-file-remove"
+                      onClick={handleRemoveFile}
+                      title="Eliminar archivo"
+                    >
+                      ✕
+                    </button>
                   </div>
                 )}
-
-                <small>Formatos permitidos: JPG, PNG, PDF (máx. 5MB)</small>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="notas">Notas adicionales (opcional)</label>
-                <textarea
-                  id="notas"
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-                  placeholder="Ej: Banco desde el que pagaste, referencia adicional, etc."
-                  className="pago-textarea"
-                  rows="2"
-                />
-              </div>
-
-              {error && <div className="error-message">{error}</div>}
-
-              {exito && (
-                <div className="exito-message">
-                  ✅ Comprobante subido correctamente. Será verificado por el administrador.
+              {previewUrl && (
+                <div className="preview-container">
+                  <img src={previewUrl} alt="Preview" className="preview-image" />
                 </div>
               )}
 
-              <button type="submit" className="pago-btn-submit" disabled={subiendo || exito || !comprobante}>
-                {subiendo ? '⏳ Subiendo...' : '📤 Subir comprobante'}
-              </button>
-            </form>
-          </>
+              <small>Formatos permitidos: JPG, PNG, PDF (máx. 5MB)</small>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="notas">Notas adicionales (opcional)</label>
+            <textarea
+              id="notas"
+              value={notas}
+              onChange={(e) => setNotas(e.target.value)}
+              placeholder={esPagoTienda 
+                ? "Ej: Voy a pasar por la tienda el lunes" 
+                : "Ej: Banco desde el que pagaste, referencia adicional, etc."}
+              className="pago-textarea"
+              rows="2"
+            />
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          {exito && (
+            <div className="exito-message">
+              ✅ Comprobante subido correctamente. Será verificado por el administrador.
+            </div>
+          )}
+
+          <button 
+            type="submit" 
+            className="pago-btn-submit" 
+            disabled={subiendo || exito || (!esPagoTienda && !comprobante)}
+          >
+            {subiendo 
+              ? '⏳ Procesando...' 
+              : esPagoTienda 
+                ? '🏪 Confirmar pago en tienda' 
+                : '📤 Subir comprobante'}
+          </button>
+        </form>
+
+        {esPagoTienda && (
+          <button
+            className="pago-btn-ticket"
+            onClick={handleDescargarTicket}
+          >
+            🖨️ Descargar / imprimir ticket
+          </button>
         )}
       </div>
     </div>

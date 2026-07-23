@@ -1354,3 +1354,231 @@
     text-align: center;
   }
 }
+/* src/styles/client/PagoPedido.css - AGREGAR AL FINAL DEL ARCHIVO */
+
+/* ─── MÉTODO DE PAGO COMPACTO ────────────────────────────────── */
+.pago-metodo-compacto {
+  background: var(--teal-deep-10);
+  border: 1px solid var(--teal-deep-20);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.pago-metodo-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pago-metodo-icon {
+  font-size: 1.2rem;
+}
+
+.pago-metodo-nombre {
+  font-size: 0.95rem;
+}
+
+.pago-metodo-nombre strong {
+  color: var(--teal-deep);
+}
+
+.pago-metodo-tipo {
+  font-size: 0.7rem;
+  color: var(--gray-mid);
+  background: var(--gray-soft);
+  padding: 0.1rem 0.7rem;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+/* ─── INSTRUCCIONES COMPACTAS ────────────────────────────────── */
+.pago-instrucciones-compacto {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  background: var(--white);
+  border-radius: 6px;
+  border-left: 3px solid var(--teal-vivid);
+}
+
+.pago-instrucciones-compacto p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+/* ─── DATOS BANCARIOS MÁS COMPACTOS ──────────────────────────── */
+.pago-datos-bancarios {
+  background: var(--teal-deep-10);
+  border: 1px solid var(--teal-deep-20);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.pago-datos-bancarios .banco-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pago-datos-bancarios .banco-info p {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  margin: 0;
+  border-bottom: 1px solid var(--teal-deep-20);
+  font-size: 0.85rem;
+}
+
+.pago-datos-bancarios .banco-info p:last-child {
+  border-bottom: none;
+}
+
+.pago-datos-bancarios .banco-info p strong {
+  color: var(--gray-mid);
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.pago-datos-bancarios .banco-info p span {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* ─── MONTO BANCARIO MÁS COMPACTO ────────────────────────────── */
+.pago-banco-monto {
+  margin-top: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: var(--white);
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid var(--teal-deep-20);
+}
+
+.pago-banco-monto span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--gray-mid);
+}
+
+.pago-banco-monto strong {
+  display: block;
+  font-size: 1.3rem;
+  color: var(--teal-deep);
+  margin: 0.1rem 0;
+}
+
+.pago-banco-monto small {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--gray-mid);
+}
+
+/* ─── TÍTULOS MÁS COMPACTOS ──────────────────────────────────── */
+.pago-card h2.pago-title {
+  font-size: 1.3rem;
+  text-align: left;
+  margin-bottom: 0.2rem;
+}
+
+.pago-card .pago-subtitle {
+  text-align: left;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* ─── TICKET MÁS COMPACTO ────────────────────────────────────── */
+.pago-ticket {
+  padding: 1rem 1.2rem;
+  margin: 0.8rem 0 1rem;
+}
+
+.pago-ticket-header h2 {
+  font-size: 1.1rem;
+}
+
+.pago-ticket-monto-valor {
+  font-size: 1.5rem;
+}
+
+.pago-ticket-folio-valor {
+  font-size: 1.1rem;
+}
+
+.pago-ticket-nota {
+  font-size: 0.7rem;
+  margin: 0.6rem 0 0;
+}
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .pago-metodo-header {
+    gap: 0.4rem;
+  }
+
+  .pago-metodo-nombre {
+    font-size: 0.85rem;
+  }
+
+  .pago-datos-bancarios .banco-info p {
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.8rem;
+  }
+
+  .pago-datos-bancarios .banco-info p strong {
+    font-size: 0.75rem;
+  }
+
+  .pago-datos-bancarios .banco-info p span {
+    font-size: 0.8rem;
+  }
+
+  .pago-banco-monto strong {
+    font-size: 1.1rem;
+  }
+
+  .pago-ticket {
+    padding: 0.8rem 1rem;
+  }
+
+  .pago-ticket-header h2 {
+    font-size: 1rem;
+  }
+
+  .pago-ticket-monto-valor {
+    font-size: 1.3rem;
+  }
+
+  .pago-card h2.pago-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .pago-metodo-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .pago-metodo-tipo {
+    align-self: flex-start;
+  }
+
+  .pago-datos-bancarios {
+    padding: 0.6rem 0.8rem;
+  }
+
+  .pago-datos-bancarios .banco-info p {
+    font-size: 0.75rem;
+  }
+
+  .pago-banco-monto strong {
+    font-size: 1rem;
+  }
+}

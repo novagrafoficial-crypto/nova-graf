@@ -97,8 +97,7 @@ const disenosRoutes           = require('./routes/client/disenosRoutes');
 const chatRoutes              = require('./routes/client/chatRoutes');
 const previasRoutes           = require('./routes/client/previasRoutes');
 const portafolioClientRoutes  = require('./routes/client/portafolioRoutes');
-
-
+const ofertaRoutes = require('./routes/client/ofertaRoutes');
 
 app.use('/api/client/productos',  productosClientRoutes);
 app.use('/api/client/carrito',    carritoRoutes);
@@ -111,8 +110,7 @@ app.use('/api/client/chat',   chatRoutes);
 app.use('/api/client/previas', previasRoutes);
 app.use('/api/client/portafolio', portafolioRoutes);
 app.use('/api/client/portafolio',        portafolioClientRoutes); 
-
-
+app.use('/api/client/ofertas', ofertaRoutes);
 
 
 
@@ -172,6 +170,18 @@ app.use('/api/admin/modulo',           moduloAdminRoutes);
 app.use('/api',                        publicacionRoutes);
 app.use('/api/admin/reabastecimiento', reabastecimientoRoutes);
 app.use('/api/admin/pedidos', pedidosAdminRoutes);
+
+
+
+
+
+
+
+
+
+// ─── 8.5 RUTAS ALEXA ──────────────────────────────────────
+const alexaRoutes = require('./routes/alexa');
+app.use('/api/alexa', alexaRoutes);
 
 
 // ─── 9. INICIAR SERVIDOR ───────────────────────────────────
