@@ -36,7 +36,6 @@ import CatalogoCliente from "./pages/Client/CatalogoCliente";
 import ProductoDetalle from "./pages/Client/ProductoDetalle";
 import CarritoCliente from './pages/Client/CarritoCliente';
 import Checkout from './pages/Client/Checkout';
-import UnderConstruction from './pages/Client/UnderConstruction';
 import PagoPedido from './pages/Client/PagoPedido';
 import DetallePedido from './pages/Client/DetallePedido';
 import SubirDiseno from './pages/Client/SubirDiseno';
@@ -115,7 +114,6 @@ function App() {
           <Route path="/cliente/checkout" element={<Checkout />} />
           <Route path="/cliente/pedido/:id" element={<DetallePedido />} />
           <Route path="/cliente/pedido/:id/pago" element={<PagoPedido />} />
-          <Route path="/cliente/en-construccion" element={<UnderConstruction />} />
           <Route path="/cliente/pedido/:id/diseno" element={<SubirDiseno />} />
           <Route path="/cliente/pedido/:id/editor" element={<EditorDiseno />} />
           <Route path="/cliente/pedido/:id/previas" element={<VerPrevias />} />
