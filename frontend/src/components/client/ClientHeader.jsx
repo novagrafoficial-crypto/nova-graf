@@ -54,7 +54,7 @@ function ClientHeader({ user }) {
           <Link to="/cliente/catalogo" className="ch-nav__link">Catálogo</Link>
            <Link to="/cliente/personalizados" className="ch-nav__link">Personalizados</Link>
           {/* 👇 Redirige a "En construcción" */}
-          <Link to="/cliente/en-construccion" className="ch-nav__link">Ofertas</Link>
+          <Link to="/cliente/ofertas" className="ch-nav__link">Ofertas/Promociones</Link>
           <Link to="/cliente/compras" className="ch-nav__link">Mis Compras</Link>
         </nav>
 
@@ -103,7 +103,7 @@ function ClientHeader({ user }) {
             { to: "/cliente/home", label: "Inicio" },
             { to: "/cliente/catalogo", label: "Catálogo" },
             { to: "/cliente/personalizados", label: "Personalizados" },
-            { to: "/cliente/en-construccion", label: "Ofertas" }, // 👈 Ruta cambiada
+            { to: "/cliente/ofertas", label: "Ofertas" }, // 👈 Ruta cambiada
             { to: "/cliente/compras", label: "Mis compras" },
           ].map(({ to, label }) => (
             <Link key={to} to={to} className="ch-mobile__link" onClick={() => setMenuOpen(false)}>
