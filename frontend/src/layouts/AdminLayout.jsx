@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { to: "inventario", icon: "📦", label: "Inventario" },
   { to: "datos-bancarios", icon: "🏦", label: "Datos Bancarios" },
   { to: "metodos-entrega", icon: "🚚", label: "Métodos de Entrega" },
+  { to: "reportes", icon: "📊", label: "Reportes" },
 ];
 
 function AdminLayout() {
@@ -29,6 +30,22 @@ function AdminLayout() {
 
   const [notificaciones, setNotificaciones] = useState([]);
   const [mostrarNotifs, setMostrarNotifs] = useState(false);
+
+  // ── Sidebar móvil ────────────────────────────────────────
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Cierra el sidebar móvil automáticamente al cambiar de ruta
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
+
+  // ── Logo de la empresa ──────────────────────────────────
+  const [empresa, setEmpresa] = useState({ nombre_empresa: "", logo_url: "" });
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/empresa`)
+      .then((res) => res.json())
+      .then((json) => { if (json.success) setEmpresa(json.data); })
+      .catch((err) => console.error("Error al cargar logo:", err));
+  }, []);
 
   useEffect(() => {
     cargarNotificaciones();
@@ -53,7 +70,38 @@ function AdminLayout() {
 
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
+      {/* Overlay oscuro detrás del sidebar cuando está abierto en móvil */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
+
+        <div
+          className="sidebar-logo"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "24px 20px 16px",
+          }}
+        >
+          {empresa.logo_url && (
+            <img
+              src={empresa.logo_url}
+              alt={empresa.nombre_empresa || "Logo"}
+              style={{
+                maxWidth: "90px",
+                height: "auto",
+                borderRadius: "12px",
+                background: "#fff",
+                padding: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}
+              onError={(e) => { e.target.style.display = "none"; }}
+            />
+          )}
+        </div>
 
         <div className="sidebar-welcome">
           <div className="welcome-avatar">
@@ -86,6 +134,14 @@ function AdminLayout() {
 
       <main className="admin-content">
         <div className="content-banner">
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Abrir menú"
+          >
+            ☰
+          </button>
+
           <div className="banner-text">
             <button onClick={() => navigate(-1)} style={{
               background: "none", border: "none", cursor: "pointer",

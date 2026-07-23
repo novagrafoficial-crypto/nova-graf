@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Nova Graf — R2 Días de entrega</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f7fafa;
+  color: #333;
+}
+.panel { padding: 1.5rem; max-width: 900px; margin: 0 auto; display:flex; flex-direction:column; gap:1.25rem; }
+
+.card { background:#fff; border:1px solid #d4eeea; border-radius:12px; padding:1.25rem; }
+
+.card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+.card-header h2 { margin:0 0 4px; color:#1A6163; font-size:18px; }
+.card-header p { margin:0; font-size:13px; color:#999; }
+.badge-estado { padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; background:#ffe8d0; color:#7a3500; }
+
+h3.section-title { margin:0 0 1rem; color:#1A6163; font-size:15px; }
+
+.entrega-box { border-radius:10px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; border-left:3px solid #35BA99; background:#d4f5eb; }
+.entrega-box .info { flex:1; }
+.entrega-box .info h3 { margin:0 0 4px; font-size:15px; color:#0F6E56; }
+.entrega-box .info p { margin:0; font-size:13px; color:#555; }
+.entrega-box .pct { text-align:center; background:#fff; border-radius:8px; padding:8px 16px; }
+.entrega-box .pct .num { font-size:24px; font-weight:700; color:#0F6E56; }
+.entrega-box .pct .label { font-size:10px; color:#999; }
+
+/* timeline */
+.timeline { display:flex; align-items:flex-start; }
+.tl-item { flex:1; display:flex; flex-direction:column; align-items:center; }
+.tl-line-wrap { display:flex; align-items:center; width:100%; }
+.tl-line { flex:1; height:2px; background:#e0f0ee; }
+.tl-line.done { background:#35BA99; }
+.tl-dot { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; background:#e0f0ee; }
+.tl-dot.done { background:#35BA99; }
+.tl-dot.current { background:#1A6163; }
+.tl-dot.pending { background:#e0f0ee; color:#999; }
+.tl-label { font-size:11px; text-align:center; margin-top:8px; color:#999; }
+.tl-label.active { color:#1A6163; font-weight:600; }
+.tl-day { font-size:10px; color:#bbb; text-align:center; margin-top:2px; }
+
+.vars { display:flex; gap:8px; flex-wrap:wrap; }
+.var-chip { background:#f4fdfb; border:1px solid #e0f0ee; border-radius:8px; padding:8px 12px; }
+.var-chip .k { font-size:11px; color:#999; margin-bottom:2px; }
+.var-chip .v { font-size:13px; font-weight:600; color:#1A6163; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>Pedido #16</h2>
+        <p>03 jul 2026, 04:44 a.m.</p>
+      </div>
+      <span class="badge-estado">EN REVISION</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="section-title">Predicción de tiempo de entrega</h3>
+    <div class="entrega-box">
+      <div class="info">
+        <h3>Entrega estimada: 5 días hábiles</h3>
+        <p>Basado en la categoría, cantidad, tipo de diseño y método de entrega. Rango estimado: 3 a 8 días.</p>
+      </div>
+      <div class="pct">
+        <div class="num">5</div>
+        <div class="label">días estimados</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="section-title">Progreso estimado del pedido</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-line-wrap">
+          <div class="tl-dot done">✓</div>
+          <div class="tl-line done"></div>
+        </div>
+        <div class="tl-label active">Pedido recibido</div>
+        <div class="tl-day">Día 0</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-line-wrap">
+          <div class="tl-line done"></div>
+          <div class="tl-dot done">✓</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-label active">Diseño del cliente</div>
+        <div class="tl-day">Día 1</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-line-wrap">
+          <div class="tl-line"></div>
+          <div class="tl-dot current">3</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-label active">Previa enviada</div>
+        <div class="tl-day">Día 2</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-line-wrap">
+          <div class="tl-line"></div>
+          <div class="tl-dot pending">4</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-label">En producción</div>
+        <div class="tl-day">Día 3</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-line-wrap">
+          <div class="tl-line"></div>
+          <div class="tl-dot pending">5</div>
+        </div>
+        <div class="tl-label">Entrega estimada</div>
+        <div class="tl-day">Día 5</div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+
+</body>
+</html>

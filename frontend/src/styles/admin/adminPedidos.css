@@ -1,0 +1,33 @@
+.pedidos-filtros button { transition: transform 0.15s, box-shadow 0.15s; }
+.pedidos-filtros button:hover { transform: translateY(-1px); }
+.pedidos-filtros button:active { transform: scale(0.96); }
+
+.pedidos-search:focus { border-color: #35BA99 !important; }
+
+.cliente-card { transition: box-shadow 0.2s; }
+.cliente-card:hover { box-shadow: 0 4px 16px rgba(26, 97, 99, 0.10); }
+
+@media (max-width: 640px) {
+  .cliente-row {
+    flex-wrap: wrap;
+    gap: 0.6rem !important;
+    padding: 0.9rem 1rem !important;
+  }
+
+  .cliente-info { min-width: 55% !important; }
+
+  .cliente-stats {
+    order: 3;
+    width: 100%;
+    display: flex;
+    gap: 1.5rem;
+    padding-left: 56px;
+  }
+  .cliente-stats > div { min-width: unset !important; text-align: left !important; }
+
+  .pedido-row {
+    padding: 0.75rem 1rem 0.75rem 2.2rem !important;
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+  }
+}

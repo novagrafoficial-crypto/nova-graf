@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
 
 const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/usuarios`;
+const API_CLUSTER = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/clientes`;
+
+const SEGMENTO_STYLE = {
+  "VIP":      { bg: "#D1FAE5", color: "#0F6E56", emoji: "⭐" },
+  "Ocasional":{ bg: "#DBEAFE", color: "#1D4ED8", emoji: "📦" },
+  "Inactivo": { bg: "#F3F4F6", color: "#6B7280", emoji: "💤" },
+};
 
 export default function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
+  const [segmentos, setSegmentos] = useState({});
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [filtroSegmento, setFiltroSegmento] = useState("TODOS");
 
   useEffect(() => { cargar(); }, []);
 
@@ -14,9 +23,29 @@ export default function AdminUsuarios() {
     try {
       const res = await fetch(API);
       const data = await res.json();
-      setUsuarios(Array.isArray(data) ? data : []);
+      const lista = Array.isArray(data) ? data : [];
+      setUsuarios(lista);
+      // Cargar segmentos solo para clientes
+      const clientes = lista.filter(u => u.rol === "cliente");
+      cargarSegmentos(clientes);
     } catch (err) { console.error(err); }
     setLoading(false);
+  };
+
+  const cargarSegmentos = async (clientes) => {
+    const mapa = {};
+    await Promise.all(
+      clientes.map(async (u) => {
+        try {
+          const res = await fetch(`${API_CLUSTER}/${u.id_usuario}/segmento`);
+          const data = await res.json();
+          mapa[u.id_usuario] = data.segmento || "Ocasional";
+        } catch {
+          mapa[u.id_usuario] = "Ocasional";
+        }
+      })
+    );
+    setSegmentos(mapa);
   };
 
   const cambiarRol = async (id, rolActual) => {
@@ -38,11 +67,21 @@ export default function AdminUsuarios() {
     cargar();
   };
 
-  const usuariosFiltrados = usuarios.filter(u =>
-    u.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    u.correo_electronico?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    u.nombre_usuario?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const usuariosFiltrados = usuarios.filter(u => {
+    const coincideBusqueda =
+      u.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      u.correo_electronico?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      u.nombre_usuario?.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideSegmento =
+      filtroSegmento === "TODOS" ||
+      u.rol !== "cliente" ||
+      segmentos[u.id_usuario] === filtroSegmento;
+    return coincideBusqueda && coincideSegmento;
+  });
+
+  // Conteo por segmento
+  const conteo = { VIP: 0, Ocasional: 0, Inactivo: 0 };
+  Object.values(segmentos).forEach(s => { if (conteo[s] !== undefined) conteo[s]++; });
 
   return (
     <div style={{ padding: "1.5rem" }}>
@@ -52,6 +91,29 @@ export default function AdminUsuarios() {
           <h1 style={{ color: "#1A6163", fontSize: "22px", fontWeight: 500, margin: 0 }}>Gestión de Usuarios</h1>
           <p style={{ color: "#999", fontSize: "14px", margin: "4px 0 0" }}>{usuarios.length} usuarios registrados</p>
         </div>
+      </div>
+
+      {/* Resumen de segmentos ML */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "1rem" }}>
+        {Object.entries(SEGMENTO_STYLE).map(([seg, style]) => (
+          <div
+            key={seg}
+            onClick={() => setFiltroSegmento(filtroSegmento === seg ? "TODOS" : seg)}
+            style={{
+              background: filtroSegmento === seg ? style.bg : "#fff",
+              border: `1.5px solid ${filtroSegmento === seg ? style.color : "#d4eeea"}`,
+              borderRadius: "12px", padding: "1rem", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "10px",
+              transition: "all 0.15s"
+            }}
+          >
+            <span style={{ fontSize: 24 }}>{style.emoji}</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: "18px", color: style.color }}>{conteo[seg]}</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>Clientes {seg}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       <input
@@ -73,71 +135,87 @@ export default function AdminUsuarios() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
             <thead>
               <tr style={{ background: "#1A6163" }}>
-                {["ID", "Nombre", "Usuario", "Correo", "Rol", "Estado", "Acciones"].map(h => (
+                {["ID", "Nombre", "Usuario", "Correo", "Rol", "Segmento ML", "Estado", "Acciones"].map(h => (
                   <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "#fff", fontWeight: 600, fontSize: "12px" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {usuariosFiltrados.length === 0 ? (
-                <tr><td colSpan={7} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>No hay usuarios que mostrar</td></tr>
-              ) : usuariosFiltrados.map((u, i) => (
-                <tr key={u.id_usuario} style={{ background: i % 2 === 0 ? "#fff" : "#f9fefe", borderBottom: "1px solid #e0f0ee" }}>
-                  <td style={{ padding: "12px 14px", color: "#999" }}>#{u.id_usuario}</td>
-                  <td style={{ padding: "12px 14px", fontWeight: 500 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: "50%",
-                        background: u.rol === "administrador" ? "#1A6163" : "#E1F5EE",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "13px", fontWeight: 700,
-                        color: u.rol === "administrador" ? "#fff" : "#0F6E56",
-                        flexShrink: 0
-                      }}>
-                        {u.nombre?.charAt(0).toUpperCase()}
+                <tr><td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>No hay usuarios que mostrar</td></tr>
+              ) : usuariosFiltrados.map((u, i) => {
+                const seg = segmentos[u.id_usuario];
+                const segStyle = SEGMENTO_STYLE[seg] || {};
+                return (
+                  <tr key={u.id_usuario} style={{ background: i % 2 === 0 ? "#fff" : "#f9fefe", borderBottom: "1px solid #e0f0ee" }}>
+                    <td style={{ padding: "12px 14px", color: "#999" }}>#{u.id_usuario}</td>
+                    <td style={{ padding: "12px 14px", fontWeight: 500 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: "50%",
+                          background: u.rol === "administrador" ? "#1A6163" : "#E1F5EE",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "13px", fontWeight: 700,
+                          color: u.rol === "administrador" ? "#fff" : "#0F6E56",
+                          flexShrink: 0
+                        }}>
+                          {u.nombre?.charAt(0).toUpperCase()}
+                        </div>
+                        {u.nombre} {u.apellido_paterno}
                       </div>
-                      {u.nombre} {u.apellido_paterno}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 14px", color: "#666" }}>{u.nombre_usuario || "—"}</td>
-                  <td style={{ padding: "12px 14px", color: "#666" }}>{u.correo_electronico}</td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <span style={{
-                      padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                      background: u.rol === "administrador" ? "#1A6163" : "#d0eaff",
-                      color: u.rol === "administrador" ? "#fff" : "#0a4a7c",
-                    }}>
-                      {u.rol}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <span style={{
-                      padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                      background: u.activo ? "#d4f5eb" : "#f0f0f0",
-                      color: u.activo ? "#0F6E56" : "#666",
-                    }}>
-                      {u.activo ? "Activo" : "Inactivo"}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <button onClick={() => cambiarRol(u.id_usuario, u.rol)} style={{
-                        padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #35BA99",
-                        background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "11px", fontWeight: 600
+                    </td>
+                    <td style={{ padding: "12px 14px", color: "#666" }}>{u.nombre_usuario || "—"}</td>
+                    <td style={{ padding: "12px 14px", color: "#666" }}>{u.correo_electronico}</td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <span style={{
+                        padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                        background: u.rol === "administrador" ? "#1A6163" : "#d0eaff",
+                        color: u.rol === "administrador" ? "#fff" : "#0a4a7c",
                       }}>
-                        {u.rol === "administrador" ? "→ Cliente" : "→ Admin"}
-                      </button>
-                      <button onClick={() => cambiarEstado(u.id_usuario, u.activo)} style={{
-                        padding: "6px 12px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600,
-                        background: u.activo ? "#ffd6d6" : "#d4f5eb",
-                        color: u.activo ? "#8b0000" : "#0F6E56",
+                        {u.rol}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      {u.rol === "cliente" && seg ? (
+                        <span style={{
+                          padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                          background: segStyle.bg, color: segStyle.color,
+                        }}>
+                          {segStyle.emoji} {seg}
+                        </span>
+                      ) : (
+                        <span style={{ color: "#ccc", fontSize: "11px" }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <span style={{
+                        padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                        background: u.activo ? "#d4f5eb" : "#f0f0f0",
+                        color: u.activo ? "#0F6E56" : "#666",
                       }}>
-                        {u.activo ? "Desactivar" : "Activar"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {u.activo ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button onClick={() => cambiarRol(u.id_usuario, u.rol)} style={{
+                          padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #35BA99",
+                          background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "11px", fontWeight: 600
+                        }}>
+                          {u.rol === "administrador" ? "→ Cliente" : "→ Admin"}
+                        </button>
+                        <button onClick={() => cambiarEstado(u.id_usuario, u.activo)} style={{
+                          padding: "6px 12px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600,
+                          background: u.activo ? "#ffd6d6" : "#d4f5eb",
+                          color: u.activo ? "#8b0000" : "#0F6E56",
+                        }}>
+                          {u.activo ? "Desactivar" : "Activar"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
