@@ -44,8 +44,8 @@ import EditorDiseno from './pages/Client/EditorDiseno';
 import VerPrevias from './pages/Client/VerPrevias';
 import Personalizados from './pages/Client/Personalizados';
 import PagoFinal from './pages/Client/PagoFinal';
-import OfertasPage from './pages/client/OfertasPage';
-import MisCompras from './components/client/MisCompras';
+import OfertasPage from './pages/Client/OfertasPage';
+import MisCompras from './components/Client/MisCompras';
 
 
 
