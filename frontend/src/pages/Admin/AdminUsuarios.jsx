@@ -311,7 +311,7 @@ export default function AdminUsuarios() {
                   background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "12px", fontWeight: 600,
                 }}
               >
-                {usuarioSeleccionado.rol === "administrador" ? "Hacer Cliente" : "Hacer Admin"}
+                {usuarioSeleccionado.rol === "administrador" ? "Hacer Cliente" : "Hacer Administrador"}
               </button>
               <button
                 onClick={() => cambiarEstado(usuarioSeleccionado.id_usuario, usuarioSeleccionado.activo)}
