@@ -15,6 +15,7 @@ export default function AdminUsuarios() {
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
   const [filtroSegmento, setFiltroSegmento] = useState("TODOS");
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
   useEffect(() => { cargar(); }, []);
 
@@ -25,7 +26,6 @@ export default function AdminUsuarios() {
       const data = await res.json();
       const lista = Array.isArray(data) ? data : [];
       setUsuarios(lista);
-      // Cargar segmentos solo para clientes
       const clientes = lista.filter(u => u.rol === "cliente");
       cargarSegmentos(clientes);
     } catch (err) { console.error(err); }
@@ -55,7 +55,8 @@ export default function AdminUsuarios() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rol: nuevoRol }),
     });
-    cargar();
+    await cargar();
+    setUsuarioSeleccionado(prev => prev ? { ...prev, rol: nuevoRol } : prev);
   };
 
   const cambiarEstado = async (id, estadoActual) => {
@@ -64,7 +65,8 @@ export default function AdminUsuarios() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ activo: !estadoActual }),
     });
-    cargar();
+    await cargar();
+    setUsuarioSeleccionado(prev => prev ? { ...prev, activo: !estadoActual } : prev);
   };
 
   const usuariosFiltrados = usuarios.filter(u => {
@@ -79,7 +81,6 @@ export default function AdminUsuarios() {
     return coincideBusqueda && coincideSegmento;
   });
 
-  // Conteo por segmento
   const conteo = { VIP: 0, Ocasional: 0, Inactivo: 0 };
   Object.values(segmentos).forEach(s => { if (conteo[s] !== undefined) conteo[s]++; });
 
@@ -133,25 +134,28 @@ export default function AdminUsuarios() {
         <p style={{ color: "#999", textAlign: "center", padding: "2rem" }}>Cargando usuarios...</p>
       ) : (
         <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "20px", overflow: "hidden", boxShadow: "0 2px 10px rgba(26, 97, 99, 0.07)" }}>
-          <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
             <thead>
               <tr style={{ background: "#1A6163" }}>
-                {["ID", "Nombre", "Usuario", "Correo", "Rol", "Segmento ML", "Estado", "Acciones"].map(h => (
+                {["ID", "Nombre", "Rol", "Segmento ML", "Estado"].map(h => (
                   <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: "#fff", fontWeight: 600, fontSize: "12px", borderBottom: "2px solid #35BA99" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {usuariosFiltrados.length === 0 ? (
-                <tr><td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>No hay usuarios que mostrar</td></tr>
+                <tr><td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>No hay usuarios que mostrar</td></tr>
               ) : usuariosFiltrados.map((u, i) => {
                 const seg = segmentos[u.id_usuario];
                 const segStyle = SEGMENTO_STYLE[seg] || {};
                 return (
                   <tr key={u.id_usuario} style={{ background: i % 2 === 0 ? "#fff" : "#f9fefe", borderBottom: "1px solid #e0f0ee" }}>
                     <td style={{ padding: "12px 14px", color: "#999" }}>#{u.id_usuario}</td>
-                    <td style={{ padding: "12px 14px", fontWeight: 500 }}>
+                    <td
+                      onClick={() => setUsuarioSeleccionado(u)}
+                      style={{ padding: "12px 14px", fontWeight: 500, cursor: "pointer" }}
+                      title="Ver detalles"
+                    >
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div style={{
                           width: 32, height: 32, borderRadius: "50%",
@@ -163,11 +167,11 @@ export default function AdminUsuarios() {
                         }}>
                           {u.nombre?.charAt(0).toUpperCase()}
                         </div>
-                        {u.nombre} {u.apellido_paterno}
+                        <span style={{ color: "#1A6163", textDecoration: "underline", textDecorationColor: "transparent" }}>
+                          {u.nombre} {u.apellido_paterno}
+                        </span>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 14px", color: "#666" }}>{u.nombre_usuario || "—"}</td>
-                    <td style={{ padding: "12px 14px", color: "#666" }}>{u.correo_electronico}</td>
                     <td style={{ padding: "12px 14px" }}>
                       <span style={{
                         padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
@@ -198,32 +202,141 @@ export default function AdminUsuarios() {
                         {u.activo ? "Activo" : "Inactivo"}
                       </span>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <div style={{ display: "flex", gap: "6px" }}>
-                        <button onClick={() => cambiarRol(u.id_usuario, u.rol)} style={{
-                          padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #35BA99",
-                          background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "11px", fontWeight: 600,
-                          transition: "background 0.15s"
-                        }}>
-                          {u.rol === "administrador" ? "→ Cliente" : "→ Admin"}
-                        </button>
-                        <button onClick={() => cambiarEstado(u.id_usuario, u.activo)} style={{
-                          padding: "6px 12px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600,
-                          background: u.activo ? "#ffd6d6" : "#d4f5eb",
-                          color: u.activo ? "#8b0000" : "#0F6E56",
-                        }}>
-                          {u.activo ? "Desactivar" : "Activar"}
-                        </button>
-                      </div>
-                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Modal de detalle de usuario */}
+      {usuarioSeleccionado && (
+        <div
+          onClick={() => setUsuarioSeleccionado(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(15, 40, 40, 0.45)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, padding: "1rem"
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: "20px", padding: "1.8rem",
+              width: "100%", maxWidth: "420px", boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+              position: "relative"
+            }}
+          >
+            <button
+              onClick={() => setUsuarioSeleccionado(null)}
+              style={{
+                position: "absolute", top: "1rem", right: "1rem",
+                border: "none", background: "transparent", fontSize: "18px",
+                color: "#999", cursor: "pointer", lineHeight: 1
+              }}
+            >
+              ✕
+            </button>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.4rem" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: usuarioSeleccionado.rol === "administrador" ? "#1A6163" : "#E1F5EE",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "20px", fontWeight: 700,
+                color: usuarioSeleccionado.rol === "administrador" ? "#fff" : "#0F6E56",
+                flexShrink: 0
+              }}>
+                {usuarioSeleccionado.nombre?.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: "17px", color: "#1A6163" }}>
+                  {usuarioSeleccionado.nombre} {usuarioSeleccionado.apellido_paterno}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#999" }}>#{usuarioSeleccionado.id_usuario}</p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", marginBottom: "1.4rem" }}>
+              <DetalleFila label="Usuario" valor={usuarioSeleccionado.nombre_usuario || "—"} />
+              <DetalleFila label="Correo" valor={usuarioSeleccionado.correo_electronico} />
+              <DetalleFila
+                label="Rol"
+                valor={
+                  <span style={{
+                    padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                    background: usuarioSeleccionado.rol === "administrador" ? "#1A6163" : "rgba(53, 186, 153, 0.14)",
+                    color: usuarioSeleccionado.rol === "administrador" ? "#fff" : "#1c7360",
+                  }}>
+                    {usuarioSeleccionado.rol}
+                  </span>
+                }
+              />
+              {usuarioSeleccionado.rol === "cliente" && (
+                <DetalleFila
+                  label="Segmento ML"
+                  valor={
+                    segmentos[usuarioSeleccionado.id_usuario] ? (
+                      <span style={{
+                        padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                        background: SEGMENTO_STYLE[segmentos[usuarioSeleccionado.id_usuario]]?.bg,
+                        color: SEGMENTO_STYLE[segmentos[usuarioSeleccionado.id_usuario]]?.color,
+                      }}>
+                        {SEGMENTO_STYLE[segmentos[usuarioSeleccionado.id_usuario]]?.emoji} {segmentos[usuarioSeleccionado.id_usuario]}
+                      </span>
+                    ) : "—"
+                  }
+                />
+              )}
+              <DetalleFila
+                label="Estado"
+                valor={
+                  <span style={{
+                    padding: "4px 12px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
+                    background: usuarioSeleccionado.activo ? "#d4f5eb" : "#f0f0f0",
+                    color: usuarioSeleccionado.activo ? "#0F6E56" : "#666",
+                  }}>
+                    {usuarioSeleccionado.activo ? "Activo" : "Inactivo"}
+                  </span>
+                }
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => cambiarRol(usuarioSeleccionado.id_usuario, usuarioSeleccionado.rol)}
+                style={{
+                  flex: 1, padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #35BA99",
+                  background: "#fff", color: "#1A6163", cursor: "pointer", fontSize: "12px", fontWeight: 600,
+                }}
+              >
+                {usuarioSeleccionado.rol === "administrador" ? "Hacer Cliente" : "Hacer Admin"}
+              </button>
+              <button
+                onClick={() => cambiarEstado(usuarioSeleccionado.id_usuario, usuarioSeleccionado.activo)}
+                style={{
+                  flex: 1, padding: "10px 12px", borderRadius: "10px", border: "none", cursor: "pointer",
+                  fontSize: "12px", fontWeight: 600,
+                  background: usuarioSeleccionado.activo ? "#ffd6d6" : "#d4f5eb",
+                  color: usuarioSeleccionado.activo ? "#8b0000" : "#0F6E56",
+                }}
+              >
+                {usuarioSeleccionado.activo ? "Desactivar" : "Activar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DetalleFila({ label, valor }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span style={{ fontSize: "12px", color: "#999" }}>{label}</span>
+      <span style={{ fontSize: "13px", color: "#333", fontWeight: 500 }}>{valor}</span>
     </div>
   );
 }
