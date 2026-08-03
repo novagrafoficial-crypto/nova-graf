@@ -16,6 +16,18 @@ NOMBRES_CLUSTER = {
     2: "Inactivo"
 }
 
+# --- RUTA PRINCIPAL (Evita el error 404) ---
+@app.route('/', methods=['GET'])
+def inicio():
+    return jsonify({
+        'estado': 'API activa y funcionando',
+        'endpoints_disponibles': {
+            '/health': 'Verificar estado del servidor (GET)',
+            '/predecir-cancelacion': 'Predicción de riesgo de cancelación (POST)',
+            '/predecir-cluster': 'Predicción de segmento de usuario (POST)'
+        }
+    })
+
 @app.route('/predecir-cancelacion', methods=['POST'])
 def predecir():
     try:
