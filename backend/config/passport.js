@@ -1,6 +1,5 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const FacebookStrategy = require('passport-facebook').Strategy;
 const db = require('./db');
 
 // ─── GOOGLE ───────────────────────────────────────────────
@@ -33,44 +32,6 @@ passport.use(new GoogleStrategy({
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       RETURNING id_usuario, nombre, correo_electronico, rol
     `, [nombre, apellido_paterno, email, email, true, 'cliente', 'google', 'GOOGLE_AUTH']);
-
-    return done(null, result.rows[0]);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
-
-// ─── FACEBOOK ─────────────────────────────────────────────
-passport.use(new FacebookStrategy({
-  clientID:     process.env.FACEBOOK_APP_ID,
-  clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL:  process.env.FACEBOOK_CALLBACK_URL,  // ← usa variable de entorno
-  profileFields: ['id', 'email', 'name'],            // ← 'email' no 'emails'
-  scope: ['email'],                                  // ← scope explícito
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    const email          = profile.emails?.[0]?.value || `fb_${profile.id}@novagraf.com`;
-    const nombre         = profile.name?.givenName  || 'Usuario';
-    const apellido_paterno = profile.name?.familyName || '';
-
-    const existing = await db.query(
-      'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE correo_electronico = $1',
-      [email]
-    );
-
-    if (existing.rowCount > 0) {
-      const user = existing.rows[0];
-      if (user.proveedor === 'local')  return done(null, false, { message: 'email_local' });
-      if (user.proveedor === 'google') return done(null, false, { message: 'email_google' });
-      return done(null, user); // ya es Facebook → login directo
-    }
-
-    const result = await db.query(`
-      INSERT INTO usuarios
-      (nombre, apellido_paterno, nombre_usuario, correo_electronico, activo, rol, proveedor, contrasena)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-      RETURNING id_usuario, nombre, correo_electronico, rol
-    `, [nombre, apellido_paterno, email, email, true, 'cliente', 'facebook', 'FACEBOOK_AUTH']);
 
     return done(null, result.rows[0]);
   } catch (error) {

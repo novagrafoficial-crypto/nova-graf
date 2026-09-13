@@ -5,6 +5,7 @@ import { CartProvider } from "./context/CartContext"; // <-- IMPORTANTE
 import PublicLayout from "./layouts/PublicLayout";
 import ClientLayout from "./layouts/ClientLayout";
 import AdminLayout from "./layouts/AdminLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Páginas públicas
 import Home from "./pages/public/Home";
@@ -44,7 +45,7 @@ import VerPrevias from './pages/Client/VerPrevias';
 import Personalizados from './pages/Client/Personalizados';
 import PagoFinal from './pages/Client/PagoFinal';
 import OfertasPage from './pages/Client/OfertasPage';
-import MisCompras from './components/client/MisCompras';
+import MisCompras from './pages/Client/MisCompras';
 
 
 
@@ -108,7 +109,11 @@ function App() {
         </Route>
 
         {/* Rutas cliente */}
-        <Route element={<CartProvider><NotificationProvider><ClientLayout /></NotificationProvider></CartProvider>}>
+        <Route element={
+          <ProtectedRoute rolRequerido="cliente">
+            <CartProvider><NotificationProvider><ClientLayout /></NotificationProvider></CartProvider>
+          </ProtectedRoute>
+        }>  
           <Route path="/cliente/home" element={<ClienteHome />} />
           <Route path="/cliente/perfil" element={<ClientProfile />} />
           <Route path="/cliente/carrito" element={<CarritoCliente/>} />
@@ -128,7 +133,11 @@ function App() {
 
         {/* Rutas admin */}
    
-        <Route path="admin" element={<AdminLayout />}>
+        <Route path="admin" element={
+          <ProtectedRoute rolRequerido="administrador">
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<AdminHome />} />
           <Route path="Registro de atributos" element={<AdminCatalogo />} />
           <Route path="productos" element={<AdminProductos />} />
@@ -152,3 +161,4 @@ function App() {
 }
 
 export default App;
+

@@ -34,11 +34,6 @@ const existing = await checkEmailExists(email);
       err.status = 400;
       throw err;
     }
-    if (existing.proveedor === 'facebook') {
-      const err = new Error('Este correo ya está registrado con Facebook. Inicia sesión con Facebook.');
-      err.status = 400;
-      throw err;
-    }
     const err = new Error('Este correo ya está registrado. Inicia sesión normalmente.');
     err.status = 400;
     throw err;
@@ -77,8 +72,7 @@ const findOrCreateGoogleUser = async ({ googleId, nombre, apellido_paterno, apel
 
   const existing = await checkEmailExists(email);
   if (existing) {
-    if (existing.proveedor === 'local')    throw new Error('email_local');
-    if (existing.proveedor === 'facebook') throw new Error('email_facebook');
+    if (existing.proveedor === 'local') throw new Error('email_local');
   }
 
   result = await db.query(`
@@ -111,8 +105,6 @@ const loginUser = async (email, password) => {
 
   if (user.proveedor === 'google')
     return { success: false, message: 'Este correo fue registrado con Google. Usa el botón de Google.' };
-  if (user.proveedor === 'facebook')
-    return { success: false, message: 'Este correo fue registrado con Facebook. Usa el botón de Facebook.' };
   if (!user.activo)
     return { success: false, message: 'Cuenta no activada. Revisa tu correo y verifica tu cuenta.' };
 

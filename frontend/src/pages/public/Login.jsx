@@ -31,9 +31,7 @@ function Login() {
   const errorMessages = {
     email_local:    "Este correo ya está registrado manualmente. Usa tu contraseña para iniciar sesión.",
     google:         "Error al iniciar sesión con Google. Intenta de nuevo.",
-    facebook:       "Error al iniciar sesión con Facebook. Intenta de nuevo.",
     email_google:   "Este correo fue registrado con Google. Usa el botón de Google.",
-    email_facebook: "Este correo fue registrado con Facebook. Usa el botón de Facebook.",
   };
 
   const urlError = searchParams.get("error");
@@ -143,10 +141,6 @@ function Login() {
     window.location.href = `${API}/api/auth/google`;
   };
 
-  const handleFacebookLogin = () => {
-    window.location.href = `${API}/api/auth/facebook`;
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -252,18 +246,6 @@ function Login() {
               }}
             >
               <i className="fab fa-google" style={{ color: "#EA4335" }}></i> Google
-            </button>
-
-            <button
-              onClick={handleFacebookLogin}
-              style={{
-                width: "100%", padding: "10px", background: "#fff",
-                border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: "8px", fontSize: "0.95rem",
-              }}
-            >
-              <i className="fab fa-facebook-f" style={{ color: "#1877F2" }}></i> Facebook
             </button>
           </div>
 

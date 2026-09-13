@@ -39,35 +39,4 @@ router.get('/google/callback',
   }
 );
 
-// ─── FACEBOOK ─────────────────────────────────────────────
-router.get('/facebook',
-  passport.authenticate('facebook', { scope: ['email'] })
-);
-
-router.get('/facebook/callback',
-  (req, res, next) => {
-    passport.authenticate('facebook', (err, user, info) => {
-      if (err) return res.redirect(`${FRONTEND_URL}/login?error=facebook`);
-
-      if (!user) {
-        const errorCode = info?.message || 'facebook';
-        return res.redirect(`${FRONTEND_URL}/login?error=${errorCode}`);
-      }
-
-      req.logIn(user, (err) => {
-        if (err) return res.redirect(`${FRONTEND_URL}/login?error=facebook`);
-        const userData = {
-          id_usuario: user.id_usuario,
-          nombre: user.nombre,
-          correo_electronico: user.correo_electronico,
-          rol: user.rol,
-        };
-        const token = generarToken(userData);
-        const encoded = encodeURIComponent(JSON.stringify({ user: userData, token }));
-        res.redirect(`${FRONTEND_URL}/auth/callback?data=${encoded}`);
-      });
-    })(req, res, next);
-  }
-);
-
 module.exports = router;
