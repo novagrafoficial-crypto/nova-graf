@@ -44,7 +44,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secreto_temporal',
   resave: false,
-  saveUninitialized: true,   // ← CORREGIDO (era false)
+  saveUninitialized: true,  
   cookie: {
     secure: false,           // false en desarrollo; true solo con HTTPS en producción
     httpOnly: true,
@@ -108,7 +108,6 @@ app.use('/api/client/notificaciones', notificacionesRoutes);
 app.use('/api/client/disenos', disenosRoutes);
 app.use('/api/client/chat',   chatRoutes);
 app.use('/api/client/previas', previasRoutes);
-app.use('/api/client/portafolio', portafolioRoutes);
 app.use('/api/client/portafolio',        portafolioClientRoutes); 
 app.use('/api/client/ofertas', ofertaRoutes);
 

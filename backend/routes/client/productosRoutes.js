@@ -5,12 +5,10 @@ const {
   mostrarCatalogo,
   mostrarDetalle,
   mostrarCategorias,
-  mostrarSubcategorias, // ✅ agregado
-  mostrarMarcas,        // ✅ agregado
-  crearProductoPersonalizado,
+  mostrarSubcategorias, // 
+  mostrarMarcas,        // 
   mostrarPortafolioPorProducto,
 } = require('../../controllers/client/productosController');
-const verificarToken = require('../../src/middlewares/auth'); // <-- añadir
 
 // ⚠️ Rutas con nombre fijo SIEMPRE antes de /:id
 router.get('/catalogo',      mostrarCatalogo);

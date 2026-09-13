@@ -1,9 +1,6 @@
 // backend/models/client/notificacionesModel.js
 const pool = require('../../config/db');
 
-/**
- * Obtener todas las notificaciones del usuario
- */
 const obtenerNotificaciones = async (usuarioId) => {
     const query = `
         SELECT 

@@ -2,7 +2,7 @@
 const pool = require('../../config/db');
 
 // ─── CREAR PEDIDO DESDE CARRITO ────────────────────────────────────
-const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId, direccionEnvio, distanciaKm) => {
+const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId, direccionEnvio) => {
   const client = await pool.connect();
   
   try {
