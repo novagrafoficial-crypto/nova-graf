@@ -266,6 +266,40 @@ const getUserIdByEmail = async (email) => {
   return result.rowCount === 0 ? null : result.rows[0];
 };
 
+// ─── VERIFICAR NOMBRE DE USUARIO DUPLICADO (excluyendo al propio usuario) ─
+const isUsernameTaken = async (nombreUsuario, excludeId) => {
+  const result = await db.query(
+    'SELECT id_usuario FROM usuarios WHERE nombre_usuario = $1 AND id_usuario <> $2',
+    [nombreUsuario, excludeId]
+  );
+  return result.rowCount > 0;
+};
+
+// ─── OBTENER CONTRASEÑA Y PROVEEDOR (para cambio de contraseña) ─────────
+const getPasswordData = async (id_usuario) => {
+  const result = await db.query(
+    'SELECT contrasena, proveedor FROM usuarios WHERE id_usuario = $1',
+    [id_usuario]
+  );
+  return result.rowCount === 0 ? null : result.rows[0];
+};
+
+// ─── ACTUALIZAR SOLO LA CONTRASEÑA (sin tocar OTP, para cambio desde perfil) ─
+const updatePasswordOnly = async (id_usuario, hashedPassword) => {
+  await db.query(
+    'UPDATE usuarios SET contrasena = $1 WHERE id_usuario = $2',
+    [hashedPassword, id_usuario]
+  );
+};
+
+// ─── OBTENER ID DE UN ADMINISTRADOR (para notificaciones automáticas) ────
+const getAdminId = async () => {
+  const result = await db.query(
+    "SELECT id_usuario FROM usuarios WHERE rol = 'admin' LIMIT 1"
+  );
+  return result.rowCount === 0 ? null : result.rows[0].id_usuario;
+};
+
 // ─── EXPORTS ──────────────────────────────────────────────
 module.exports = {
   createUser,
@@ -283,4 +317,8 @@ module.exports = {
   updateUserProfile,
   resendActivationOTP,
   getUserIdByEmail,
+  isUsernameTaken,
+  getPasswordData,
+  updatePasswordOnly,
+  getAdminId,
 };

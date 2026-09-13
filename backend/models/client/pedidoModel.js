@@ -334,6 +334,28 @@ const registrarPagoFinal = async (pedidoId, tipoPago, monto, comprobanteUrl, not
   return rows[0];
 };
 
+// ─── DATOS BÁSICOS DE UN PEDIDO (sin filtrar por usuario, para chat admin↔cliente) ─
+const obtenerPedidoBasico = async (pedidoId) => {
+  const query = `
+    SELECT id, estado, usuario_id
+    FROM ventas.pedidos_clientes
+    WHERE id = $1
+  `;
+  const { rows } = await pool.query(query, [pedidoId]);
+  return rows[0] || null;
+};
+
+// ─── DATOS BÁSICOS DE UN PEDIDO, VERIFICANDO QUE SEA DEL USUARIO ────────
+const obtenerPedidoBasicoDeUsuario = async (pedidoId, usuarioId) => {
+  const query = `
+    SELECT id, estado
+    FROM ventas.pedidos_clientes
+    WHERE id = $1 AND usuario_id = $2
+  `;
+  const { rows } = await pool.query(query, [pedidoId, usuarioId]);
+  return rows[0] || null;
+};
+
 module.exports = {
   crearPedidoDesdeCarrito,
   registrarPago,
@@ -341,5 +363,7 @@ module.exports = {
   obtenerPedidosUsuario,
   actualizarEstadoPedido,
   calcularMontoPendiente,
-  registrarPagoFinal
+  registrarPagoFinal,
+  obtenerPedidoBasico,
+  obtenerPedidoBasicoDeUsuario
 };

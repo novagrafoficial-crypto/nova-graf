@@ -1,4 +1,5 @@
 const express = require('express');
+const verificarToken = require('../../src/middlewares/auth');
 const router = express.Router();
 const {
   registerUser,
@@ -30,9 +31,9 @@ router.post('/resend-recovery-otp',   resendRecoveryOTP);
 router.post('/resend-activation-otp', resendActivationOTPController);
 router.post('/get-user-id',           getUserIdByEmail);
 
-// ─── Perfil ────────────────────────────────────────────────
-router.get('/profile/:id',            getProfile);
-router.put('/profile/:id',            putProfile);
-router.put('/profile/:id/password',   putPassword);
+// ─── Perfil (Autenticado)────────────────────────────────────────────
+router.get('/profile/:id',            verificarToken, getProfile);
+router.put('/profile/:id',            verificarToken, putProfile);
+router.put('/profile/:id/password',   verificarToken, putPassword);
 
 module.exports = router;

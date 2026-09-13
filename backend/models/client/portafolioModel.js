@@ -1,9 +1,5 @@
 // backend/models/client/portafolioModel.js
 const pool = require('../../config/db');
-
-/**
- * Obtener todos los productos del portafolio
- */
 const obtenerPortafolio = async () => {
     const query = `
         SELECT 
