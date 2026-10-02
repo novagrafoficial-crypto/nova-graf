@@ -8,7 +8,7 @@ const helmet = require('helmet');
 const app = express();
 
 // ─── 1. CORS ───────────────────────────────────────────────
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:4173'];
 
 app.use(cors({
   origin: FRONTEND_URL,
