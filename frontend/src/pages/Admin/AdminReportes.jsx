@@ -39,21 +39,6 @@ export default function AdminReportes() {
     }
   };
 
-  const descargarCSV = async (endpoint, nombre) => {
-    try {
-      const res = await fetch(`${API}/${endpoint}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = nombre;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const formatMoney = (n) =>
     Number(n).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 
@@ -72,7 +57,7 @@ export default function AdminReportes() {
       {/* Encabezado */}
       <div>
         <h1 style={{ fontSize: "22px", fontWeight: 500, color: "#1A6163", margin: "0 0 4px" }}>Reportes</h1>
-        <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>Información importante del negocio y exportación de datasets</p>
+        <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>Información importante del negocio</p>
       </div>
 
       {/* Tarjetas resumen */}
@@ -160,44 +145,6 @@ export default function AdminReportes() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Exportación de datasets */}
-      <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", padding: "1.25rem" }}>
-        <h3 style={{ margin: "0 0 4px", color: "#1A6163", fontSize: "15px" }}>📂 Exportar datasets para modelos ML</h3>
-        <p style={{ margin: "0 0 1rem", fontSize: "13px", color: "#666" }}>
-          Los datos se extraen directamente de la base de datos de Nova Graf en tiempo real.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-          {[
-            {
-              titulo: "Dataset C1 — Cancelación de pedidos",
-              desc: "Variables: edad, total_pedidos, tasa_cancelacion, metodo_pago, metodo_entrega, es_nuevo, cantidad_productos, dias_entrega, cancelado",
-              endpoint: "dataset-cancelacion",
-              nombre: "dataset_c1_cancelacion.csv"
-            },
-            {
-              titulo: "Dataset K1 — Segmentación de clientes",
-              desc: "Variables: edad, antiguedad_cliente, total_pedidos, gasto_total, tasa_cancelacion, categorias_distintas, dias_desde_ultima_compra, productos_promedio_pedido",
-              endpoint: "dataset-segmentacion",
-              nombre: "dataset_k1_segmentacion.csv"
-            }
-          ].map((d, i) => (
-            <div key={i} style={{ border: "1px solid #d4eeea", borderRadius: "10px", padding: "1rem" }}>
-              <p style={{ margin: "0 0 4px", fontWeight: 600, fontSize: "14px", color: "#1A6163" }}>{d.titulo}</p>
-              <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#666" }}>{d.desc}</p>
-              <button
-                onClick={() => descargarCSV(d.endpoint, d.nombre)}
-                style={{
-                  padding: "8px 18px", borderRadius: "8px", border: "none",
-                  background: "#1A6163", color: "#fff", cursor: "pointer",
-                  fontWeight: 600, fontSize: "13px"
-                }}>
-                ⬇️ Descargar CSV
-              </button>
-            </div>
-          ))}
         </div>
       </div>
 
