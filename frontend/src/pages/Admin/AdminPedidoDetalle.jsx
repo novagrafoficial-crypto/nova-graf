@@ -25,13 +25,13 @@ export default function AdminPedidoDetalle() {
   const [mensaje, setMensaje] = useState("");
   const [notasRechazo, setNotasRechazo] = useState("");
   const [status, setStatus] = useState(null);
-  const [riesgo, setRiesgo] = useState(null);
+
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const adminId = storedUser?.id_usuario || storedUser?.id;
 
   useEffect(() => { cargar(); }, [id]);
-  useEffect(() => { cargarRiesgo(); }, [id]);
+
 
   const cargar = async () => {
     try {
@@ -45,15 +45,7 @@ export default function AdminPedidoDetalle() {
     }
   };
 
-  const cargarRiesgo = async () => {
-    try {
-      const res = await fetch(`${API}/${id}/riesgo-cancelacion`);
-      const data = await res.json();
-      setRiesgo(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+
 
   const actualizarEstado = async (estado) => {
     try {
@@ -161,28 +153,6 @@ export default function AdminPedidoDetalle() {
         </div>
       )}
 
-      {/* 🤖 Predicción ML */}
-      {riesgo && (
-        <div style={{
-          background: riesgo.riesgo === 'ALTO' ? '#FEE2E2' : '#D1FAE5',
-          border: `2px solid ${riesgo.riesgo === 'ALTO' ? '#DC2626' : '#35BA99'}`,
-          borderRadius: 12, padding: '1rem 1.25rem',
-          display: 'flex', alignItems: 'center', gap: '1rem'
-        }}>
-          <span style={{ fontSize: 28 }}>{riesgo.riesgo === 'ALTO' ? '🔴' : '🟢'}</span>
-          <div>
-            <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: riesgo.riesgo === 'ALTO' ? '#DC2626' : '#0F6E56' }}>
-              {riesgo.riesgo === 'ALTO' ? 'Alto riesgo de cancelación' : 'Pedido en buen camino'}
-            </p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#555' }}>
-              {riesgo.riesgo === 'ALTO'
-                ? 'El modelo predice que este pedido podría cancelarse. Se recomienda contactar al cliente.'
-                : 'El modelo predice que este pedido será completado correctamente.'}
-            </p>
-          </div>
-          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#999' }}>🤖 Predicción ML</span>
-        </div>
-      )}
 
       {/* Info del pedido */}
       <div style={{ background: "#fff", border: "1px solid #d4eeea", borderRadius: "12px", padding: "1.25rem" }}>

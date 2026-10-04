@@ -63,37 +63,5 @@ const getSubcategorias = async (req, res) => {
   }
 };
 
-// ─── Predicción individual (por producto) ─────────────────────────────────────
-const getPrediccion = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { periodo = 'mes' } = req.query;
-    const data = await model.getPrediccion(id, periodo);
-    res.json(data);
-  } catch (err) {
-    console.error('[reabastecimiento] getPrediccion:', err);
-    res.status(500).json({ error: 'Error al calcular predicción.' });
-  }
-};
- 
-// ─── Predicción general ───────────────────────────────────────────────────────
-// GET /api/admin/reabastecimiento/prediccion
-// Devuelve todas las variantes activas con:
-//   - stock_actual, ROP, promedio_diario, tasa k, días_hasta_rop, estado
-//
-// El cálculo exponencial dx/dt = kx se resuelve en el modelo:
-//   k = ln(1 − d / x₀)
-//   x(t) = x₀ · e^(k·t)
-//   t_ROP = ln(ROP / x₀) / k
-// ─────────────────────────────────────────────────────────────────────────────
-const getPrediccionGeneral = async (_req, res) => {
-  try {
-    const data = await model.getPrediccionGeneral();
-    res.json(data);
-  } catch (err) {
-    console.error('[reabastecimiento] getPrediccionGeneral:', err);
-    res.status(500).json({ error: 'Error al calcular predicción general.' });
-  }
-};
 
-module.exports = { getProductos, getVariantes, getVentas, getCategorias, getSubcategorias, getPrediccion, getPrediccionGeneral, };
+module.exports = { getProductos, getVariantes, getVentas, getCategorias, getSubcategorias };

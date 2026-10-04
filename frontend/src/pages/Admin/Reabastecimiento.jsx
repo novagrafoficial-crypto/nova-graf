@@ -5,8 +5,17 @@ import "../../styles/admin/AdminReabastecimiento.css";
 const API = import.meta.env.VITE_API_URL;
 
 // ── ProductoCard ──────────────────────────────────────────────────────────────
-function ProductoCard({ producto, estadoProducto }) {
+function ProductoCard({ producto }) {
   const navigate = useNavigate();
+
+  const stockNum = Number(producto.stock_total);
+  const stockMin = Number(producto.stock_minimo_total);
+
+  // Estado calculado directamente con el stock (sin predicción)
+  const estadoProducto =
+    stockNum === 0 || stockNum <= stockMin ? "critico" :
+    stockNum < 10                          ? "proximo" :
+                                             "abastecido";
 
   const handleVariantes = () =>
     navigate(`/admin/stock/${producto.producto_id}/variantes`, {
@@ -22,20 +31,14 @@ function ProductoCard({ producto, estadoProducto }) {
       state: { producto_nombre: producto.producto_nombre },
     });
 
-  const handlePrediccion = () =>
-    navigate(`/admin/stock/${producto.producto_id}/prediccion`, {
-      state: { producto_nombre: producto.producto_nombre },
-    });
-
   // Badge según estado
   const badge = {
     critico:    { cls: "rb-badge--critico",    txt: "Crítico"    },
     proximo:    { cls: "rb-badge--proximo",    txt: "Próximo"    },
     abastecido: { cls: "rb-badge--abastecido", txt: "Abastecido" },
-  }[estadoProducto] ?? { cls: "rb-badge--abastecido", txt: "Abastecido" };
+  }[estadoProducto];
 
   // Color del número de stock
-  const stockNum = Number(producto.stock_total);
   const stockCls =
     stockNum === 0  ? "rb-stock-num--danger" :
     stockNum < 10   ? "rb-stock-num--warn"   :
@@ -78,9 +81,6 @@ function ProductoCard({ producto, estadoProducto }) {
           <button className="rb-btn rb-btn--secondary" onClick={handleVentas}>
             📊 Ventas
           </button>
-          <button className="rb-btn rb-btn--accent"    onClick={handlePrediccion}>
-            🔮 Predecir
-          </button>
         </div>
       </td>
     </tr>
@@ -97,7 +97,6 @@ export default function Reabastecimiento() {
   const [filtros,        setFiltros]        = useState({
     categoria_id: "", subcategoria_id: "", search: "",
   });
-  const [estadosProductos, setEstadosProductos] = useState({});
 
   // ── Paginación ──
   const [paginaActual, setPaginaActual] = useState(1);
@@ -146,43 +145,6 @@ export default function Reabastecimiento() {
     setPaginaActual(1);
   }, [filtros]);
 
-  // Cargar predicciones para obtener estado más crítico por producto
-  useEffect(() => {
-    Promise.all([
-      fetch(`${API}/api/admin/reabastecimiento/productos`).then((r) => r.json()),
-      fetch(`${API}/api/admin/reabastecimiento/prediccion`).then((r) => r.json()),
-    ])
-      .then(([productosList, variantes]) => {
-        const estadoPorProducto = {};
-
-        productosList.forEach((p) => {
-          const s = Number(p.stock_total);
-          estadoPorProducto[p.producto_id] =
-            s === 0 ? "critico" : s < 10 ? "proximo" : "abastecido";
-        });
-
-        variantes.forEach((v) => {
-          const pid    = v.producto_id;
-          const nuevo  = v.estado;
-          const actual = estadoPorProducto[pid];
-          if (nuevo === "critico") {
-            estadoPorProducto[pid] = "critico";
-          } else if (nuevo === "proximo" && actual !== "critico") {
-            estadoPorProducto[pid] = "proximo";
-          } else if (
-            nuevo === "abastecido" &&
-            actual !== "critico" &&
-            actual !== "proximo"
-          ) {
-            estadoPorProducto[pid] = "abastecido";
-          }
-        });
-
-        setEstadosProductos(estadoPorProducto);
-      })
-      .catch((err) => console.error("Error cargando datos:", err));
-  }, []);
-
   // ── Lógica de paginación ──
   const totalPaginas       = Math.ceil(productos.length / PRODUCTOS_POR_PAGINA);
   const productosPaginados = productos.slice(
@@ -199,8 +161,8 @@ export default function Reabastecimiento() {
       {/* ── Header ── */}
       <header className="rb-header">
         <div>
-          <h1 className="rb-title">Predicción de Reabastecimiento</h1>
-          <p className="rb-subtitle">Filtra y analiza el inventario por categoría.</p>
+          <h1 className="rb-title">Control de Inventario</h1>
+          <p className="rb-subtitle">Filtra y revisa el inventario por categoría.</p>
         </div>
         <div className="rb-counter">
           <span className="rb-counter__num">{productos.length}</span>
@@ -314,11 +276,7 @@ export default function Reabastecimiento() {
 
             <tbody>
               {productosPaginados.map((p) => (
-                <ProductoCard
-                  key={p.producto_id}
-                  producto={p}
-                  estadoProducto={estadosProductos[p.producto_id] ?? "abastecido"}
-                />
+                <ProductoCard key={p.producto_id} producto={p} />
               ))}
             </tbody>
           </table>
