@@ -121,7 +121,6 @@ const categoriasRoutes          = require('./routes/admin/categoriasRoutes');
 const subcategoriasRoutes       = require('./routes/admin/subcategoriasRoutes');
 const productosRoutes           = require('./routes/admin/productosRoutes');
 const usuariosRoutes            = require('./routes/admin/usuariosRoutes');
-const moduloAdminRoutes         = require('./routes/admin/moduloAdminRoutes');
 const adminMisionRoutes         = require('./routes/admin/empresa/adminMisionRoutes');
 const adminAntecedentesRoutes   = require('./routes/admin/empresa/adminAntecedentesRoutes');
 const adminContactosRoutes      = require('./routes/admin/empresa/adminContactosRoutes');
@@ -162,7 +161,6 @@ app.use('/api/admin/categorias',       categoriasRoutes);
 app.use('/api/admin/subcategorias',    subcategoriasRoutes);
 app.use('/api/admin/productos',        productosRoutes);
 app.use('/api/admin/usuarios',         usuariosRoutes);
-app.use('/api/admin/modulo',           moduloAdminRoutes);
 app.use('/api',                        publicacionRoutes);
 app.use('/api/admin/pedidos', pedidosAdminRoutes);
 
