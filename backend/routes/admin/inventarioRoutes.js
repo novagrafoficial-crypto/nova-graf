@@ -16,7 +16,6 @@ const validarId = (req, res, next) => {
 
 // ─── Rutas ────────────────────────────────────────────────────────────────────
 router.get('/',                    ctrl.getInventario);
-router.get('/reabastecimiento',    ctrl.getReabastecimiento);   // ← antes de /:id
 router.get('/:id',  validarId,     ctrl.getInventarioPorId);
 
 router.post('/',                   ctrl.createInventario);

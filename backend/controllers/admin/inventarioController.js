@@ -2,19 +2,6 @@
 
 const inventarioModel = require('../../models/admin/inventarioModel');
 
-// ─── Fórmulas matemáticas ────────────────────────────────────────────────────
-const calcularEOQ = (D, S, H) => {
-  if (!D || !S || !H || H === 0) return 0;
-  return Math.sqrt((2 * D * S) / H);
-};
-
-const calcularStockSeguridad = (Z, sigma, L) => {
-  if (!Z || !sigma || !L) return 0;
-  return Z * sigma * Math.sqrt(L);
-};
-
-const calcularROP = (d, L, SS) => (d * L) + SS;
-
 // ─── Validar campos requeridos ────────────────────────────────────────────────
 const validarCamposRequeridos = (data) => {
   const requeridos = ['variante_id', 'cantidad_disponible'];
@@ -134,65 +121,10 @@ const deleteInventario = async (req, res) => {
   }
 };
 
-// ─── GET reabastecimiento ──────────────────────────────────────────────────────
-const getReabastecimiento = async (req, res) => {
-  try {
-    const inventario = await inventarioModel.obtenerInventario();
-
-    const resultado = inventario.map((item) => {
-      const ventasDiarias = item.demanda_anual ? item.demanda_anual / 365 : 0;
-
-      const D     = parseFloat(item.demanda_anual)       || 0;
-      const S     = parseFloat(item.costo_pedido)        || 100;
-      const H     = parseFloat(item.costo_mantenimiento) || 5;
-      const L     = parseFloat(item.tiempo_entrega)      || 1;
-      const Z     = parseFloat(item.nivel_servicio)      || 1.65;
-      const sigma = parseFloat(item.desviacion_demanda)  || parseFloat((ventasDiarias * 0.3).toFixed(2));
-
-      const EOQ = Math.round(calcularEOQ(D, S, H));
-      const SS  = Math.round(calcularStockSeguridad(Z, sigma, L));
-      const ROP = Math.round(calcularROP(ventasDiarias, L, SS));
-
-      // Alerta si el stock actual bajó del punto de reorden
-      const alerta = item.cantidad_disponible <= ROP;
-
-      return {
-        ...item,
-        EOQ,
-        stock_seguridad: SS,
-        punto_reorden:   ROP,
-        alerta,
-        recomendacion: alerta
-          ? `Pedir ${EOQ} unidades`
-          : 'Stock suficiente',
-        // Variables del modelo (útil para el frontend y para la maestra)
-        _modelo: {
-          D,
-          S,
-          H,
-          Z,
-          sigma: parseFloat(sigma.toFixed(2)),
-          L,
-          d: parseFloat(ventasDiarias.toFixed(2)),
-        },
-      };
-    });
-
-    res.json(resultado);
-  } catch (err) {
-    console.error('[getReabastecimiento]', err);
-    res.status(500).json({
-      error: 'Error en reabastecimiento',
-      detalle: err.message,
-    });
-  }
-};
-
 module.exports = {
   getInventario,
   getInventarioPorId,
   createInventario,
   updateInventario,
   deleteInventario,
-  getReabastecimiento,
 };

@@ -133,7 +133,6 @@ const inventarioRoutes          = require('./routes/admin/inventarioRoutes');
 const adminVisionRoutes         = require('./routes/admin/empresa/adminVisionRoutes');
 const monitoreoRoutes           = require('./routes/admin/monitoreoRoutes');
 const publicacionRoutes         = require('./routes/admin/publicacionRoutes');
-const reabastecimientoRoutes    = require('./routes/admin/reabastecimientoRoutes');
 const pedidosAdminRoutes = require('./routes/admin/pedidosAdminRoutes');
 const marketingRoutes = require('./routes/admin/marketingRoutes');
 const comprasRoutes = require('./routes/admin/comprasRoutes');
@@ -165,7 +164,6 @@ app.use('/api/admin/productos',        productosRoutes);
 app.use('/api/admin/usuarios',         usuariosRoutes);
 app.use('/api/admin/modulo',           moduloAdminRoutes);
 app.use('/api',                        publicacionRoutes);
-app.use('/api/admin/reabastecimiento', reabastecimientoRoutes);
 app.use('/api/admin/pedidos', pedidosAdminRoutes);
 
 
