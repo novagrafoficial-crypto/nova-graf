@@ -8,7 +8,7 @@ const helmet = require('helmet');
 const app = express();
 
 // ─── 1. CORS ───────────────────────────────────────────────
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:4173'];
 
 app.use(cors({
   origin: FRONTEND_URL,
@@ -44,7 +44,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secreto_temporal',
   resave: false,
-  saveUninitialized: true,   // ← CORREGIDO (era false)
+  saveUninitialized: true,  
   cookie: {
     secure: false,           // false en desarrollo; true solo con HTTPS en producción
     httpOnly: true,
@@ -108,7 +108,6 @@ app.use('/api/client/notificaciones', notificacionesRoutes);
 app.use('/api/client/disenos', disenosRoutes);
 app.use('/api/client/chat',   chatRoutes);
 app.use('/api/client/previas', previasRoutes);
-app.use('/api/client/portafolio', portafolioRoutes);
 app.use('/api/client/portafolio',        portafolioClientRoutes); 
 app.use('/api/client/ofertas', ofertaRoutes);
 

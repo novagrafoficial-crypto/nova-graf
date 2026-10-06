@@ -1,7 +1,6 @@
 // backend/controllers/client/pedidoController.js
 const pedidoModel = require('../../models/client/pedidoModel');
 const metodosEntregaModel = require('../../models/client/metodosEntregaModel');
-const metodosPagoModel = require('../../models/client/metodosPagoModel');
 const carritoModel = require('../../models/client/carritoModel');
 const disenoModel = require('../../models/client/disenoModel');
 

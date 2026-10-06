@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Footer from "../../components/Footer";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -198,7 +197,6 @@ function ResetPassword() {
           )}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

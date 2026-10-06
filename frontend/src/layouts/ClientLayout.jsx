@@ -1,27 +1,18 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import ClientHeader from "../components/client/ClientHeader";
 import ClientFooter from "../components/client/ClientFooter";
 
 function ClientLayout() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // ProtectedRoute ya garantiza que exista un usuario cliente autenticado
+    // antes de llegar aquí; solo lo leemos para mostrarlo en el header.
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
-      navigate("/login");
-      return;
-    }
-    const parsed = JSON.parse(storedUser);
-    if (parsed.rol === "administrador") {
-      navigate("/admin/AdminLayout");
-      return;
-    }
-    setUser(parsed);
-  }, [navigate]);
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
 
-  // No renderizar nada hasta tener el usuario
   if (!user) return null;
 
   return (

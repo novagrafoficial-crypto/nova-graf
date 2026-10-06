@@ -125,7 +125,6 @@ function Register() {
   };
 
   const handleGoogleLogin = () => window.location.href = `${API_URL}/api/auth/google`;
-  const handleFacebookLogin = () => window.location.href = `${API_URL}/api/auth/facebook`;
 
   return (
     <div className="register-page">
@@ -302,9 +301,6 @@ function Register() {
             <div className="social-buttons">
               <button className="social-btn google" onClick={handleGoogleLogin}>
                 <i className="fab fa-google"></i> Google
-              </button>
-              <button className="social-btn facebook" onClick={handleFacebookLogin}>
-                <i className="fab fa-facebook-f"></i> Facebook
               </button>
             </div>
           </div>

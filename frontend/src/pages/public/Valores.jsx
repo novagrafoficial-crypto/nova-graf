@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/public/Mision.css';
-import Footer from '../../components/Footer';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -40,7 +39,6 @@ const Valores = () => {
         </div>
       ))}
       <Link to="/">Volver al inicio</Link>
-      <Footer />
     </div>
   );
 };

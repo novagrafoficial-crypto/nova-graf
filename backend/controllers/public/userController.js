@@ -1,8 +1,7 @@
 const userModel = require('../../models/public/userModel');
 const { sendOTPEmail, sendRecoveryEmail } = require('../../config/sendgrid');
-const db = require('../../config/db');
-const bcrypt = require('bcrypt'); // ← FIX: faltaba este import (causa ReferenceError en putPassword)
-const { generarToken } = require('../../utils/jwt');  // ← AGREGAR
+const bcrypt = require('bcrypt');
+const { generarToken } = require('../../utils/jwt');
 
 // ─── REGISTRO ─────────────────────────────────────────────
 const registerUser = async (req, res) => {
@@ -51,7 +50,7 @@ const verifyUser = async (req, res) => {
   }
 };
 
-// Solo modificamos loginUserController:
+// ─── LOGIN ─────────────────────────────────────────────────
 const loginUserController = async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,13 +63,12 @@ const loginUserController = async (req, res) => {
     if (!result.success)
       return res.status(401).json({ message: result.message });
 
-    // Generar token JWT
     const token = generarToken(result.user);
 
     return res.status(200).json({
       message: 'Login exitoso',
       user: result.user,
-      token   // ← INCLUIR TOKEN EN RESPUESTA
+      token
     });
   } catch (error) {
     console.error(error);
@@ -204,9 +202,13 @@ const getUserIdByEmail = async (req, res) => {
   }
 };
 
-// ─── PERFIL — GET ─────────────────────────────────────────
+// ─── PERFIL — GET (requiere ser dueño del perfil) ─────────
 const getProfile = async (req, res) => {
   try {
+    if (String(req.usuario.id_usuario) !== String(req.params.id)) {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+
     const perfil = await userModel.getUserProfile(req.params.id);
     if (!perfil) return res.status(404).json({ message: 'Usuario no encontrado' });
     res.json(perfil);
@@ -216,10 +218,14 @@ const getProfile = async (req, res) => {
   }
 };
 
-// ─── PERFIL — PUT (datos personales) ─────────────────────
+// ─── PERFIL — PUT (datos personales, requiere ser dueño) ──
 const putProfile = async (req, res) => {
   try {
     const { id } = req.params;
+    if (String(req.usuario.id_usuario) !== String(id)) {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+
     const { nombre, apellido_paterno, apellido_materno,
             nombre_usuario, fecha_nacimiento, domicilio, telefono } = req.body;
 
@@ -230,11 +236,8 @@ const putProfile = async (req, res) => {
     if (!nombre_usuario?.trim())
       return res.status(400).json({ message: 'El nombre de usuario es obligatorio' });
 
-    const dup = await db.query(
-      'SELECT id_usuario FROM usuarios WHERE nombre_usuario = $1 AND id_usuario <> $2',
-      [nombre_usuario.trim(), id]
-    );
-    if (dup.rowCount > 0)
+    const usernameEnUso = await userModel.isUsernameTaken(nombre_usuario.trim(), id);
+    if (usernameEnUso)
       return res.status(409).json({ message: 'Ese nombre de usuario ya está en uso' });
 
     const actualizado = await userModel.updateUserProfile(id, {
@@ -255,10 +258,14 @@ const putProfile = async (req, res) => {
   }
 };
 
-// ─── CONTRASEÑA — PUT (desde perfil, solo locales) ───────
+// ─── CONTRASEÑA — PUT (desde perfil, solo locales, requiere ser dueño) ─
 const putPassword = async (req, res) => {
   try {
     const { id } = req.params;
+    if (String(req.usuario.id_usuario) !== String(id)) {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+
     const { actual, nueva } = req.body;
 
     if (!actual || !nueva)
@@ -266,23 +273,20 @@ const putPassword = async (req, res) => {
     if (nueva.length < 6)
       return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
 
-    const row = await db.query(
-      'SELECT contrasena, proveedor FROM usuarios WHERE id_usuario = $1', [id]
-    );
-    if (row.rowCount === 0)
+    const datosContrasena = await userModel.getPasswordData(id);
+    if (!datosContrasena)
       return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    const { contrasena, proveedor } = row.rows[0];
+    const { contrasena, proveedor } = datosContrasena;
 
     if (proveedor === 'google')
       return res.status(403).json({ message: 'Las cuentas de Google no tienen contraseña local' });
 
-    // FIX: bcrypt ahora está importado correctamente arriba
     const ok = await bcrypt.compare(actual, contrasena);
     if (!ok) return res.status(401).json({ message: 'Contraseña actual incorrecta' });
 
     const hash = await bcrypt.hash(nueva, 10);
-    await db.query('UPDATE usuarios SET contrasena = $1 WHERE id_usuario = $2', [hash, id]);
+    await userModel.updatePasswordOnly(id, hash);
     res.json({ message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('putPassword:', error.message);

@@ -1,9 +1,6 @@
 // backend/models/client/notificacionesModel.js
 const pool = require('../../config/db');
 
-/**
- * Obtener todas las notificaciones del usuario
- */
 const obtenerNotificaciones = async (usuarioId) => {
     const query = `
         SELECT 
@@ -78,10 +75,24 @@ const eliminarNotificacion = async (notificacionId, usuarioId) => {
     return rows[0] || null;
 };
 
+/**
+ * Crear una notificación nueva
+ */
+const crearNotificacion = async ({ usuario_id, pedido_id, tipo, titulo, mensaje, enlace }) => {
+    const query = `
+        INSERT INTO ventas.notificaciones (usuario_id, pedido_id, tipo, titulo, mensaje, enlace)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+    `;
+    const { rows } = await pool.query(query, [usuario_id, pedido_id, tipo, titulo, mensaje, enlace]);
+    return rows[0];
+};
+
 module.exports = {
     obtenerNotificaciones,
     obtenerNoLeidas,
     marcarComoLeida,
     marcarTodasComoLeidas,
-    eliminarNotificacion
+    eliminarNotificacion,
+    crearNotificacion
 };

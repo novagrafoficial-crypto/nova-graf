@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import Footer from "../../components/Footer";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -190,7 +189,6 @@ function ForgotPassword() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

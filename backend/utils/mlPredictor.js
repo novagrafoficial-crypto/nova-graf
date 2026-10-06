@@ -1,5 +1,4 @@
 const axios = require('axios');
-
 const ML_API = 'https://nova-graf-ml-api-wvzu.onrender.com';
 
 const predecirCancelacion = async (datos) => {

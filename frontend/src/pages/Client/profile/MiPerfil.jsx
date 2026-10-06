@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -38,7 +39,9 @@ function MiPerfil() {
 
   useEffect(() => {
     if (!user) { navigate("/"); return; }
-    fetch(`${API_BASE}/api/users/profile/${user.id_usuario}`)
+    fetch(`${API_BASE}/api/users/profile/${user.id_usuario}`, {
+      headers: { ...getAuthHeaders() },
+    })
       .then(r => r.json())
       .then(data => { setProfile(data); setForm(data); })
       .catch(() => {})
@@ -50,7 +53,7 @@ function MiPerfil() {
     try {
       const res  = await fetch(`${API_BASE}/api/users/profile/${user.id_usuario}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(form),
       });
       const data = await res.json();
@@ -78,7 +81,7 @@ function MiPerfil() {
     try {
       const res  = await fetch(`${API_BASE}/api/users/profile/${user.id_usuario}/password`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ actual: pwForm.actual, nueva: pwForm.nueva }),
       });
       const data = await res.json();
