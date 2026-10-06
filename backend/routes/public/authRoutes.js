@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const passport = require('../../config/passport');
 const { generarToken } = require('../../utils/jwt');  // ← AGREGAR
+const authMobileController = require('../../controllers/public/authMobileController');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -38,5 +39,6 @@ router.get('/google/callback',
     })(req, res, next);
   }
 );
+router.post('/google/mobile', authMobileController.googleMobileLogin);
 
 module.exports = router;
