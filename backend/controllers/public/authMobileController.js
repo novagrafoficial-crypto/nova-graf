@@ -1,3 +1,4 @@
+//se instalo nueva dependencia
 const { OAuth2Client } = require('google-auth-library');
 const db = require('../../config/db'); // Tu conexión a PostgreSQL
 const { generarToken } = require('../../utils/jwt'); // Tu generador oficial de tokens web
