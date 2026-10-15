@@ -6,6 +6,8 @@ import PublicLayout from "./layouts/PublicLayout";
 import ClientLayout from "./layouts/ClientLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PwaStatus from "./components/PwaStatus";
+
 
 // Páginas públicas
 import Home from "./pages/public/Home";
@@ -84,6 +86,7 @@ import AdminReportes from "./pages/Admin/AdminReportes";
 function App() {
   return (
     <BrowserRouter>
+      <PwaStatus />
       <Routes>
 
         {/* Rutas públicas */}

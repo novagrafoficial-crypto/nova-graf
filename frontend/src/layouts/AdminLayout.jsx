@@ -1,6 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/admin/AdminLayout.css";
+import { limpiarCachesPrivados } from '../utils/pwa'; 
 
 const NAV_LINKS = [
   { to: "Registro de atributos", icon: "🗂️", label: "Catálogo" },
@@ -19,14 +20,14 @@ const NAV_LINKS = [
 function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const adminName  = storedUser?.nombre || storedUser?.name || "Administrador";
 
   const activeLink   = NAV_LINKS.find((l) => location.pathname.includes(l.to));
   const sectionTitle = activeLink?.label ?? "Panel de Administración";
 
-  const handleLogout = () => { localStorage.removeItem("user"); navigate("/"); };
+  const handleLogout = () => { limpiarCachesPrivados(); localStorage.removeItem("user"); navigate("/"); };
 
   const [notificaciones, setNotificaciones] = useState([]);
   const [mostrarNotifs, setMostrarNotifs] = useState(false);

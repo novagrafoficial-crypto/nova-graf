@@ -5,6 +5,7 @@ import axios from 'axios';
 import { getToken } from '../../utils/auth';
 import { useCart } from '../../context/CartContext';
 import '../../styles/client/Checkout.css';
+import SugerenciaEntrega from '../../components/SugerenciaEntrega';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -252,6 +253,10 @@ const Checkout = () => {
           <form onSubmit={handleSubmit}>
 
             {/* ─── PASO 1: CATEGORÍA DE ENTREGA ───────── */}
+            <SugerenciaEntrega
+              categoriasDisponibles={categoriasDisponibles}
+              onSugerir={handleCategoriaChange}
+            />
             <div className="form-group">
               <label htmlFor="categoria-entrega">
                 <span className="form-step">1</span>

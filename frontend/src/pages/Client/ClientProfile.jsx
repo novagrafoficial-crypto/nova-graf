@@ -9,6 +9,8 @@ import MisDisenos from "./profile/MisDisenos";     // ← COMENTADO (no existe)
 // import Historial from "./profile/Historial";       // ← COMENTADO (no existe)
 // import Configuracion from "./profile/Configuracion"; // ← COMENTADO (no existe)
 import "../../styles/client/Clientprofile.css";
+import { limpiarCachesPrivados } from '../../utils/pwa';
+
 
 const MENU = [
   { id: "mi-perfil", icon: "👤", label: "Mi perfil" },
@@ -81,6 +83,7 @@ function ClientProfile() {
   }
 
   const confirmarLogout = () => {
+    limpiarCachesPrivados();
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/");
