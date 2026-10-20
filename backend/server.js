@@ -8,23 +8,24 @@ const helmet = require('helmet');
 const app = express();
 
 // ─── 1. CORS ───────────────────────────────────────────────
-const FRONTEND_URL = process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:4173'];
+const FRONTEND_URLS = (process.env.FRONTEND_URL || 'http://localhost:5173,http://localhost:4173')
+  .split(',')
+  .map(u => u.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
-app.use(cors({
-  origin: FRONTEND_URL,
+const corsOptions = {
+  origin: (origin, callback) => {
+    // sin origin = Postman, app móvil, etc.
+    if (!origin || FRONTEND_URLS.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+};
 
-// ─── 2. PREFLIGHT ──────────────────────────────────────────
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
-});
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // ─── 3. HELMET ─────────────────────────────────────────────
 app.use(helmet({
