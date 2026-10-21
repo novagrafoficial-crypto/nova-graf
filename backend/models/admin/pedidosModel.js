@@ -47,11 +47,16 @@ const obtenerPorId = async (id) => {
     SELECT 
       d.cantidad,
       d.precio_unitario,
+      d.cantidad * d.precio_unitario AS subtotal,
       pv.sku,
+      pv.imagen_url,
+      col.nombre AS color,
       pr.nombre AS producto_nombre
+      pr.descripcion
     FROM ventas.pedido_cliente_detalle d
     JOIN productos.producto_variantes pv ON d.variante_id = pv.id
     JOIN productos.productos pr ON pv.producto_id = pr.id
+    LEFT JOIN productos.colores col ON pv.color_id = col.id
     WHERE d.pedido_cliente_id = $1
   `, [id]);
 
