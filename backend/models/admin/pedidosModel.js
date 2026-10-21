@@ -51,7 +51,7 @@ const obtenerPorId = async (id) => {
       pv.sku,
       pv.imagen_url,
       col.nombre AS color,
-      pr.nombre AS producto_nombre
+      pr.nombre AS producto_nombre,
       pr.descripcion
     FROM ventas.pedido_cliente_detalle d
     JOIN productos.producto_variantes pv ON d.variante_id = pv.id
