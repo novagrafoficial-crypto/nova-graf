@@ -20,6 +20,8 @@ router.get('/', verificarToken, pedidoController.obtenerPedidosUsuario);
 router.post('/:id/diseno', verificarToken, pedidoController.subirDiseno); // ← NUEVO
 
 // ─── OBTENER DISEÑOS DEL PEDIDO ──────────────────────────────────
-router.get('/:id/disenos', verificarToken, pedidoController.obtenerDisenos); // ← NUEVO (opcional)
+router.get('/:id/disenos', verificarToken, pedidoController.obtenerDisenos); // ← NUEVO 
+// ─── SUBIR DISEÑOS DEL PEDIDO
+router.post('/:id/disenos', verificarToken, pedidoController.subirDisenosPedido);
 
 module.exports = router;
