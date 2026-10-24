@@ -245,6 +245,75 @@ const subirDiseno = async (req, res) => {
         });
     }
 };
+// ─── SUBIR DISEÑO PEDIDO ──────────────────────────────────────────────
+const subirDisenosPedido = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { disenos } = req.body;
+        const usuarioId = req.usuario.id_usuario;
+
+        const pedido = await pedidoModel.obtenerDetallePedido(id, usuarioId);
+        if (!pedido) {
+            return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+        }
+        if (pedido.estado !== 'EN_DISENO') {
+            return res.status(400).json({
+                success: false,
+                message: `El pedido no está en etapa de diseño. Estado actual: ${pedido.estado}`
+            });
+        }
+        if (!Array.isArray(disenos) || disenos.length === 0) {
+            return res.status(400).json({ success: false, message: 'Debes enviar al menos un diseño' });
+        }
+
+        // Se arma desde los productos REALES del pedido y se exige un diseño por producto
+        const detalles = pedido.detalles || [];
+        const porVariante = new Map(disenos.map((d) => [Number(d.variante_id), d]));
+
+        const faltantes = detalles.filter((d) => {
+            const x = porVariante.get(Number(d.variante_id));
+            return !x || !x.archivo_url;
+        });
+        if (faltantes.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Falta el diseño de: ${faltantes.map((d) => d.producto_nombre).join(', ')}`
+            });
+        }
+
+        const lista = detalles.map((d) => {
+            const x = porVariante.get(Number(d.variante_id));
+            const etiqueta = `[${d.producto_nombre}${d.color ? ' - ' + d.color : ''}]`;
+            return {
+                variante_id: Number(d.variante_id),
+                archivo_url: x.archivo_url,
+                // Así el admin ve a qué producto pertenece cada diseño
+                notas_cliente: `${etiqueta} ${x.notas_cliente || ''}`.trim()
+            };
+        });
+
+        const guardados = await disenoModel.guardarDisenosPedido(id, lista);
+
+        try {
+            await require('../../models/admin/pedidosModel').notificarAdmins(
+                id, 'DISENO_ENVIADO', '🎨 Diseños recibidos',
+                `El cliente envió los diseños del pedido #${id}`, `/admin/pedido/${id}`
+            );
+        } catch (e) {
+            console.error('No se pudo notificar a los admins:', e.message);
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Diseños enviados correctamente',
+            disenos: guardados,
+            nuevo_estado: 'EN_REVISION'
+        });
+    } catch (error) {
+        console.error('Error al subir diseños del pedido:', error);
+        res.status(500).json({ success: false, message: 'Error al subir los diseños' });
+    }
+};
 
 // ─── OBTENER DISEÑOS DE UN PEDIDO ─────────────────────────────
 const obtenerDisenos = async (req, res) => {
@@ -362,6 +431,7 @@ module.exports = {
   obtenerMetodosEntrega,
   crearPedido,
   obtenerDetallePedido,
+  subirDisenosPedido,
   subirDiseno,
   obtenerDisenos,
   subirComprobante,
