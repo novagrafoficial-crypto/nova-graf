@@ -15,7 +15,8 @@ const obtenerPreviasPorPedido = async (pedidoId) => {
             rechazada,
             fecha_subida,
             fecha_aprobacion,
-            fecha_vista
+            fecha_vista,
+            comentario_cliente
         FROM ventas.previas_diseno
         WHERE pedido_cliente_id = $1
         ORDER BY numero_previa ASC
@@ -38,7 +39,8 @@ const obtenerPrevia = async (pedidoId, numeroPrevia) => {
             rechazada,
             fecha_subida,
             fecha_aprobacion,
-            fecha_vista
+            fecha_vista,
+            comentario_cliente
         FROM ventas.previas_diseno
         WHERE pedido_cliente_id = $1 AND numero_previa = $2
     `;
@@ -88,14 +90,15 @@ const aprobarPrevia = async (pedidoId, numeroPrevia) => {
 /**
  * Marcar previa como rechazada
  */
-const rechazarPrevia = async (pedidoId, numeroPrevia) => {
+const rechazarPrevia = async (pedidoId, numeroPrevia, comentario = null) => {
     const query = `
         UPDATE ventas.previas_diseno 
-        SET rechazada = TRUE
+        SET rechazada = TRUE,
+            comentario_cliente = $3
         WHERE pedido_cliente_id = $1 AND numero_previa = $2
         RETURNING *
     `;
-    const { rows } = await pool.query(query, [pedidoId, numeroPrevia]);
+    const { rows } = await pool.query(query, [pedidoId, numeroPrevia, comentario]);
     return rows[0] || null;
 };
 
@@ -138,6 +141,15 @@ const tienePreviaAprobada = async (pedidoId) => {
     const { rows } = await pool.query(query, [pedidoId]);
     return parseInt(rows[0].total) > 0;
 };
+const contarPreviasPendientes = async (pedidoId) => {
+    const { rows } = await pool.query(
+        `SELECT COUNT(*) AS total
+         FROM ventas.previas_diseno
+         WHERE pedido_cliente_id = $1 AND aprobada = FALSE AND rechazada = FALSE`,
+        [pedidoId]
+    );
+    return parseInt(rows[0].total) || 0;
+};
 
 module.exports = {
     obtenerPreviasPorPedido,
@@ -147,5 +159,6 @@ module.exports = {
     rechazarPrevia,
     marcarPreviaVista,
     contarPreviasRechazadas,
-    tienePreviaAprobada
+    tienePreviaAprobada,
+    contarPreviasPendientes
 };
