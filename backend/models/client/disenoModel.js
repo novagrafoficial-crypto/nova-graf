@@ -116,10 +116,41 @@ const obtenerDisenoPorId = async (disenoId, usuarioId) => {
     return rows[0] || null;
 };
 
+const guardarDisenosPedido = async (pedidoId, disenos) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const guardados = [];
+        for (const d of disenos) {
+            const { rows } = await client.query(
+                `INSERT INTO ventas.disenos_clientes (
+                    pedido_cliente_id, variante_id, tipo_origen,
+                    archivo_url, simulador_json, notas_cliente, fecha_envio
+                ) VALUES ($1, $2, 'ARCHIVO_SUBIDO', $3, NULL, $4, NOW())
+                RETURNING *`,
+                [pedidoId, d.variante_id, d.archivo_url, d.notas_cliente]
+            );
+            guardados.push(rows[0]);
+        }
+        await client.query(
+            `UPDATE ventas.pedidos_clientes SET estado = 'EN_REVISION' WHERE id = $1`,
+            [pedidoId]
+        );
+        await client.query('COMMIT');
+        return guardados;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
     guardarDiseno,
     obtenerDisenosPorPedido,
     obtenerUltimoDiseno,
     obtenerDisenosCliente,
-    obtenerDisenoPorId
+    obtenerDisenoPorId,
+    guardarDisenosPedido
 };
