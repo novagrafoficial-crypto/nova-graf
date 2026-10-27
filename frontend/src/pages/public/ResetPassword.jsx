@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Navigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function ResetPassword() {
   const { id_usuario } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const otp = location.state?.otp; // viene de VerifyRecovery
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  if (!otp) return <Navigate to="/forgot-password" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +38,7 @@ function ResetPassword() {
       const res = await fetch(`${API_URL}/api/users/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario, newPassword, confirmPassword }),
+        body: JSON.stringify({ id_usuario, otp, newPassword, confirmPassword }),
       });
       const data = await res.json();
 
