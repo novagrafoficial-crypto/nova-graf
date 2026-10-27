@@ -19,7 +19,7 @@ const generateAndSaveOTP = async (userId) => {
 // ─── VERIFICAR EMAIL ──────────────────────────────────────
 const checkEmailExists = async (email) => {
   const result = await db.query(
-    'SELECT correo_electronico, proveedor FROM usuarios WHERE correo_electronico = $1',
+    'SELECT correo_electronico, proveedor FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
     [email]
   );
   return result.rowCount === 0 ? null : result.rows[0];
@@ -64,17 +64,28 @@ const existing = await checkEmailExists(email);
 // ─── REGISTRO / LOGIN CON GOOGLE ─────────────────────────
 const findOrCreateGoogleUser = async ({ googleId, nombre, apellido_paterno, apellido_materno, email }) => {
 
+
   let result = await db.query(
     'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE google_id = $1',
     [googleId]
   );
   if (result.rowCount > 0) return result.rows[0];
 
-  const existing = await checkEmailExists(email);
-  if (existing) {
-    if (existing.proveedor === 'local') throw new Error('email_local');
+  const porCorreo = await db.query(
+    'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
+    [email]
+  );
+  if (porCorreo.rowCount > 0) {
+    const existente = porCorreo.rows[0];
+    if (existente.proveedor === 'local') throw new Error('email_local');
+    if (existente.proveedor !== 'google') throw new Error('email_otro_proveedor');
+
+ 
+    await db.query('UPDATE usuarios SET google_id = $1 WHERE id_usuario = $2', [googleId, existente.id_usuario]);
+    return existente;
   }
 
+  // 3. Usuario nuevo
   result = await db.query(`
     INSERT INTO usuarios
     (nombre, apellido_paterno, apellido_materno, nombre_usuario, correo_electronico, 
@@ -94,7 +105,7 @@ const findOrCreateGoogleUser = async ({ googleId, nombre, apellido_paterno, apel
 const loginUser = async (email, password) => {
   const result = await db.query(
     `SELECT id_usuario, nombre, correo_electronico, contrasena, activo, rol, proveedor 
-     FROM usuarios WHERE correo_electronico = $1`,
+     FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)`,
     [email]
   );
 
@@ -105,12 +116,20 @@ const loginUser = async (email, password) => {
 
   if (user.proveedor === 'google')
     return { success: false, message: 'Este correo fue registrado con Google. Usa el botón de Google.' };
-  if (!user.activo)
-    return { success: false, message: 'Cuenta no activada. Revisa tu correo y verifica tu cuenta.' };
 
   const passwordMatch = await bcrypt.compare(password, user.contrasena);
   if (!passwordMatch)
     return { success: false, message: 'Correo o contraseña incorrectos' };
+
+  // La contraseña es correcta: ahora sí es seguro decir que falta activar.
+  // Devolvemos el id para que la app móvil vaya directo a la pantalla del código.
+  if (!user.activo)
+    return {
+      success: false,
+      code: 'NOT_ACTIVE',
+      id_usuario: user.id_usuario,
+      message: 'Cuenta no activada. Revisa tu correo y verifica tu cuenta.',
+    };
 
   return {
     success: true,
@@ -135,7 +154,7 @@ const verifyOTP = async (userId, otp) => {
 
   const user = result.rows[0];
 
-  if (String(user.codigo_otp) !== String(otp))
+  if (!user.codigo_otp || String(user.codigo_otp) !== String(otp))
     return { success: false, message: 'Código incorrecto' };
   if (new Date() > new Date(user.otp_expiracion))
     return { success: false, message: 'Código expirado' };
@@ -161,7 +180,7 @@ const getOTPData = async (userId) => {
 const findUserByEmail = async (email) => {
   const result = await db.query(
     `SELECT id_usuario, nombre, correo_electronico, activo, telefono, proveedor
-     FROM usuarios WHERE correo_electronico = $1`,
+     FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)`,
     [email]
   );
   return result.rowCount === 0 ? null : result.rows[0];
@@ -189,7 +208,7 @@ const verifyRecoveryOTP = async (userId, otp) => {
     return { success: false, message: 'Usuario no encontrado' };
 
   const user = result.rows[0];
-  if (String(user.codigo_otp) !== String(otp))
+  if (!user.codigo_otp || String(user.codigo_otp) !== String(otp))
     return { success: false, message: 'Código incorrecto' };
   if (new Date() > new Date(user.otp_expiracion))
     return { success: false, message: 'Código expirado' };
@@ -197,7 +216,10 @@ const verifyRecoveryOTP = async (userId, otp) => {
   return { success: true };
 };
 
-const resetPassword = async (userId, newPassword) => {
+const resetPasswordWithOTP = async (userId, otp, newPassword) => {
+  const check = await verifyRecoveryOTP(userId, otp);
+  if (!check.success) return check;
+
   const hashed = await bcrypt.hash(newPassword, 10);
   await db.query(
     'UPDATE usuarios SET contrasena = $1, codigo_otp = NULL, otp_expiracion = NULL WHERE id_usuario = $2',
@@ -252,7 +274,7 @@ const resendActivationOTP = async (userId) => {
 // ─── OBTENER ID POR EMAIL ─────────────────────────────────
 const getUserIdByEmail = async (email) => {
   const result = await db.query(
-    'SELECT id_usuario FROM usuarios WHERE correo_electronico = $1',
+    'SELECT id_usuario FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
     [email]
   );
   return result.rowCount === 0 ? null : result.rows[0];
@@ -303,7 +325,7 @@ module.exports = {
   findUserById,
   saveRecoveryOTP,
   verifyRecoveryOTP,
-  resetPassword,
+  resetPasswordWithOTP,
   checkEmailExists,
   getUserProfile,
   updateUserProfile,
