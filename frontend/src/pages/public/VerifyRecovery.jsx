@@ -39,7 +39,7 @@ function VerifyRecovery() {
       const data = await res.json();
 
       if (res.ok && data.valid) {
-        navigate(`/reset-password/${id_usuario}`);
+        navigate(`/reset-password/${id_usuario}`, { state: { otp } });
       } else {
         setMsgColor("#ef4444");
         setMessage(data.message || "Código incorrecto");
