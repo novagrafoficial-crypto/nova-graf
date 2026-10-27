@@ -6,6 +6,9 @@ const passport = require('./config/passport');
 const path = require('node:path');
 const helmet = require('helmet');
 const app = express();
+// Detrás de un proxy (Render, Railway, Vercel...) esto permite que req.ip sea la IP real
+// del cliente y que el limitador de intentos no mezcle a todos los usuarios.
+app.set('trust proxy', 1);
 
 // ─── 1. CORS ───────────────────────────────────────────────
 const FRONTEND_URLS = (process.env.FRONTEND_URL || 'http://localhost:5173,http://localhost:4173')
