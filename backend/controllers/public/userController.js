@@ -11,6 +11,8 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'Todos los campos son obligatorios' });
   if (password !== confirmPassword)
     return res.status(400).json({ message: 'Las contraseñas no coinciden' });
+  if (password.length < 6)
+    return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
 
   try {
     const newUser = await userModel.createUser({ name, lastNameP, lastNameM, username, birthDate, address, phone, email, password });
@@ -60,8 +62,11 @@ const loginUserController = async (req, res) => {
   try {
     const result = await userModel.loginUser(email, password);
 
-    if (!result.success)
-      return res.status(401).json({ message: result.message });
+      if (!result.success)
+      return res.status(401).json({
+        message: result.message,
+        ...(result.code && { code: result.code, id_usuario: result.id_usuario }),
+      });
 
     const token = generarToken(result.user);
 
@@ -88,6 +93,8 @@ const forgotPassword = async (req, res) => {
 
     if (!user)
       return res.status(200).json({ message: 'Si el correo existe, recibirás el código.', id_usuario: null });
+     if (user.proveedor === 'google')
+      return res.status(400).json({ message: 'Esta cuenta usa Google. Inicia sesión con el botón de Google.' });
     if (!user.activo)
       return res.status(400).json({ message: 'Cuenta no activada.' });
 
@@ -124,16 +131,19 @@ const verifyRecoveryOTP = async (req, res) => {
 };
 
 // ─── CAMBIAR CONTRASEÑA (recuperación) ───────────────────
+// Exige el OTP: sin código válido NO se puede cambiar la contraseña.
 const resetPasswordController = async (req, res) => {
-  const { id_usuario, newPassword, confirmPassword } = req.body;
+  const { id_usuario, otp, newPassword, confirmPassword } = req.body;
 
-  if (!id_usuario || !newPassword || !confirmPassword)
+  if (!id_usuario || !otp || !newPassword || !confirmPassword)
     return res.status(400).json({ message: 'Todos los campos son requeridos' });
   if (newPassword !== confirmPassword)
     return res.status(400).json({ message: 'Las contraseñas no coinciden' });
+  if (newPassword.length < 8 || !/\d/.test(newPassword) || !/[a-zA-Z]/.test(newPassword))
+    return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres, una letra y un número' });
 
   try {
-    const result = await userModel.resetPassword(id_usuario, newPassword);
+    const result = await userModel.resetPasswordWithOTP(id_usuario, String(otp), newPassword);
 
     if (result.success)
       return res.status(200).json({ message: result.message });
