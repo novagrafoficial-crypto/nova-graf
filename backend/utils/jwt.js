@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
-//cambios de recuperacion de codigo
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+
+// Sin secreto por defecto: si falta JWT_SECRET el servidor NO debe arrancar,
+// porque firmaría los tokens con un valor público.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('Falta la variable de entorno JWT_SECRET');
+}
 
 const generarToken = (usuario) => {
   const payload = {
