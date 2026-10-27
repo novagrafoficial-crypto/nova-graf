@@ -14,7 +14,7 @@ passport.use(new GoogleStrategy({
     const apellido_paterno = profile.name.familyName || '';
 
     const existing = await db.query(
-      'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE correo_electronico = $1',
+      'SELECT id_usuario, nombre, correo_electronico, rol, proveedor FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
       [email]
     );
 
