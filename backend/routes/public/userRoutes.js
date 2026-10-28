@@ -18,6 +18,7 @@ const {
   putProfile,
   putPassword,
 } = require('../../controllers/public/userController');
+const { solicitarEliminacion } = require('../../controllers/public/solicitudEliminacionController');
 
 // ─── Autenticación ─────────────────────────────────────────
 router.post('/register',              limitRegistro, registerUser);
@@ -33,6 +34,9 @@ router.post('/resend-recovery-otp',   limitReenvio, resendRecoveryOTP);
 // ─── Activación de cuenta ──────────────────────────────────
 router.post('/resend-activation-otp', limitReenvio, resendActivationOTPController);
 router.post('/get-user-id',           limitLookup, getUserIdByEmail);
+
+// ─── Solicitud de eliminación de cuenta (Google Play) ─────
+router.post('/solicitar-eliminacion', limitCorreo, solicitarEliminacion);
 
 // ─── Perfil (Autenticado)────────────────────────────────────────────
 router.get('/profile/:id',            verificarToken, getProfile);
