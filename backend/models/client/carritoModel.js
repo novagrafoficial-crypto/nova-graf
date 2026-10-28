@@ -1,5 +1,6 @@
 // models/client/carritoModel.js
 const pool = require('../../config/db');
+const Descuento = require('./Descuento');
 
 // ─── CREAR O OBTENER CARRITO ACTIVO ──────────────────────────────
 const obtenerOCrearCarrito = async (usuarioId) => {
@@ -95,7 +96,8 @@ const obtenerCarrito = async (usuarioId) => {
       ORDER BY cd.fecha_agregado DESC
     `;
     const { rows } = await pool.query(query, [usuarioId]);
-    return rows;
+    // Aplica las ofertas activas (precio_unitario y subtotal ya con descuento)
+    return await Descuento.aplicarDescuentos(rows);
   } catch (error) {
     console.error('Error en obtenerCarrito:', error);
     throw error;
@@ -178,17 +180,11 @@ const vaciarCarrito = async (usuarioId) => {
 // ─── OBTENER TOTAL DEL CARRITO ─────────────────────────────────────
 const obtenerTotalCarrito = async (usuarioId) => {
   try {
-    const query = `
-      SELECT 
-        COALESCE(SUM(cd.cantidad * (p.precio_base + COALESCE(pv.precio_adicional, 0))), 0) AS total
-      FROM ventas.carrito c
-      JOIN ventas.carrito_detalle cd ON c.id = cd.carrito_id
-      JOIN productos.producto_variantes pv ON cd.variante_id = pv.id
-      JOIN productos.productos p ON pv.producto_id = p.id
-      WHERE c.usuario_id = $1
-    `;
-    const { rows } = await pool.query(query, [usuarioId]);
-    return parseFloat(rows[0].total) || 0;
+    // Se calcula con los mismos renglones del carrito para que el total
+    // incluya los descuentos (antes se sumaba directo en SQL sin ofertas).
+    const items = await obtenerCarrito(usuarioId);
+    const total = items.reduce((suma, i) => suma + i.subtotal, 0);
+    return parseFloat(total.toFixed(2));
   } catch (error) {
     console.error('Error en obtenerTotalCarrito:', error);
     throw error;
