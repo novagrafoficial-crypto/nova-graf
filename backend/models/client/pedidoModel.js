@@ -1,5 +1,6 @@
 // backend/models/client/pedidoModel.js
 const pool = require('../../config/db');
+const Descuento = require('./Descuento');
 
 // ─── CREAR PEDIDO DESDE CARRITO ────────────────────────────────────
 const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId, direccionEnvio) => {
@@ -27,17 +28,19 @@ const crearPedidoDesdeCarrito = async (usuarioId, metodoEntregaId, metodoPagoId,
       throw new Error('El carrito está vacío');
     }
     
+    // Aplica las ofertas activas: el precio que se guarda ya va con descuento
+    const conDescuento = await Descuento.aplicarDescuentos(carritoItems.rows);
+
     let totalProductos = 0;
-    const detalles = carritoItems.rows.map(item => {
-      const precioUnitario = parseFloat(item.precio_unitario);
-      const subtotal = item.cantidad * precioUnitario;
-      totalProductos += subtotal;
+    const detalles = conDescuento.map(item => {
+      totalProductos += item.subtotal;
       return {
         variante_id: item.variante_id,
         cantidad: item.cantidad,
-        precio_unitario: precioUnitario
+        precio_unitario: item.precio_unitario
       };
     });
+    totalProductos = parseFloat(totalProductos.toFixed(2));
     
     const metodoQuery = `
       SELECT costo
