@@ -24,7 +24,8 @@ import Contacto from './pages/public/Contacto';
 import PortafolioPublico from './pages/public/PortafolioPublico';
 import Nosotros from './pages/public/Nosotros';
 import Contactos from './pages/public/Contactos';
-
+import Privacidad from './pages/public/Privacidad';
+import EliminarCuenta from './pages/public/EliminarCuenta';
 
 
 
@@ -57,6 +58,7 @@ import Admin from "./layouts/AdminLayout";
 //import AdminSubcategorias from "./pages/Admin/AdminSubcategorias";
 import AdminProductos from "./pages/Admin/AdminProductos";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
+import AdminEliminacionCuentas from "./pages/Admin/AdminEliminacionCuentas";
 import AdminPublicacion from './pages/Admin/AdminPublicacion';
 import AdminMision from './pages/Admin/AdminMision';
 import AdminEmpresaCom from './pages/Admin/AdminEmpresaCom';
@@ -105,6 +107,8 @@ function App() {
           <Route path="/catalogo" element={<PortafolioPublico />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/contactos" element={<Contactos />} />
+          <Route path="/privacidad" element={<Privacidad />} />
+          <Route path="/eliminar-cuenta" element={<EliminarCuenta />} />
           
         </Route>
 
@@ -153,6 +157,7 @@ function App() {
           <Route path="datos-bancarios" element={<AdminDatosBancarios />} />
           <Route path="metodos-entrega" element={<AdminMetodosEntrega />} />
           <Route path="reportes" element={<AdminReportes />} />
+          <Route path="eliminacion-cuentas" element={<AdminEliminacionCuentas />} />
         </Route>
 
       </Routes>
