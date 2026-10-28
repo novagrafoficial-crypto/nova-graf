@@ -1,0 +1,57 @@
+/* Páginas legales: Política de privacidad y Eliminar cuenta (requisito de Google Play) */
+.legal {
+  min-height: 100vh;
+  background: #F4F4F2;
+  margin-top: 90px; /* espacio del Header fijo, igual que las demás páginas públicas */
+  padding: 40px 16px 64px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #111111;
+}
+.legal-contenedor { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+.legal-hero { background: #1A6163; color: #fff; border-radius: 20px; padding: 28px; }
+.legal-hero h1 { margin: 0 0 6px; font-size: 1.75rem; font-weight: 700; }
+.legal-hero p { margin: 0; opacity: 0.85; line-height: 1.5; }
+
+.legal-card { background: #fff; border: 1px solid #E4E4E7; border-radius: 16px; padding: 24px; }
+.legal-card h2 { margin: 0 0 12px; font-size: 1.2rem; font-weight: 700; }
+.legal-card h3 { margin: 18px 0 6px; font-size: 1rem; font-weight: 600; }
+.legal-card p, .legal-card li { color: #3F3F46; line-height: 1.6; font-size: 0.95rem; }
+.legal-card ul, .legal-card ol { margin: 0; padding-left: 20px; }
+.legal-fecha { color: #71717A; font-size: 0.85rem; margin: 0; }
+
+.legal-aviso { display: flex; gap: 10px; align-items: flex-start; background: #E6F2EF; border-radius: 12px; padding: 14px 16px; color: #111; }
+
+/* Formulario */
+.legal-form { display: flex; flex-direction: column; gap: 16px; }
+.legal-campo { display: flex; flex-direction: column; gap: 6px; }
+.legal-campo label { font-weight: 500; font-size: 0.95rem; }
+.legal-campo label span { color: #71717A; font-weight: 400; font-size: 0.85rem; }
+.legal-campo input, .legal-campo textarea {
+  border: 1px solid #E4E4E7; border-radius: 12px; padding: 12px 14px; font-size: 1rem; font-family: inherit; color: #111;
+}
+.legal-campo textarea { min-height: 90px; resize: vertical; }
+.legal-campo input:focus, .legal-campo textarea:focus { outline: none; border: 1.5px solid #1A6163; }
+.legal-campo.error input { border: 1.5px solid #C0392B; }
+.legal-error-campo { color: #C0392B; font-size: 0.85rem; }
+
+.legal-check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; line-height: 1.5; }
+.legal-check input { width: 18px; height: 18px; margin-top: 3px; accent-color: #1A6163; }
+
+.legal-boton {
+  border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 600; cursor: pointer;
+  background: #C0392B; color: #fff;
+}
+.legal-boton:disabled { opacity: 0.6; cursor: not-allowed; }
+.legal-boton.secundario { background: #fff; color: #111; border: 1px solid #E4E4E7; }
+
+.legal-mensaje { border-radius: 12px; padding: 12px 14px; font-weight: 500; }
+.legal-mensaje.error { background: #FEE2E2; color: #111; }
+.legal-exito { text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.legal-exito-icono {
+  width: 64px; height: 64px; border-radius: 32px; background: #35BA99; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 2rem;
+}
+
+.legal-enlace { color: #1A6163; font-weight: 600; text-decoration: none; }
+.legal-enlace:hover { text-decoration: underline; }
