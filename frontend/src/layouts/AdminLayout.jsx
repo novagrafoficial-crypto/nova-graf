@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { to: "datos-bancarios", icon: "🏦", label: "Datos Bancarios" },
   { to: "metodos-entrega", icon: "🚚", label: "Métodos de Entrega" },
   { to: "reportes", icon: "📊", label: "Reportes" },
+  { to: "eliminacion-cuentas", icon: "🗑️", label: "Eliminación de cuentas" },
 ];
 
 function AdminLayout() {
