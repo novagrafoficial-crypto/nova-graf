@@ -100,6 +100,60 @@ class Descuento {
   }
   return base;
 }
+  // ─── APLICAR DESCUENTOS A RENGLONES DEL CARRITO / PEDIDO ──────
+  // Recibe filas con { variante_id, cantidad, precio_base, precio_adicional }
+  // y regresa las mismas filas con el precio ya rebajado:
+  //   precio_original  -> precio sin descuento
+  //   precio_unitario  -> precio que se cobra (con descuento si aplica)
+  //   subtotal         -> cantidad * precio_unitario
+  //   descuento_id / descuento_nombre / ahorro
+  //   descuento_pendiente -> { nombre, cantidad_minima, faltan } si hay una
+  //                          oferta pero todavia no llega a la cantidad minima
+  // Si una variante tiene varios descuentos, se usa el que deja el precio mas bajo.
+  static async aplicarDescuentos(items) {
+    const filas = await this.getDescuentosConVariantes();
+
+    // variante_id -> lista de descuentos activos para esa variante
+    const porVariante = new Map();
+    filas.forEach(f => {
+      const lista = porVariante.get(f.variante_id) || [];
+      lista.push(f);
+      porVariante.set(f.variante_id, lista);
+    });
+
+    return items.map(item => {
+      const cantidad = parseInt(item.cantidad, 10) || 0;
+      const precioOriginal = parseFloat(item.precio_base) + parseFloat(item.precio_adicional || 0);
+      const candidatos = porVariante.get(item.variante_id) || [];
+
+      let mejor = null;      // descuento que si aplica
+      let pendiente = null;  // descuento al que le faltan piezas
+      candidatos.forEach(d => {
+        const minima = parseInt(d.cantidad_minima, 10) || 1;
+        const final = this.calcularPrecioFinal(item.precio_base, item.precio_adicional, d.tipo, d.valor);
+        if (cantidad >= minima) {
+          if (!mejor || final < mejor.final) mejor = { d, final };
+        } else if (!pendiente || minima < pendiente.cantidad_minima) {
+          pendiente = { nombre: d.descuento_nombre, cantidad_minima: minima, faltan: minima - cantidad };
+        }
+      });
+
+      const precioUnitario = mejor ? parseFloat(mejor.final.toFixed(2)) : precioOriginal;
+      const ahorro = parseFloat(((precioOriginal - precioUnitario) * cantidad).toFixed(2));
+
+      return {
+        ...item,
+        precio_original: parseFloat(precioOriginal.toFixed(2)),
+        precio_unitario: precioUnitario,
+        subtotal: parseFloat((precioUnitario * cantidad).toFixed(2)),
+        descuento_id: mejor ? mejor.d.descuento_id : null,
+        descuento_nombre: mejor ? mejor.d.descuento_nombre : null,
+        ahorro,
+        descuento_pendiente: mejor ? null : pendiente
+      };
+    });
+  }
+
   // ─── OFERTAS AGRUPADAS (para /api/client/ofertas) ──────────
   // Agrupa por descuento y dentro trae la lista de variantes con
   // precio_original y precio_final ya calculados, listos para pintar.
