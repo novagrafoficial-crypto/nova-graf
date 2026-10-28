@@ -146,6 +146,10 @@ const Footer = () => {
               <span className="footer-list-icon">🔒</span>
               <Link to="/privacidad" className="footer-list-link">Políticas de Privacidad</Link>
             </li>
+            <li className="footer-list-item">
+              <span className="footer-list-icon">🗑️</span>
+              <Link to="/eliminar-cuenta" className="footer-list-link">Eliminar mi cuenta</Link>
+            </li>
           </ul>
         </div>
       </div>
