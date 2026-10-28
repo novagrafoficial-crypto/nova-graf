@@ -145,9 +145,11 @@ const metodosPagoRoutes = require('./routes/admin/metodosPagoRoutes');
 const metodosEntregaRoutes = require('./routes/admin/metodosEntregaRoutes');
 const reportesRoutes = require('./routes/admin/reportesRoutes');
 const segmentacionRoutes = require('./routes/admin/segmentacionRoutes');
+const solicitudesEliminacionRoutes = require('./routes/admin/solicitudesEliminacionRoutes');
 
 
 app.use('/api/admin/clientes', segmentacionRoutes);
+app.use('/api/admin/solicitudes-eliminacion', solicitudesEliminacionRoutes);
 app.use('/api/admin/reportes', reportesRoutes);
 app.use('/api/admin/metodos-entrega', metodosEntregaRoutes);
 app.use('/api/admin/metodos-pago', metodosPagoRoutes);
