@@ -1,0 +1,43 @@
+/* Admin → Eliminación de cuentas */
+.elim { display: flex; flex-direction: column; gap: 18px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #111; }
+.elim-cabecera { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.elim-cabecera h2 { margin: 0; font-size: 1.4rem; }
+.elim-cabecera p { margin: 2px 0 0; color: #71717A; font-size: 0.9rem; }
+
+.elim-filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+.elim-filtro { border: 1px solid #E4E4E7; background: #fff; border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: 0.9rem; }
+.elim-filtro.activo { background: #1A6163; border-color: #1A6163; color: #fff; }
+
+.elim-aviso { background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px; padding: 12px 14px; font-size: 0.9rem; line-height: 1.5; }
+.elim-mensaje { border-radius: 12px; padding: 12px 14px; font-weight: 500; }
+.elim-mensaje.ok { background: #DCFCE7; }
+.elim-mensaje.error { background: #FEE2E2; }
+
+.elim-tabla-caja { background: #fff; border: 1px solid #E4E4E7; border-radius: 14px; overflow-x: auto; }
+.elim-tabla { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.elim-tabla th { text-align: left; padding: 12px; background: #F4F4F5; color: #3F3F46; font-weight: 600; white-space: nowrap; }
+.elim-tabla td { padding: 12px; border-top: 1px solid #F4F4F5; vertical-align: top; }
+.elim-sub { color: #71717A; font-size: 0.8rem; }
+
+.elim-pastilla { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+.elim-pastilla.PENDIENTE { background: #FEF3C7; color: #92400E; }
+.elim-pastilla.ATENDIDA { background: #DCFCE7; color: #166534; }
+.elim-pastilla.RECHAZADA { background: #F4F4F5; color: #52525B; }
+.elim-pastilla.ok { background: #E6F2EF; color: #0F4F51; }
+.elim-pastilla.warn { background: #FFEDD5; color: #9A3412; }
+
+.elim-acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+.elim-btn { border: none; border-radius: 10px; padding: 8px 12px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+.elim-btn.confirmar { background: #C0392B; color: #fff; }
+.elim-btn.rechazar { background: #fff; color: #111; border: 1px solid #E4E4E7; }
+.elim-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.elim-vacio { text-align: center; color: #71717A; padding: 40px 16px; }
+
+/* Ventana de confirmación */
+.elim-fondo { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+.elim-modal { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 12px; }
+.elim-modal h3 { margin: 0; }
+.elim-modal p { margin: 0; color: #3F3F46; line-height: 1.5; }
+.elim-modal textarea { border: 1px solid #E4E4E7; border-radius: 10px; padding: 10px 12px; min-height: 80px; font-family: inherit; font-size: 0.95rem; }
+.elim-modal-botones { display: flex; gap: 8px; justify-content: flex-end; }
