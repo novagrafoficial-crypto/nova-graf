@@ -74,8 +74,11 @@ function MiPerfil() {
     if (pwForm.nueva !== pwForm.confirmar) {
       setPwMsg({ text: "❌ Las contraseñas no coinciden", ok: false }); return;
     }
-    if (pwForm.nueva.length < 6) {
-      setPwMsg({ text: "❌ Mínimo 6 caracteres", ok: false }); return;
+    if (pwForm.nueva.length < 8 || !/[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(pwForm.nueva) || !/\d/.test(pwForm.nueva)) {
+      setPwMsg({ text: "❌ Mínimo 8 caracteres, con una letra y un número", ok: false }); return;
+    }
+    if (pwForm.nueva === pwForm.actual) {
+      setPwMsg({ text: "❌ La nueva contraseña debe ser diferente a la actual", ok: false }); return;
     }
     setPwSaving(true);
     try {
@@ -86,7 +89,17 @@ function MiPerfil() {
       });
       const data = await res.json();
       setPwMsg({ text: (res.ok ? "✅ " : "❌ ") + data.message, ok: res.ok });
-      if (res.ok) { setPwForm({ actual: "", nueva: "", confirmar: "" }); setShowPw(false); }
+      if (res.ok) {
+        setPwForm({ actual: "", nueva: "", confirmar: "" });
+        // El backend cerró todas las sesiones: se vuelve a iniciar sesión con la nueva contraseña
+        setTimeout(() => {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/login");
+        }, 2500);
+        setPwSaving(false);
+        return;
+      }
     } catch { setPwMsg({ text: "❌ Error de conexión", ok: false }); }
     setTimeout(() => setPwMsg({ text: "", ok: true }), 3500);
     setPwSaving(false);
