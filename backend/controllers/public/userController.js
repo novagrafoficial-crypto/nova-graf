@@ -280,8 +280,10 @@ const putPassword = async (req, res) => {
 
     if (!actual || !nueva)
       return res.status(400).json({ message: 'Faltan campos' });
-    if (nueva.length < 6)
-      return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
+    if (nueva.length < 8 || !/[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(nueva) || !/\d/.test(nueva))
+      return res.status(400).json({ message: 'La contraseña debe tener mínimo 8 caracteres, una letra y un número' });
+    if (nueva === actual)
+      return res.status(400).json({ message: 'La nueva contraseña debe ser diferente a la actual' });
 
     const datosContrasena = await userModel.getPasswordData(id);
     if (!datosContrasena)
@@ -293,11 +295,11 @@ const putPassword = async (req, res) => {
       return res.status(403).json({ message: 'Las cuentas de Google no tienen contraseña local' });
 
     const ok = await bcrypt.compare(actual, contrasena);
-    if (!ok) return res.status(401).json({ message: 'Contraseña actual incorrecta' });
+    if (!ok) return res.status(400).json({ message: 'Contraseña actual incorrecta' });
 
     const hash = await bcrypt.hash(nueva, 10);
     await userModel.updatePasswordOnly(id, hash);
-    res.json({ message: 'Contraseña actualizada correctamente' });
+    res.json({ message: 'Contraseña actualizada. Se cerró la sesión en todos tus dispositivos.' });
   } catch (error) {
     console.error('putPassword:', error.message);
     res.status(500).json({ message: 'Error al cambiar contraseña' });
