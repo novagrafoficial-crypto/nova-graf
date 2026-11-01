@@ -222,7 +222,7 @@ const resetPasswordWithOTP = async (userId, otp, newPassword) => {
 
   const hashed = await bcrypt.hash(newPassword, 10);
   await db.query(
-    'UPDATE usuarios SET contrasena = $1, codigo_otp = NULL, otp_expiracion = NULL WHERE id_usuario = $2',
+    'UPDATE usuarios SET contrasena = $1, codigo_otp = NULL, otp_expiracion = NULL, password_changed_at = NOW() WHERE id_usuario = $2',
     [hashed, userId]
   );
   return { success: true, message: 'Contraseña actualizada correctamente' };
@@ -301,7 +301,7 @@ const getPasswordData = async (id_usuario) => {
 // ─── ACTUALIZAR SOLO LA CONTRASEÑA (sin tocar OTP, para cambio desde perfil) ─
 const updatePasswordOnly = async (id_usuario, hashedPassword) => {
   await db.query(
-    'UPDATE usuarios SET contrasena = $1 WHERE id_usuario = $2',
+    'UPDATE usuarios SET contrasena = $1, password_changed_at = NOW() WHERE id_usuario = $2',
     [hashedPassword, id_usuario]
   );
 };
