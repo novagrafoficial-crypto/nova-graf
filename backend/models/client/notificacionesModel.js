@@ -79,6 +79,14 @@ const eliminarNotificacion = async (notificacionId, usuarioId) => {
  * Crear una notificación nueva
  */
 const crearNotificacion = async ({ usuario_id, pedido_id, tipo, titulo, mensaje, enlace }) => {
+    // ARCO — Oposición: no se crean avisos para quien los desactivó
+    try {
+        const pref = await pool.query('SELECT recibe_avisos FROM usuarios WHERE id_usuario = $1', [usuario_id]);
+        if (pref.rows[0]?.recibe_avisos === false) return null;
+    } catch (error) {
+        if (error.code !== '42703') throw error; // columna aún no creada: se notifica como siempre
+    }
+
     const query = `
         INSERT INTO ventas.notificaciones (usuario_id, pedido_id, tipo, titulo, mensaje, enlace)
         VALUES ($1, $2, $3, $4, $5, $6)

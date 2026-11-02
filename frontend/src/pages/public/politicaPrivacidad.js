@@ -1,7 +1,7 @@
 // Política de privacidad de Nova Graf (la misma que muestra la app móvil).
 // Si cambias algo aquí, cambia también src/features/legal/constants/avisoPrivacidad.ts en la app.
 
-export const FECHA_ACTUALIZACION = "28 de octubre de 2026";
+export const FECHA_ACTUALIZACION = "02 de noviembre de 2026";
 export const CORREO_PRIVACIDAD = "novagraf.oficial@gmail.com";
 
 export const POLITICA_PRIVACIDAD = [
@@ -12,7 +12,7 @@ export const POLITICA_PRIVACIDAD = [
       { t: "li", x: "Responsable: Nova Graf." },
       { t: "li", x: "Domicilio: C. Morelos 43, Centro, 43000 Huejutla de Reyes, Hgo." },
       { t: "li", x: "Correo de privacidad: novagraf.oficial@gmail.com" },
-      { t: "li", x: "Fecha de publicación: 20 de octubre de 2026. Última actualización: 28 de octubre de 2026." },
+      { t: "li", x: "Fecha de publicación: 20 de octubre de 2026. Última actualización: 02 de noviembre de 2026." },
     ],
   },
   {
@@ -106,6 +106,7 @@ export const POLITICA_PRIVACIDAD = [
     bloques: [
       { t: "li", x: "Tienes derecho a solicitar el acceso, la rectificación, la cancelación u oposición al tratamiento de tus datos personales (derechos ARCO), así como a revocar tu consentimiento." },
       { t: "li", x: "Algunos datos puedes corregirlos tú mismo en tu Perfil: nombre, teléfono, domicilio y contraseña." },
+      { t: "li", x: "Oposición: en la app, desde Mi perfil → Privacidad, puedes desactivar en cualquier momento los avisos sobre mensajes y previas de tus pedidos. El cambio se aplica de inmediato." },
       { t: "li", x: "Para el resto, escribe a novagraf.oficial@gmail.com desde el correo registrado e indica: tu nombre completo, el correo de tu cuenta, el derecho que quieres ejercer, una descripción clara de los datos involucrados y, para rectificar, los documentos que respalden el cambio." },
       { t: "li", x: "Para proteger tus datos, verificamos tu identidad respondiendo al correo registrado y, si es necesario, pidiéndote información adicional sobre tu cuenta o tus pedidos recientes. Responderemos dentro de los plazos que establece la normativa aplicable." },
     ],
