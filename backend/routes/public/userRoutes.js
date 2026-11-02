@@ -17,6 +17,8 @@ const {
   getProfile,
   putProfile,
   putPassword,
+  getPrivacidad,
+  putPrivacidad,
 } = require('../../controllers/public/userController');
 const { solicitarEliminacion } = require('../../controllers/public/solicitudEliminacionController');
 
@@ -42,5 +44,9 @@ router.post('/solicitar-eliminacion', limitCorreo, solicitarEliminacion);
 router.get('/profile/:id',            verificarToken, getProfile);
 router.put('/profile/:id',            verificarToken, putProfile);
 router.put('/profile/:id/password',   verificarToken, putPassword);
+
+// ─── Privacidad: derecho ARCO de Oposición (Opt-Out) ───────
+router.get('/profile/:id/privacidad', verificarToken, getPrivacidad);
+router.put('/profile/:id/privacidad', verificarToken, putPrivacidad);
 
 module.exports = router;

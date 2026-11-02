@@ -306,6 +306,42 @@ const putPassword = async (req, res) => {
   }
 };
 
+// ─── PRIVACIDAD — GET/PUT (ARCO: Oposición, requiere ser dueño) ─
+const getPrivacidad = async (req, res) => {
+  try {
+    if (String(req.usuario.id_usuario) !== String(req.params.id)) {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+    const prefs = await userModel.getPrivacyPrefs(req.params.id);
+    if (!prefs) return res.status(404).json({ message: 'Usuario no encontrado' });
+    res.json(prefs);
+  } catch (error) {
+    console.error('getPrivacidad:', error.message);
+    res.status(500).json({ message: 'Error al obtener tus preferencias' });
+  }
+};
+
+const putPrivacidad = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (String(req.usuario.id_usuario) !== String(id)) {
+      return res.status(403).json({ message: 'No autorizado' });
+    }
+
+    const { recibe_avisos } = req.body;
+    if (typeof recibe_avisos !== 'boolean') {
+      return res.status(400).json({ message: 'Preferencia no válida' });
+    }
+
+    const prefs = await userModel.updatePrivacyPrefs(id, { recibe_avisos });
+    if (!prefs) return res.status(404).json({ message: 'Usuario no encontrado' });
+    res.json({ message: 'Preferencias guardadas', ...prefs });
+  } catch (error) {
+    console.error('putPrivacidad:', error.message);
+    res.status(500).json({ message: 'Error al guardar tus preferencias' });
+  }
+};
+
 // ─── EXPORTS ──────────────────────────────────────────────
 module.exports = {
   registerUser,
@@ -320,4 +356,6 @@ module.exports = {
   getProfile,
   putProfile,
   putPassword,
+  getPrivacidad,
+  putPrivacidad,
 };

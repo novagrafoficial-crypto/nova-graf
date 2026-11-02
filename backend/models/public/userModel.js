@@ -314,6 +314,32 @@ const getAdminId = async () => {
   return result.rowCount === 0 ? null : result.rows[0].id_usuario;
 };
 
+// ─── PREFERENCIAS DE PRIVACIDAD (ARCO — Oposición) ───────
+// Si la migración aún no se ejecutó (columna inexistente, código 42703)
+// se responden los valores por defecto para no romper nada.
+const PRIVACIDAD_DEFAULT = { recibe_avisos: true };
+
+const getPrivacyPrefs = async (id_usuario) => {
+  try {
+    const result = await db.query(
+      'SELECT recibe_avisos FROM usuarios WHERE id_usuario = $1',
+      [id_usuario]
+    );
+    return result.rowCount === 0 ? null : result.rows[0];
+  } catch (error) {
+    if (error.code === '42703') return { ...PRIVACIDAD_DEFAULT };
+    throw error;
+  }
+};
+
+const updatePrivacyPrefs = async (id_usuario, { recibe_avisos }) => {
+  const result = await db.query(
+    'UPDATE usuarios SET recibe_avisos = $1 WHERE id_usuario = $2 RETURNING recibe_avisos',
+    [recibe_avisos, id_usuario]
+  );
+  return result.rowCount === 0 ? null : result.rows[0];
+};
+
 // ─── EXPORTS ──────────────────────────────────────────────
 module.exports = {
   createUser,
@@ -335,4 +361,6 @@ module.exports = {
   getPasswordData,
   updatePasswordOnly,
   getAdminId,
+  getPrivacyPrefs,
+  updatePrivacyPrefs,
 };
