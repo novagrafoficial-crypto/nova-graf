@@ -6,9 +6,9 @@ const crypto = require('node:crypto');
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
 // ✅ Helper compartido para evitar duplicación (Sonar)
-const generateAndSaveOTP = async (userId) => {
+const generateAndSaveOTP = async (userId, minutos) => {
   const otp = generateOTP();
-  const expiration = new Date(Date.now() + 10 * 60 * 1000);
+  const expiration = new Date(Date.now() + minutos * 60 * 1000);
   await db.query(
     'UPDATE usuarios SET codigo_otp = $1, otp_expiracion = $2 WHERE id_usuario = $3',
     [otp, expiration, userId]
@@ -41,7 +41,7 @@ const existing = await checkEmailExists(email);
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const otp = generateOTP();
-  const otpExpiration = new Date(Date.now() + 10 * 60 * 1000);
+  const otpExpiration = new Date(Date.now() + 2 * 60 * 1000);
 
   const result = await db.query(`
     INSERT INTO usuarios
@@ -196,7 +196,7 @@ const findUserById = async (id_usuario) => {
 
 // ─── RECUPERACIÓN DE CONTRASEÑA ───────────────────────────
 const saveRecoveryOTP = async (userId) => {
-  return generateAndSaveOTP(userId); // ✅ usa helper
+  return generateAndSaveOTP(userId, 5); // ✅ usa helper
 };
 
 const verifyRecoveryOTP = async (userId, otp) => {
@@ -268,7 +268,7 @@ const updateUserProfile = async (id_usuario, fields) => {
 
 // ─── REENVIAR OTP DE ACTIVACIÓN ───────────────────────────
 const resendActivationOTP = async (userId) => {
-  return generateAndSaveOTP(userId); // ✅ usa helper
+  return generateAndSaveOTP(userId, 2); // ✅ usa helper
 };
 
 // ─── OBTENER ID POR EMAIL ─────────────────────────────────
