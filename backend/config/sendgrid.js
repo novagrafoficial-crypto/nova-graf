@@ -43,7 +43,7 @@ const sendEmail = async ({ to, subject, htmlContent }) => {
 };
 
 // Diseño común con tablas y estilos en línea para que se vea bien en Gmail y Outlook
-const plantillaCodigo = ({ titulo, mensaje, otp, notaFinal }) => `
+const plantillaCodigo = ({ titulo, mensaje, otp, minutos, notaFinal }) => `
 <div style="margin:0; padding:0; background-color:${COLORES.fondo};">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${COLORES.fondo};">
     <tr>
@@ -73,7 +73,7 @@ const plantillaCodigo = ({ titulo, mensaje, otp, notaFinal }) => `
           </tr>
           <tr>
             <td style="padding:0 32px 30px 32px;">
-              <p style="margin:0; color:${COLORES.texto}; font-size:13px; line-height:20px;">Este código expira en <strong style="color:${COLORES.oscuro};">10 minutos</strong>. ${notaFinal}</p>
+              <p style="margin:0; color:${COLORES.texto}; font-size:13px; line-height:20px;">Este código expira en <strong style="color:${COLORES.oscuro};">${minutos} minutos</strong>. ${notaFinal}</p>
             </td>
           </tr>
           <tr>
@@ -96,6 +96,7 @@ const sendOTPEmail = async (toEmail, otp) => {
       titulo: 'Activa tu cuenta',
       mensaje: 'Te damos la bienvenida a Nova Graf. Usa el siguiente código para verificar tu correo:',
       otp,
+      minutos: 2,
       notaFinal: 'Si no creaste esta cuenta, ignora este correo.',
     }),
   });
@@ -110,6 +111,7 @@ const sendRecoveryEmail = async (toEmail, otp) => {
       titulo: 'Recupera tu contraseña',
       mensaje: 'Recibimos una solicitud para restablecer tu contraseña. Usa el siguiente código:',
       otp,
+      minutos: 5,
       notaFinal: 'Si no solicitaste esto, ignora este correo y tu contraseña seguirá igual.',
     }),
   });
